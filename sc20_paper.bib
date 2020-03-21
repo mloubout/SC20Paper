@@ -2268,6 +2268,21 @@ url={http://lib.ugent.be/catalog/rug01:001559640}
   bdsk-url-2	= {http://dx.doi.org/10.1190/segam2018-2996274.1}
 }
 
+@phdthesis{louboutin2020THmfi,
+	title = {Modeling for inversion in exploration geophysics},
+	year = {2020},
+	note = {(PhD)},
+	month = {03},
+	school = {Georgia Institute of Technology},
+	type = {phd},
+	address = {Atlanta},
+	abstract = {Seismic inversion, and more generally geophysical exploration, aims at better understanding the earth{\textquoteright}s subsurface, which is one of today{\textquoteright}s most important challenges. Firstly, it contains natural resources that are critical to our technologies such as water, minerals and oil and gas. Secondly, monitoring the subsurface in the context of CO2 sequestration, earthquake detection and global seismology are of major interests with regard to safety and the environment hazards. However, the technologies to monitor the subsurface or find resources are scientifically extremely challenging. Seismic inversion can be formulated as a mathematical optimization problem that minimizes the difference between field recorded data and numerically modeled synthetic data. The process of solving this optimization problem then requires to numerically model, thousands of times, wave-propagation in large three-dimensional representations of part of the earth subsurface. The mathematical and computational complexity of this problem, therefore, calls for software design that abstracts these requirements and facilitates algorithm and software development. My thesis addresses some of the challenges that arise from these problems; mainly the computational cost and access to the right software for research and development. In the first part, I will discuss a performance metric that improves the current runtime-only benchmarks in exploration geophysics. This metric, the roofline model, first provides insight at the hardware level of the performance of a given implementation relative to the maximum achievable performance. Second, this study demonstrates that the choice of numerical discretization has a major impact on the achievable performance depending on the hardware at hand and shows that a flexible framework with respect to the discretization parameters is necessary. In the second part, I will introduce and describe Devito, a symbolic finite-difference DSL that provides a high-level interface to the definition of partial differential equations (PDE) such as the wave equation. Devito, from the symbolic definition of PDEs, then generates and compiles highly optimized C code on-the-fly to compute the solution of the PDE. The combination of the high-level abstractions and the just-in-time compiler enable research for geophysical exploration and PDE-constrainted optimization based on the paradigm of separation of concerns. This allows researchers to concentrate on their respective field of study while having access to computationally performant solvers with a flexible and easy to use interface to successfully implement complex representations of the physics. The second part of my thesis will be split into two sub-parts; first describing the symbolic application programming interface (API), before describing and benchmarking the just-in-time compiler. I will end my thesis with concluding remarks, the latest developments and a brief description of projects that were enabled by Devito.},
+	keywords = {finite-differences, FWI, HPC, Imaging, inversion, Modeling, performance, PhD, RTM},
+	url = {https://slim.gatech.edu/Publications/Public/Thesis/2020/louboutin2020THmfi/louboutin2020THmfi.pdf},
+	presentation = {https://slim.gatech.edu/Publications/Public/Thesis/2020/louboutin2020THmfi/louboutin2020THmfi_pres.pdf},
+	author = {Mathias Louboutin}
+}
+
 @article{ lumley20104,
   title={4D seismic monitoring of CO 2 sequestration},
   author={Lumley, David},
