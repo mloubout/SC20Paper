@@ -1,5 +1,5 @@
 ---
-title: Devito for large scale modeling and inversion in elastic and anisotropic earth.
+title: Devito for large scale elastic modeling and anisotropic inversion.
 author: |
     Mathias Louboutin^1^, Fabio Luporini^2^, Rhodri Nelson^2^, Philipp Witte1^, Felix J. Herrmann^1^ and Gerard Gorman^1^ \
     ^1^School of Computational Science and Engineering, Georgia Institute of Technology \
@@ -28,13 +28,12 @@ Outline:
 
 ## Devito
 
-Iro to devito
+Intro to devito
 
 ## Performance comparison
 
 FIX FORMATING AND MORE DETAILS
 
-[fdelmodc]:https://github.com/JanThorbecke/OpenSource.git
 To furthermore validate the computational performance of Devito, and thanks to the vectorial extension I present in Section 5.3, I compared the runtime of Devito with a reference open source hand-coded propagator. This propagator, described in[@thorbecke] is an elastic kernel (c.f. 5.1) and has been implemented by J. W. Thorbecke who is a developer and benchmarker for Cray and Senior researcher in applied geophysics at Delft University of Technology. The source code can be found at [fdelmodc]. I compared the runtime of Devito against [fdelmodc] for a fixed and common computational setup from one of their examples:
 
 - 2001 by 1001 physical grid points.
@@ -55,13 +54,17 @@ FIX FORMATING
 |:----------------|:-----------------|:------------------|:-------------------|:---------------|:---------------|
 | GCC 9.2.0       | 166.07s          |  172.83s          |     237.52s        | 1.430          | 1.374          |
 | ICC 19.1.0      | 131.59s          |  136.85s          |     237.17         | 1.802          | 1.733          |
-:Runtime comparison between Devito and [fdelmodc][@thorbecke] for a two dimensional elastic model. The first column shows the kernel runtime of Devito and the second column shows the total runtime including code generation and compilation. Only the runtime of [fdelmodc] is shown as the kernel and libraries are precompiled.
+
+:Runtime comparison between Devito and [fdelmodc] for a two dimensional elastic model [@thorbecke]. The first column shows the kernel runtime of Devito and the second column shows the total runtime including code generation and compilation. Only the runtime of [fdelmodc] is shown as the kernel and libraries are precompiled.
 
 This comparison illustrate the performance achieved with Devito is at least on par with hand coded propagators. Future work will aim at providing a thorough benchmark by comparing first against a three dimensional implementations and second against state of the art stencil language.
 
 
 ## 3D anisotropic imaging
+
 {>> More from thesis, not sure if should rewrite <<}
+
+Code for reproducibility can be found at [AzureTTI] that contains, the propagators and gradient computation, Dockerfiles and azure [batch-shipyard] setup for running the RTM.
 
 In this section, I highlight why high-level interfaces are extremely important for easy and rapid development of simulation and inversion codes in exploration geophysics. The example I choose is an anisotropic representation of the physics called Transverse Tilted Isotropic (TTI) [@thomsen1986]. This representation for wave motion is one of the most widely used in exploration geophysics since it captures the leading order kinematics and dynamics of acoustic wave motion in highly heterogeneous elastic media where the medium properties vary more rapidly in the direction perpendicular to sedimentary strata [@alkhalifah2000; @baysal1983; @bubetti2012; @bubetti2014; @bubesatti2016; @chu2011; @duveneck; @fletcher; @fowlertti2010; @louboutin2018segeow; @whitmore1983; @witte2016segpve; @xu2014; @zhang2005; @zhang2011; @zhan2013]. The TTI wave equation is an acoustic, low dimensional (4 parameters, 2 wavefields) simplification of the 21 parameter and 12 wavefields tensorial equations of motions [@hooke]. This simplified representation is parametrized by the Thomsen parameters ``\epsilon(x), \delta(x)`` that relate to the global (many wavelength propagation) difference in propagation speed in the vertical and horizontal directions, and the tilt and azimuth angles ``\theta(x), \phi(x)`` that define the rotation of the vertical and horizontal axis around the cartesian directions.
 
@@ -187,5 +190,11 @@ Each component of a vectorial or tensorial object is accessible via conventional
 
 ## Conclusions
 
+
+[fdelmodc]:https://github.com/JanThorbecke/OpenSource.git
+[AzureTTI]:https://github.com/slimgroup/Azure2019
+[batch-shipyard]:https://batch-shipyard.readthedocs.io
+[JUDI]:https://github.com/slimgroup/JUDI.jl
+[Devito]:https://github.com/devitocodes/devito
 
 ## References
