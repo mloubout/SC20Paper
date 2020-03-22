@@ -28,7 +28,35 @@ Outline:
 
 ## Devito
 
+### Symbolic API
+
 Intro to devito
+
+### Performance analysis
+
+Cluster basic scaling results (reuse rhodri/george from eage HPC)
+
+#### Figure: {#OMPScaling}
+![](./Figures/OMPScale.png)
+
+#### Figure: {#MPIScaling}
+![](./Figures/MPIScale.png)
+
+Good scaling, let's see rooflines
+Rofflines (from compiler paper?)
+
+#### Figure: {#AcousticRoofline}
+![](./Figures/acoustic/acoustic_dim[768,768,768]_so[4,8,12,16]_to[2]_arch[knl7250]_bkend[core].png)
+![](./Figures/acoustic/acoustic_dim[768,768,768]_so[4,8,12,16]_to[2]_arch[skl8180]_bkend[core].png)
+: Roofline model for acoustic modeling operator on a Xeon and XeonPhi +details
+
+#### Figure: {#TTIRoofline}
+![](./Figures/tti/tti_dim[768,768,768]_so[4,8,12,16]_to[2]_arch[knl7250]_bkend[core].png)
+![](./Figures/tti/tti_dim[768,768,768]_so[4,8,12,16]_to[2]_arch[skl8180]_bkend[core].png)
+: Roofline model for tti modeling operator on a Xeon and XeonPhi +details
+
+
+Good roofline perf and liner perf scaling with size, let's compare to other code
 
 ## Performance comparison
 
