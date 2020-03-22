@@ -95,8 +95,14 @@ As discussed in @zhang2011 and @duveneck, we choose a finite-difference discreti
 Because of the very high number of floating-point operations (FLOP) needed per grid point for the weighted rotated Laplacian, this anisotropic wave-equation is extremely challenging to implement. As we show in Figure #ttiflops, and previously analysed in [@louboutin2016ppf], the computational cost with high-order finite-difference is in the order of thousands of FLOPs per grid point without optimizations.
 
 #### Table: {#ttiflops}
-put table from presentation
-: Per-grid-point flops of the finite-difference stencil of the TTI wave-equation for different spatial discretization orders.
+|                 | Flops dse=noop   |  Flops dse=basic  | Flops dse=advanced | Flops dse=aggressive|
+|:----------------|:-----------------|:------------------|:-------------------|:---------------|
+| space_order=4   | 501              |  217              |     175            | 95             |
+| space_order=8   | 539              |  301              |     238            | 102            |
+| space_order=12  | 1613             |  860              |     653            | 160            |
+| space_order=16  | 5489             |  2839             |     2131           | 276            |
+
+: Per-grid-point flops of the finite-difference stencil for the TTI wave-equation with different spatial discretization orders.
 
 Consequently, the implementation of a solver for this wave-equation can be time-consuming and can lead to thousands of lines of code and the verification of its result becomes challenging as any small error is effectively untrackable and any change to the finite-difference scheme or to the time-stepper is nearly impossible to achieve without substantial re-coding. Another complication stems from the fact that practitioners of seismic inversion are often geoscientists and not computer scientists/programmers. Unfortunately, this background often either results in poorly written low performant codes or it leads to complications when research codes are handed off to computer scientists who know how to write fast codes but who often miss the necessary geophysical domain knowledge. Neither situation is conducive to addressing the complexities that come with implementing codes based on the latest geophysical insights in geophysics and high-performance computing. Devito with its high level interface and state-of-the art just-in-time compiler addresses these complications by enabling geophysical domain experts to express themselves while offering sufficient flexibility to make the code suitable for industrial applications. Aside from these practical industrial considerations, obtaining correct and numerically stable implementations for the adjoint TTI wave-equation also has proven to be challenge in the past.
 
