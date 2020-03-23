@@ -1,7 +1,7 @@
 ---
 title: Devito for large scale elastic modeling and anisotropic inversion.
 author: |
-    Mathias Louboutin^1^, Fabio Luporini^2^, Rhodri Nelson^2^, Philipp Witte1^, Felix J. Herrmann^1^ and Gerard Gorman^1^ \
+    Mathias Louboutin^1^, Fabio Luporini^2^, Philipp Witte^1^ , Rhodri Nelson^2^, George Bisbas^2^, Felix J. Herrmann^1^ and Gerard Gorman^1^ \
     ^1^School of Computational Science and Engineering, Georgia Institute of Technology \
     ^2^ Imperial Collge London
 bibliography:
@@ -12,7 +12,7 @@ bibliography:
 ## Abstract
 
 Single-PDE single node is a good POC but real-world problem are order of magnitudes more complex.
-Devito not just a small-scale tool, can solve real-worl size problems and is portable to the cloud.
+Devito not just a small-scale tool, can solve real-world size problems and is portable to the cloud.
 
 ## Introduction
 
@@ -22,12 +22,6 @@ Devito not just a small-scale tool, can solve real-worl size problems and is por
 
 Devito supports now Vectorial and second-order tensorial symbolic expressions and automatic finite-difference stencil generation. This support allows extremely simple and mathematical implementation of vectorial equation as the math writes.
 
-Outline:
-- Intro to devito
-- Perf comp with thorbeck
-- TTI RTM
-- Elastic with vectorial extension
-
 
 ## Devito
 
@@ -35,6 +29,43 @@ We first introduce Devito [@devito-api, @devito-compiler], and describe the capa
 
 ### Symbolic API
 
+The core of the symbolic API relies on three types of object:
+
+- `Grid` that defines the discretized model.
+- `(Time)Function` that defines a spatially (and time) varying symbolic object on the `Grid`
+- `Sparse(Time)Function` that defines a (time varying) pointwise object on the grid.
+
+A `Grid` represent a discretized finite n-dimensional space and is created as follows:
+
+```python
+from devito import Grid
+grid = Grid(shape=(nx, ny, nz), extent=(ext_x, ext_y, ext_z), origin=(o_x, o_y, o_z))
+```
+
+where `(nx, ny, nz)` are the number of grid points in each direction, `(ext_x, ext_y, ext_z)` is the physical extent of the domain in physical units (i.e `m`) and `(o_x, o_y, o_z)` is the origin of the domain in the same physical units. The `grid` then contains all the information related to the discretization such as the grid spacing, and automatically initilizes the `Dimension` that define the domain `x, y, z`. With this grid, the symbolic objects can be created for the discretization of a PDE.
+
+```python
+from devito import Function, TimeFunction
+m = Function(name="m", grid=grid, space_order=so)
+u = TimeFunction(name="u", grid=grid, space_order=so, time_order=to)
+```
+
+```python
+from devito import Function, TimeFunction
+s1 = SparseFunction(name="s", grid=grid, npoint=1, coordinates=coords)
+s2 = SparseTimeFunction(name="u", grid=grid, npoint=1, nt=nt, coordinates=coords)
+```
+
+From these object, we can define, as an example, the acoustic wave-equation in a single line as
+
+```python
+ eq = m * u.dt2 - u.laplace
+ src_eq = s1.inject(u.forward, expr=s1 * dt**2 / m)
+ rec_eq = rec.interpolate(u)
+```
+
+-  fully supports staggered grid
+- allows for custom FD coeffs
 
 ### Performance analysis
 
@@ -64,22 +95,17 @@ Good roofline perf and liner perf scaling with size, let's compare to other code
 
 ## Performance comparison
 
-FIX FORMATING AND MORE DETAILS
-
 To furthermore validate the computational performance of Devito, and thanks to the vectorial extension I present in Section 5.3, I compared the runtime of Devito with a reference open source hand-coded propagator. This propagator, described in[@thorbecke] is an elastic kernel (c.f. 5.1) and has been implemented by J. W. Thorbecke who is a developer and benchmarker for Cray and Senior researcher in applied geophysics at Delft University of Technology. The source code can be found at [fdelmodc]. I compared the runtime of Devito against [fdelmodc] for a fixed and common computational setup from one of their examples:
 
 - 2001 by 1001 physical grid points.
-- 200 grid points of dampening layer on all four sides (total of 2401x1401 computational grid points).
+- 200 grid points of dampening layer (absorbing layer [@cerjan]) on all four sides (total of 2401x1401 computational grid points).
 - 10001 time steps.
 - Single point source, 2001 receivers.
 - Same compiler (gcc/icc) to compile [fdelmodc] and run Devito.
 - Intel(R) Xeon(R) CPU E3-1270 v6 @ 3.8GHz.
 - Single socket, four physical cores, four physical threads, thread pinning to cores and hyperthreading off.
 
-The runtime results are summarized in Table~\ref{tab:bench-comp} and show on average that Devito performs around 75\% faster with the intel compiler and 40\% faster with gcc.
-
-FIX FORMATING
-
+The runtime results are summarized in Table #bench-comp and show on average that Devito performs around 75\% faster with the intel compiler and 40\% faster with gcc.
 
 #### Table: {#bench-comp}
 |   Compiler      |   Devito kernel  |  Devito runtime   |  FDELMODC runtime  | Kernel speedup | Runtime speedup|
@@ -90,7 +116,6 @@ FIX FORMATING
 :Runtime comparison between Devito and [fdelmodc] for a two dimensional elastic model [@thorbecke]. The first column shows the kernel runtime of Devito and the second column shows the total runtime including code generation and compilation. Only the runtime of [fdelmodc] is shown as the kernel and libraries are precompiled.
 
 This comparison illustrate the performance achieved with Devito is at least on par with hand coded propagators. Future work will aim at providing a thorough benchmark by comparing first against a three dimensional implementations and second against state of the art stencil language.
-
 
 ## 3D anisotropic imaging
 
@@ -142,9 +167,11 @@ Simulation of wave motion is only one aspect of solving problems in seismology. 
 
 ## 3D TTI RTM in the Cloud
 
+{>> ADD setup, Node type (E64_v2), number of nodes, ....<<}
+
 One of the main challenges in modern HPC is to modernize legacy codes for the cloud, which are usually hand-tuned or designed for on-premise clusters with a known and fixed architecture and setup. Porting these codes and algorithms to the cloud can be straightforward using a lift-and-shift strategy that essentially boils down to renting a cluster in the cloud. However, this strategy is not cost-efficient. Pricing in the cloud is typically based on a pay-as-you-go model, which charges for requested computational resources, regardless of whether or not instances and cores are actively used or sit idle. This pricing model is disadvantageous for the lift-and-shift strategy and oftentimes incurs higher costs than required by the actual computations, especially for communication-heavy but task-based algorithms that only need partial resources depending of the stage of the computation. On the other hand, serverless software design provides flexible and cost efficient usage of cloud resources including for large scale inverse problem such as seismic inversion. With Devito, we had access to a portable yet computationally efficient framework for wave-equation based seismic exploration that allowed us to quickly develop a new strategy to execute seismic inversion algorithms in the cloud. This new serverless and event-driven approach led to significant early results [@witte2019TPDedas, @witte2019SEGedw] that caught the attention of both seismic inverse problems practitioners and cloud providers. This led to a proof of concept project on an industry size problem in collaboration with Microsoft Azure. The main objectives of this project were:
 
-- Demonstrate the scalability, robustness and cost effectiveness of a serverless implementation of seismic imaging in the cloud. In this case, we imaged a synthetic three dimensional anisotropic subsurface model that mimics a realistic industry size problem with a realistic representation of the physics (TTI). {>>May want to say how big model was roughly to be more concrete.<<}
+- Demonstrate the scalability, robustness and cost effectiveness of a serverless implementation of seismic imaging in the cloud. In this case, we imaged a synthetic three dimensional anisotropic subsurface model that mimics a realistic industry size problem with a realistic representation of the physics (TTI). The physical size of the problem is `10kmx10kmx2.8km` discretized on a `12.5m` grid.
 
 - Demonstrate the flexibility and portability of Devito. The seismic image (RTM as defined in Chapter 3) was computed with Devito and highlights the code-generation and high performance capability of Devito on an at-scale real world problem. This result shows that in addition to conventional benchmark metrics such as soft and hard scaling and the roofline model, Devito provides state of the art performance on practical applications as well.
 
@@ -161,10 +188,9 @@ The subsurface velocity model that was used in this study is an artificial aniso
 @witte2019TPDedas fully describes the serverless implementation of seismic inverse problems, including iterative algorithms for least square minimization problems (LSRTM). The 3D anisotropic imaging results were presented as part of a keynote presentation at the EAGE HPC workshop in October 2019 [@herrmann2019EAGEHPCaii]. This work perfectly illustrates the flexibility and portability of Devito, as we were able to easily port a code only tested and developed on local hardware to the cloud, with only requiring minor adjustments. This portability included the possibility to run MPI-based code for domain decomposition in the cloud, after developing it on a desktop computer.
 
 
-
 ## Elastic modeling
 
-{>> From thesis <<}
+{>> From thesis, should I add SEAM results? Would look pretty cool but we don't have the license for it <<}
 
 The elastic isotropic wave-equation, parametrized by the Lamé parameters ``\lambda, \mu`` and the density ``\rho`` reads:
 
