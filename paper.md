@@ -30,14 +30,42 @@ We first introduce Devito [@devito-api, @devito-compiler], and describe the capa
 ### Symbolic API
 
 The core of the symbolic API relies on three types of object:
+
 - `Grid` that defines the discretized model.
 - `(Time)Function` that defines a spatially (and time) varying symbolic object on the `Grid`
 - `Sparse(Time)Function` that defines a (time varying) pointwise object on the grid.
 
-For a typical time-dependent physical problem with parameters and solution field, the physical parameter, that are space dependent only, would be  `Function`, the solution field would be a `TimeFunction` an a point-source would be a `SparseTimeFunction`.
+A `Grid` represent a discretized finite n-dimensional space and is created as follows:
 
-.....
+```python
+from devito import Grid
+grid = Grid(shape=(nx, ny, nz), extent=(ext_x, ext_y, ext_z), origin=(o_x, o_y, o_z))
+```
 
+where `(nx, ny, nz)` are the number of grid points in each direction, `(ext_x, ext_y, ext_z)` is the physical extent of the domain in physical units (i.e `m`) and `(o_x, o_y, o_z)` is the origin of the domain in the same physical units. The `grid` then contains all the information related to the discretization such as the grid spacing, and automatically initilizes the `Dimension` that define the domain `x, y, z`. With this grid,the symbolic objects can be created for the discretization of a PDE.
+
+```python
+from devito import Function, TimeFunction
+m = Function(name="m", grid=grid, space_order=so)
+u = TimeFunction(name="u", grid=grid, space_order=so, time_order=to)
+```
+
+```python
+from devito import Function, TimeFunction
+s1 = SparseFunction(name="s", grid=grid, npoint=1, coordinates=coords)
+s2 = SparseTimeFunction(name="u", grid=grid, npoint=1, nt=nt, coordinates=coords)
+```
+
+From these object, we can define, as an example, the acoustic wave-equation in a single line as
+
+```python
+ eq = m * u.dt2 - u.laplace
+ src_eq = s1.inject(u.forward, expr=s1 * dt**2 / m)
+ rec_eq = rec.interpolate(u)
+```
+
+-  fully supports staggered grid
+- allows for custom FD coeffs
 
 ### Performance analysis
 
