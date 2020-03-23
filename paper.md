@@ -42,7 +42,7 @@ from devito import Grid
 grid = Grid(shape=(nx, ny, nz), extent=(ext_x, ext_y, ext_z), origin=(o_x, o_y, o_z))
 ```
 
-where `(nx, ny, nz)` are the number of grid points in each direction, `(ext_x, ext_y, ext_z)` is the physical extent of the domain in physical units (i.e `m`) and `(o_x, o_y, o_z)` is the origin of the domain in the same physical units. The `grid` then contains all the information related to the discretization such as the grid spacing, and automatically initilizes the `Dimension` that define the domain `x, y, z`. With this grid,the symbolic objects can be created for the discretization of a PDE.
+where `(nx, ny, nz)` are the number of grid points in each direction, `(ext_x, ext_y, ext_z)` is the physical extent of the domain in physical units (i.e `m`) and `(o_x, o_y, o_z)` is the origin of the domain in the same physical units. The `grid` then contains all the information related to the discretization such as the grid spacing, and automatically initilizes the `Dimension` that define the domain `x, y, z`. With this grid, the symbolic objects can be created for the discretization of a PDE.
 
 ```python
 from devito import Function, TimeFunction
