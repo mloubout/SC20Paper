@@ -11,6 +11,9 @@ bibliography:
 
 ## Abstract
 
+Single-PDE single node is a good POC but real-world problem are order of magnitudes more complex.
+Devito not just a small-scale tool, can solve real-worl size problems and is portable to the cloud.
+
 ## Introduction
 
 - Devito symbolic dsl + compiler
@@ -28,9 +31,10 @@ Outline:
 
 ## Devito
 
+We first introduce Devito [@devito-api, @devito-compiler], and describe the capabilities that enabled the real world applications we present in the following sections. Devito, originally, is a finite-difference domain-specific language (DSL) buolt on top of `Sympy` [@sympy] that probvides a high-level symbolic interface for the definition of partial differential equations (PDE). Devito then automatically generates the finite-difference stencil associated with the PDE and support both cartesian and staggered grid finite-difference. This stencil is then passed to the Devito compiler that generates and compiles (just-in-time compilation) C-code that is optimized for the architecture at hand. In previous work, we have focused on the DSL and the compiler to highlight the potential application and use cases. In this paper, we extend previous work to real world applicationsuch as multi-node elastic modeling[@...], and multi-experiment seismic imaging in an anisotropic media [@virieux, @thomsen, @zhang2011, @duveneck, @louboutin2018segeow]. We briefly describe the symbolic API and compiler and give a brief overview of the computational performance of the generated code.
+
 ### Symbolic API
 
-Intro to devito
 
 ### Performance analysis
 
