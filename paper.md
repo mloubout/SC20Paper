@@ -24,7 +24,7 @@ Devito supports now Vectorial and second-order tensorial symbolic expressions an
 
 ## Devito
 
-We first introduce Devito [@devito-api, @devito-compiler], and describe the capabilities that enabled the real world applications we present in the following sections. Devito, originally, is a finite-difference domain-specific language (DSL) buolt on top of `Sympy` [@sympy] that probvides a high-level symbolic interface for the definition of partial differential equations (PDE). Devito then automatically generates the finite-difference stencil associated with the PDE and support both cartesian and staggered grid finite-difference. This stencil is then passed to the Devito compiler that generates and compiles (just-in-time compilation) C-code that is optimized for the architecture at hand. In previous work, we have focused on the DSL and the compiler to highlight the potential application and use cases. In this paper, we extend previous work to real world applicationsuch as multi-node elastic modeling[@...], and multi-experiment seismic imaging in an anisotropic media [@virieux, @thomsen, @zhang2011, @duveneck, @louboutin2018segeow]. We briefly describe the symbolic API and compiler and give a brief overview of the computational performance of the generated code.
+We first introduce Devito [@devito-api, @devito-compiler], and describe the capabilities that enabled the real world applications we present in the following sections. Devito, originally, is a finite-difference domain-specific language (DSL) built on top of `Sympy` [@sympy] that provides a high-level symbolic interface for the definition of partial differential equations (PDE). Devito then automatically generates the finite-difference stencil associated with the PDE and support both cartesian and staggered grid finite-difference. This stencil is then passed to the Devito compiler that generates and compiles (just-in-time compilation) C-code that is optimized for the architecture at hand. In previous work, we have focused on the DSL and the compiler to highlight the potential application and use cases. In this paper, we extend previous work to real world application such as multi-node elastic modeling[@...], and multi-experiment seismic imaging in an anisotropic media [@virieux, @thomsen, @zhang2011, @duveneck, @louboutin2018segeow]. We briefly describe the symbolic API and compiler and give a brief overview of the computational performance of the generated code.
 
 ### Symbolic API
 
@@ -32,7 +32,7 @@ The core of the symbolic API relies on three types of object:
 
 - `Grid` that defines the discretized model.
 - `(Time)Function` that defines a spatially (and time) varying symbolic object on the `Grid`
-- `Sparse(Time)Function` that defines a (time varying) pointwise object on the grid.
+- `Sparse(Time)Function` that defines a (time varying) point-wise object on the grid.
 
 A `Grid` represent a discretized finite n-dimensional space and is created as follows:
 
@@ -41,7 +41,7 @@ from devito import Grid
 grid = Grid(shape=(nx, ny, nz), extent=(ext_x, ext_y, ext_z), origin=(o_x, o_y, o_z))
 ```
 
-where `(nx, ny, nz)` are the number of grid points in each direction, `(ext_x, ext_y, ext_z)` is the physical extent of the domain in physical units (i.e `m`) and `(o_x, o_y, o_z)` is the origin of the domain in the same physical units. The `grid` then contains all the information related to the discretization such as the grid spacing, and automatically initilizes the `Dimension` that define the domain `x, y, z`. With this grid, the symbolic objects can be created for the discretization of a PDE.
+where `(nx, ny, nz)` are the number of grid points in each direction, `(ext_x, ext_y, ext_z)` is the physical extent of the domain in physical units (i.e `m`) and `(o_x, o_y, o_z)` is the origin of the domain in the same physical units. The `grid` then contains all the information related to the discretization such as the grid spacing, and automatically initializes the `Dimension` that define the domain `x, y, z`. With this grid, the symbolic objects can be created for the discretization of a PDE.
 
 ```python
 from devito import Function, TimeFunction
@@ -142,8 +142,6 @@ This comparison illustrate the performance achieved with Devito is at least on p
 
 ## 3D anisotropic imaging
 
-{>> More from thesis, not sure if should rewrite <<}
-
 Code for reproducibility can be found at [AzureTTI] that contains, the propagators and gradient computation, Dockerfiles and azure [batch-shipyard] setup for running the RTM.
 
 In this section, I highlight why high-level interfaces are extremely important for easy and rapid development of simulation and inversion codes in exploration geophysics. The example I choose is an anisotropic representation of the physics called Transverse Tilted Isotropic (TTI) [@thomsen1986]. This representation for wave motion is one of the most widely used in exploration geophysics since it captures the leading order kinematics and dynamics of acoustic wave motion in highly heterogeneous elastic media where the medium properties vary more rapidly in the direction perpendicular to sedimentary strata [@alkhalifah2000; @baysal1983; @bubetti2012; @bubetti2014; @bubesatti2016; @chu2011; @duveneck; @fletcher; @fowlertti2010; @louboutin2018segeow; @whitmore1983; @witte2016segpve; @xu2014; @zhang2005; @zhang2011; @zhan2013]. The TTI wave equation is an acoustic, low dimensional (4 parameters, 2 wavefields) simplification of the 21 parameter and 12 wavefields tensorial equations of motions [@hooke]. This simplified representation is parametrized by the Thomsen parameters ``\epsilon(x), \delta(x)`` that relate to the global (many wavelength propagation) difference in propagation speed in the vertical and horizontal directions, and the tilt and azimuth angles ``\theta(x), \phi(x)`` that define the rotation of the vertical and horizontal axis around the cartesian directions.
@@ -190,7 +188,7 @@ Simulation of wave motion is only one aspect of solving problems in seismology. 
 
 ## 3D TTI RTM in the Cloud
 
-{>> ADD setup, Node type (E64_v2), number of nodes, ....<<}
+{>> Add comp setup with node types, number of nodes, ...<<}
 
 One of the main challenges in modern HPC is to modernize legacy codes for the cloud, which are usually hand-tuned or designed for on-premise clusters with a known and fixed architecture and setup. Porting these codes and algorithms to the cloud can be straightforward using a lift-and-shift strategy that essentially boils down to renting a cluster in the cloud. However, this strategy is not cost-efficient. Pricing in the cloud is typically based on a pay-as-you-go model, which charges for requested computational resources, regardless of whether or not instances and cores are actively used or sit idle. This pricing model is disadvantageous for the lift-and-shift strategy and oftentimes incurs higher costs than required by the actual computations, especially for communication-heavy but task-based algorithms that only need partial resources depending of the stage of the computation. On the other hand, serverless software design provides flexible and cost efficient usage of cloud resources including for large scale inverse problem such as seismic inversion. With Devito, we had access to a portable yet computationally efficient framework for wave-equation based seismic exploration that allowed us to quickly develop a new strategy to execute seismic inversion algorithms in the cloud. This new serverless and event-driven approach led to significant early results [@witte2019TPDedas, @witte2019SEGedw] that caught the attention of both seismic inverse problems practitioners and cloud providers. This led to a proof of concept project on an industry size problem in collaboration with Microsoft Azure. The main objectives of this project were:
 
@@ -212,8 +210,6 @@ The subsurface velocity model that was used in this study is an artificial aniso
 
 
 ## Elastic modeling
-
-{>> From thesis, should I add SEAM results? Would look pretty cool but we don't have the license for it <<}
 
 The elastic isotropic wave-equation, parametrized by the Lamé parameters ``\lambda, \mu`` and the density ``\rho`` reads:
 
@@ -274,8 +270,16 @@ Each component of a vectorial or tensorial object is accessible via conventional
 
 ## Discussion
 
+Portability extension (GPUs, FPGAs, ...)
+Higher order tensors (stiffness stensor is 4th order)
+...
+
 
 ## Conclusions
+
+Can solve large scale and non-trivial physics problem both on conventional clusters and in the Cloud
+Good performance
+High level interface that allows simple and mathematical expression of cmplicated pgysics
 
 
 [fdelmodc]:https://github.com/JanThorbecke/OpenSource.git
