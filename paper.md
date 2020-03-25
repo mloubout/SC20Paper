@@ -94,31 +94,22 @@ When accessing or manipulating data in a Devito code, users have the illusion to
 Finally, we remark that while providing abstractions for distributed data manipulation, Devito does not support natively any mechanisms for parallel I/O.
 
 
-### Performance analysis
+### Scalability
 
-Cluster basic scaling results (reuse rhodri/george from eage HPC)
+In previous work, we presented extensive benchmarking of Devtio through the roofline model to demonstrate the performance of the generated code from an architecture point of view [@devito-compiler, @devito-api, ...]. We know show scaling benchmark for shared memory parallelism (openMP) and distributed-memory parallelism (MPI) for different kernels. This scalability analysis demonstrate that the generated code implements all the necessary statement for state of the art parallelism.
+
+We first look at the weak scaling for shared parallelism. This experiment was ran on [@rhodri not sure what the arch is on cx2, i can ask george too] and shown on Figure #OMPScaling.
 
 #### Figure: {#OMPScaling}
 ![](./Figures/OMPScale.png)
 
+The scaling shows that Devito scales nearly perfectly for all four kernels that range from extremely memory bound to almost compute bound. This results demonstrates the the shared memory parallelism implemented in the Devito compiler generates the C code with the correct pragmas and vectorization statements.
+
+Second, we look at the weak saling from a distributed parallelism point of view. This time we ran the experiment on [@rhodri] and we show the results on Figure #MPIScaling.
 #### Figure: {#MPIScaling}
 ![](./Figures/MPIScale.png)
 
-Good scaling, let's see rooflines
-Rofflines (from compiler paper?)
-
-#### Figure: {#AcousticRoofline}
-![](./Figures/acoustic/acoustic_dim[768,768,768]_so[4,8,12,16]_to[2]_arch[knl7250]_bkend[core].png)
-![](./Figures/acoustic/acoustic_dim[768,768,768]_so[4,8,12,16]_to[2]_arch[skl8180]_bkend[core].png)
-: Roofline model for acoustic modelling operator on a Xeon and XeonPhi +details
-
-#### Figure: {#TTIRoofline}
-![](./Figures/tti/tti_dim[768,768,768]_so[4,8,12,16]_to[2]_arch[knl7250]_bkend[core].png)
-![](./Figures/tti/tti_dim[768,768,768]_so[4,8,12,16]_to[2]_arch[skl8180]_bkend[core].png)
-: Roofline model for tti modelling operator on a Xeon and XeonPhi +details
-
-
-Good roofline perf and liner perf scaling with size, let's compare to other code
+The MPI scaling shows that for compute bound kernels such as TTI (c.f Eq #TTIfwd, Table #ttiflops), the scaling follows the expected near-optimal trend, while for memory bound kernels such as the acoustic wave equation, the scaling is sub-optimal. These results can be expected (see [put ref] for example) and hows that once again Devito implements distributed memory in an efficient way and performs as we would expect of a hand coded implementation.
 
 ## Performance comparison
 
@@ -288,13 +279,13 @@ We show the elastic particle velocity and stress for a well known 2D synthetic m
 ### 3D proof of concept in the cloud
 {>> This is the actual SEAM run but can't say it don't have license<<}
 
-Finally, we modelled three dimensional elastic data in the Cloud to demonstrate the scalability of Devito to cluster-size problems in the Cloud. The model we chose mimics the reference model in geophysics known as the SEAM model [@...] that is a three dimensional extreme scale synthetic representation of the subsurface. The physical dimension of the model are `45kmx35kmx15km` then descretized with a grid spacing of `20mx20mx10m` that led to a computational grid of `2250x1750x1500` grid points (5.9 billion grid points). One of the main challenges of elastic modelling is the extreme memory cost due to the number of wavefield. For a three dimensional propagators, a minimum of 21 fields need to be stored:
+Finally, we modelled three dimensional elastic data in the Cloud to demonstrate the scalability of Devito to cluster-size problems in the Cloud. The model we chose mimics the reference model in geophysics known as the SEAM model [@...] that is a three dimensional extreme scale synthetic representation of the subsurface. The physical dimension of the model are `45kmx35kmx15km` then discretized with a grid spacing of `20mx20mx10m` that led to a computational grid of `2250x1750x1500` grid points (5.9 billion grid points). One of the main challenges of elastic modelling is the extreme memory cost due to the number of wavefield. For a three dimensional propagators, a minimum of 21 fields need to be stored:
 
 - Three particle velocities with two time steps (`v.forward` and `v`)
 - Six stress with two time steps (`tau.forward` and `tau`)
 - Three model parameters `lamda`, `mu` and `rho`
 
-These 21 fields, with the grid we just describe, leads to a minimum of 461Gb of memory for modelling only. For this experiment, we obtained access to small HPC VM on azure called `Standard_H16r` that are 16 cores Intel Xeon E5 2667 v3 with no hyperthreading and used 32 nodes for a single source experiment (we solved a single wave equation). We used a 12th order discretization that leads to 2.8TFlop/time-step to be computed for this model and propagated the elastic wave for 16 seconds (23000 time steps). The modelling finished in 16 hours which converts to 1.1TFlop/s. While these number may appear to be low, the elastic kernel is extremely memory bound, while the TTI kernel is nearly compute bound (see rooflines in [@louboutin2016ppf, @devito-api, @devito-compiler]) making it more computationaly efficient, in particular in combination with MPI. Future work with involve working on the InfiniBand enabled and true HPC VM on azure to achieve Cloud performance on par with state of the art Cluster performance.
+These 21 fields, with the grid we just describe, leads to a minimum of 461Gb of memory for modelling only. For this experiment, we obtained access to small HPC VM on azure called `Standard_H16r` that are 16 cores Intel Xeon E5 2667 v3 with no hyperthreading and used 32 nodes for a single source experiment (we solved a single wave equation). We used a 12th order discretization that leads to 2.8TFlop/time-step to be computed for this model and propagated the elastic wave for 16 seconds (23000 time steps). The modelling finished in 16 hours which converts to 1.1TFlop/s. While these number may appear to be low, the elastic kernel is extremely memory bound, while the TTI kernel is nearly compute bound (see rooflines in [@louboutin2016ppf, @devito-api, @devito-compiler]) making it more computationally efficient, in particular in combination with MPI. Future work with involve working on the InfiniBand enabled and true HPC VM on azure to achieve Cloud performance on par with state of the art Cluster performance.
 
 ## Discussion
 
