@@ -11,9 +11,10 @@ bibliography:
 
 ## Abstract
 
-Devito is an open-source Python project based on domain-specific languages and compiler technology originally devised for rapid implementation of high performance applications in exploration seismology, where popular inversion methods such as Full-Waveform Inversion and Reverse-Time Migration are used to create images of the earth's subsurface. Throughout several years of development, and thanks to the feedback of companies and community, both the language and compiler have deeply evolved. Today, sophisticated boundary conditions, tensor contractions, sparse operations (e.g., interpolations), as well as fundamental features such as staggered grids and sub domains, are supported and may be used altogether in the same code. There is virtually no limit to the complexity of a Devito operator. To support all of this flexibility and to ensure competitive performance, the compiler relies on a generic framework for data dependency analysis to schedule loops and detect computational properties, such as parallelism. In this article we harness all this potential to show that Devito is ready for large-scale production-grade seismic inversion problems. We have used Devito to generate MPI-parallel wave propagators -- as well as their corresponding adjoints -- for the pseudo-acoustic anisotropic wave-equation in a transverse tilted isotropic media, and run them for Reverse-Time Migration on and synthetic industry scale datasets in an HPC cloud system, reaching the performance of 28TFlop/s.
+[Devito] is an open-source Python project based on domain-specific languages and compiler technology originally devised for rapid implementation of high performance applications in exploration seismology, where popular inversion methods such as Full-Waveform Inversion and Reverse-Time Migration are used to create images of the earth's subsurface. Throughout several years of development, and thanks to the feedback of companies and community, both the language and compiler have deeply evolved. Today, sophisticated boundary conditions, tensor contractions, sparse operations (e.g., interpolations), as well as fundamental features such as staggered grids and sub domains, are supported and may be used altogether in the same code. There is virtually no limit to the complexity of a Devito operator. To support all of this flexibility and to ensure competitive performance, the compiler relies on a generic framework for data dependency analysis to schedule loops and detect computational properties, such as parallelism. In this article we harness all this potential to show that Devito is ready for large-scale production-grade seismic inversion problems. We have used  Devito to generate MPI-parallel wave propagators -- as well as their corresponding adjoints -- for the pseudo-acoustic anisotropic wave-equation in a transverse tilted isotropic media and for the elastic wave-equation and ran them on a synthetic industry scale datasets in an HPC cloud system, reaching the performance of 28TFlop/s.
 
 ## Introduction
+
 
 - Devito symbolic dsl + compiler
 - Acoustic isotropic is trivial, real world is at the bare minimum elastic.
@@ -250,8 +251,7 @@ v = VectorTimeFunction(name='v', grid=model.grid, space_order=so, time_order=1)
 tau = TensorTimeFunction(name='t', grid=model.grid, space_order=so, time_order=1)
 
 u_v = Eq(v.forward, model.damp * (v + s/rho*div(tau)))
-u_t = Eq(tau.forward,  model.damp *  (tau + s * (l * diag(div(v.forward)) +
-                                                mu * (grad(v.forward) + grad(v.forward).T))))
+u_t = Eq(tau.forward,  model.damp *  (tau + s * (l * diag(div(v.forward)) + mu * (grad(v.forward) + grad(v.forward).T))))
 ```
 
 The `sympy` expressions created by these commands can be displayed via the `sympy` pretty printer (`sympy.pprint`) as shown in Figure #PrettyElas\. This representation reflects perfectly the mathematics while still providing computational portability and efficiency through the Devito compiler.
@@ -286,13 +286,6 @@ Finally, we modelled three dimensional elastic data in the Cloud to demonstrate 
 - Three model parameters `lamda`, `mu` and `rho`
 
 These 21 fields, with the grid we just describe, leads to a minimum of 461Gb of memory for modelling only. For this experiment, we obtained access to small HPC VM on azure called `Standard_H16r` that are 16 cores Intel Xeon E5 2667 v3 with no hyperthreading and used 32 nodes for a single source experiment (we solved a single wave equation). We used a 12th order discretization that leads to 2.8TFlop/time-step to be computed for this model and propagated the elastic wave for 16 seconds (23000 time steps). The modelling finished in 16 hours which converts to 1.1TFlop/s. While these number may appear to be low, the elastic kernel is extremely memory bound, while the TTI kernel is nearly compute bound (see rooflines in [@louboutin2016ppf, @devito-api, @devito-compiler]) making it more computationally efficient, in particular in combination with MPI. Future work with involve working on the InfiniBand enabled and true HPC VM on azure to achieve Cloud performance on par with state of the art Cluster performance.
-
-## Discussion
-
-Portability extension (GPUs, FPGAs, ...)
-Higher order tensors (stiffness stensor is 4th order)
-...
-
 
 ## Conclusions
 
