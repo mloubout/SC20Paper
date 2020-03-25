@@ -66,6 +66,30 @@ From these object, we can define, as an example, the acoustic wave-equation in a
 -  fully supports staggered grid
 - allows for custom FD coeffs
 
+### Overview of distributed-memory parallelism
+
+We here provide a minimal description of distributed-memory parallelism in Devito; the interested reader should refer to [@mpi-notebook] for thorough explanations and practical examples. 
+
+Devito implements distributed-memory parallelism on top of MPI. The design is such that users can almost entirely abstract away from it. Given *any* Devito code, just running it as
+
+```python
+DEVITO_MPI=1 mpirun -n X python ...
+```
+
+will trigger the compiler to generate C with routines for halo exchanges. The routines are scheduled at a suitable depth in the various loop nests thanks to data dependency analysis. The following optimizations are automatically applied:
+
+* redundant halo exchanges are detected and dropped;
+* computation/communication overlap, with prodding of the asynchronous progress engine by a designated thread through repeated calls to `MPI_Test`;
+* a halo exchange is placed as far as possible from where it is needed to maximize computation/communication overlap;
+* data packing and unpacking is threaded.
+
+The domain decomposition occurs in Python upon creation of a `Grid` object. Exploiting the MPI Cartesian topology abstraction, Devito logically splits a grid based on the number of available MPI processes (users are given an "escape hatch" to override Devito’s default decomposition strategy). `Function` and `TimeFunction` objects inherit the `Grid` decomposition. For `SparseFunction` objects the approach is different. Since a `SparseFunction` represents a sparse set of points, Devito looks at the physical coordinates of each point and, based on the `Grid` decomposition, schedules the logical ownership to an MPI rank. If a sparse point lies along the boundary of two or more MPI ranks, then it is duplicated to be accessible by all neighboring processes. Eventually, a duplicated point may be redundantly computed by multiple processes, but any redundant increments will be discarded.
+
+When accessing or manipulating data in a Devito code, users have the illusion to be working with classic NumPy arrays, while underneath they actually are distributed. All manner of NumPy indexing schemes (basic, slicing, etc.) are supported. In the implementation, proper global-to-local and local-to-global index conversion routines are used to propagate a read/write access to the impacted subset of ranks. For example [@rhodrin ADD A TINY YET FANCY EXAMPLE HERE].
+
+Finally, we remark that while providing abstractions for distributed data manipulation, Devito does not support natively any mechanisms for parallel I/O.
+
+
 ### Performance analysis
 
 Cluster basic scaling results (reuse rhodri/george from eage HPC)
