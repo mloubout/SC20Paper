@@ -1,9 +1,10 @@
 ---
 title: Devito for large scale elastic modelling and anisotropic inversion.
 author: |
-    Mathias Louboutin^1^, Fabio Luporini^2^, Philipp Witte^1^ , Rhodri Nelson^2^, George Bisbas^2^, Felix J. Herrmann^1^ and Gerard Gorman^1^ \
+    Mathias Louboutin^1^, Fabio Luporini^2^, Philipp Witte^1^ , Rhodri Nelson^2^, George Bisbas^2^, Jan Thorbecke^3^, Felix J. Herrmann^1^ and Gerard Gorman^1^ \
     ^1^School of Computational Science and Engineering, Georgia Institute of Technology \
-    ^2^ Imperial College London
+    ^2^ Imperial College London \
+    ^3^ TU-Delft
 bibliography:
     - sc20_paper.bib
 ---
@@ -135,7 +136,7 @@ The MPI scaling shows that for compute bound kernels such as TTI (c.f Eq #TTIfwd
 
 ### Performance comparison
 
-To furthermore validate the computational performance of Devito, and thanks to the vectorial extension we present in Section #elastic, we compared the runtime of Devito with a reference open source hand-coded propagator in collaboration with its author. This propagator, described in[@thorbecke] is a state of the art elastic kernel [@...]. The source code can be found at [fdelmodc]. We compared the runtime of Devito against [fdelmodc] for a fixed and common computational setup from one of their examples:
+To furthermore validate the computational performance of Devito, and thanks to the vectorial extension we present in Section #elastic, we compared the runtime of Devito with a reference open source hand-coded propagator in collaboration with its author. This propagator, described in[@thorbecke] is a state of the art elastic kernel (Eq #elas1). In order the have a fair comparison, we ensure, in collaboration with the author of [fdelmodc] that the physical and computational settings were identical. THe setting were the following:
 
 - 2001 by 1001 physical grid points.
 - 200 grid points of dampening layer (absorbing layer [@cerjan]) on all four sides (total of 2401x1401 computational grid points).
@@ -145,17 +146,7 @@ To furthermore validate the computational performance of Devito, and thanks to t
 - Intel(R) Xeon(R) CPU E3-1270 v6 @ 3.8GHz.
 - Single socket, four physical cores, four physical threads, thread pinning to cores and hyperthreading off.
 
-The runtime results are summarized in Table #bench-comp and show on average that Devito performs around 75\% faster with the intel compiler and 40\% faster with gcc.
-
-#### Table: {#bench-comp}
-|   Compiler      |   Devito kernel  |  Devito runtime   |  FDELMODC runtime  | Kernel speedup | Runtime speedup|
-|:----------------|:-----------------|:------------------|:-------------------|:---------------|:---------------|
-| single thread   | 166.07s          |  172.83s          |     237.52s        | 1.430          | 1.374          |
-| multi thread (4)| 131.59s          |  136.85s          |     237.17         | 1.802          | 1.733          |
-
-:Runtime comparison between Devito and [fdelmodc] for a two dimensional elastic model [@thorbecke]. The first column shows the kernel runtime of Devito and the second column shows the total runtime including code generation and compilation. Only the runtime of [fdelmodc] is shown as the kernel and libraries are precompiled.
-
-This comparison illustrate the performance achieved with Devito is at least on par with hand coded propagators. Future work will aim at providing a thorough benchmark by comparing first against a three dimensional implementations and second against state of the art stencil language.
+The runtime obtained for this problem for both propagators were identical with less than one percent of difference. This similar runtime were obtained both with the Intel compiler and the gNU compiler and we ran the experiment with a fourth order and a sixth order discretization. The kernels were executed five time each to ensure consistency between the results and we consistently obtained similar runtimes. This comparison illustrate the performance achieved with Devito is at least on par with hand coded propagators. Future work will aim at providing a thorough benchmark by comparing first against a three dimensional implementations and second against state of the art stencil language.
 
 ## 3D anisotropic imaging
 
