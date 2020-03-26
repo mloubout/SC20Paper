@@ -3,7 +3,7 @@ title: Devito for large scale elastic modelling and anisotropic inversion.
 author: |
     Mathias Louboutin^1^, Fabio Luporini^2^, Philipp Witte^1^ , Rhodri Nelson^2^, George Bisbas^2^, Felix J. Herrmann^1^ and Gerard Gorman^1^ \
     ^1^School of Computational Science and Engineering, Georgia Institute of Technology \
-    ^2^ Imperial Collge London
+    ^2^ Imperial College London
 bibliography:
     - sc20_paper.bib
 ---
@@ -112,7 +112,7 @@ Second, we look at the weak saling from a distributed parallelism point of view.
 
 The MPI scaling shows that for compute bound kernels such as TTI (c.f Eq #TTIfwd, Table #ttiflops), the scaling follows the expected near-optimal trend, while for memory bound kernels such as the acoustic wave equation, the scaling is sub-optimal. These results can be expected (see [put ref] for example) and hows that once again Devito implements distributed memory in an efficient way and performs as we would expect of a hand coded implementation.
 
-## Performance comparison
+### Performance comparison
 
 To furthermore validate the computational performance of Devito, and thanks to the vectorial extension we present in Section #elastic, we compared the runtime of Devito with a reference open source hand-coded propagator in collaboration with its author. This propagator, described in[@thorbecke] is a state of the art elastic kernel [@...]. The source code can be found at [fdelmodc]. We compared the runtime of Devito against [fdelmodc] for a fixed and common computational setup from one of their examples:
 
@@ -129,8 +129,8 @@ The runtime results are summarized in Table #bench-comp and show on average that
 #### Table: {#bench-comp}
 |   Compiler      |   Devito kernel  |  Devito runtime   |  FDELMODC runtime  | Kernel speedup | Runtime speedup|
 |:----------------|:-----------------|:------------------|:-------------------|:---------------|:---------------|
-| GCC 9.2.0       | 166.07s          |  172.83s          |     237.52s        | 1.430          | 1.374          |
-| ICC 19.1.0      | 131.59s          |  136.85s          |     237.17         | 1.802          | 1.733          |
+| single thread   | 166.07s          |  172.83s          |     237.52s        | 1.430          | 1.374          |
+| multi thread (4)| 131.59s          |  136.85s          |     237.17         | 1.802          | 1.733          |
 
 :Runtime comparison between Devito and [fdelmodc] for a two dimensional elastic model [@thorbecke]. The first column shows the kernel runtime of Devito and the second column shows the total runtime including code generation and compilation. Only the runtime of [fdelmodc] is shown as the kernel and libraries are precompiled.
 
