@@ -42,7 +42,7 @@ from devito import Grid
 grid = Grid(shape=(nx, ny, nz), extent=(ext_x, ext_y, ext_z), origin=(o_x, o_y, o_z))
 ```
 
-where `(nx, ny, nz)` are the number of grid points in each direction, `(ext_x, ext_y, ext_z)` is the physical extent of the domain in physical units (i.e `m`) and `(o_x, o_y, o_z)` is the origin of the domain in the same physical units. The `grid` then contains all the information related to the discretization such as the grid spacing, and automatically initializes the `Dimension` that define the domain `x, y, z`. With this grid, the symbolic objects can be created for the discretization of a PDE. First, we can define a spatialy varying model parameter `m` and a time-space varying field `u`
+where `(nx, ny, nz)` are the number of grid points in each direction, `(ext_x, ext_y, ext_z)` is the physical extent of the domain in physical units (i.e `m`) and `(o_x, o_y, o_z)` is the origin of the domain in the same physical units. The `grid` then contains all the information related to the discretization such as the grid spacing, and automatically initializes the `Dimension` that define the domain `x, y, z`. With this grid, the symbolic objects can be created for the discretization of a PDE. First, we can define a spatially varying model parameter `m` and a time-space varying field `u`
 
 ```python
 from devito import Function, TimeFunction
@@ -90,7 +90,21 @@ will trigger the compiler to generate C with routines for halo exchanges. The ro
 
 The domain decomposition occurs in Python upon creation of a `Grid` object. Exploiting the MPI Cartesian topology abstraction, Devito logically splits a grid based on the number of available MPI processes (users are given an "escape hatch" to override Devito’s default decomposition strategy). `Function` and `TimeFunction` objects inherit the `Grid` decomposition. For `SparseFunction` objects the approach is different. Since a `SparseFunction` represents a sparse set of points, Devito looks at the physical coordinates of each point and, based on the `Grid` decomposition, schedules the logical ownership to an MPI rank. If a sparse point lies along the boundary of two or more MPI ranks, then it is duplicated to be accessible by all neighboring processes. Eventually, a duplicated point may be redundantly computed by multiple processes, but any redundant increments will be discarded.
 
-When accessing or manipulating data in a Devito code, users have the illusion to be working with classic NumPy arrays, while underneath they actually are distributed. All manner of NumPy indexing schemes (basic, slicing, etc.) are supported. In the implementation, proper global-to-local and local-to-global index conversion routines are used to propagate a read/write access to the impacted subset of ranks. For example [@rhodrin ADD A TINY YET FANCY EXAMPLE HERE].
+When accessing or manipulating data in a Devito code, users have the illusion to be working with classic NumPy arrays, while underneath they actually are distributed. All manner of NumPy indexing schemes (basic, slicing, etc.) are supported. In the implementation, proper global-to-local and local-to-global index conversion routines are used to propagate a read/write access to the impacted subset of ranks. For example, consider the array
+```python
+            A = [[ 1,  2,  3,  4],
+                 [ 5,  6,  7,  8],
+                 [ 9, 10, 11, 12],
+                 [13, 14, 15, 16]])
+```
+which is distributed across 4 ranks such that `rank 0` contains the elements reading `1, 2, 5, 6`, `rank 1` the elements `3, 4, 7, 8`,  `rank 2` the elements `9, 10, 13, 14` and `rank 3` the elements `11, 12, 15, 16`. The slicing operation `A[::-1, ::-1]` will then return
+```python
+                [[ 16, 15, 14, 13],
+                 [ 12, 11, 10,  9],
+                 [  8,  7,  6,  5],
+                 [  4,  3,  2,  1]])
+```
+such that now `rank 0` contains the elements `16, 15, 12, 11` and so forth.
 
 Finally, we remark that while providing abstractions for distributed data manipulation, Devito does not support natively any mechanisms for parallel I/O.
 
@@ -99,14 +113,21 @@ Finally, we remark that while providing abstractions for distributed data manipu
 
 In previous work, we presented extensive benchmarking of Devtio through the roofline model to demonstrate the performance of the generated code from an architecture point of view [@devito-compiler, @devito-api, ...]. We know show scaling benchmark for shared memory parallelism (openMP) and distributed-memory parallelism (MPI) for different kernels. This scalability analysis demonstrate that the generated code implements all the necessary statement for state of the art parallelism.
 
-We first look at the weak scaling for shared parallelism. This experiment was ran on [@rhodri not sure what the arch is on cx2, i can ask george too] and shown on Figure #OMPScaling.
+We first look at the weak scaling for shared parallelism. This experiment was ran on the CX2 cluster located at Imperial College London (architecture detailed in #cx2-arch) and result presented in Figure #OMPScaling.
+
+#### Table: {#cx2-arch}
+|   CX2 architecture                      |
+|:----------------------------------------|
+| Intel(R) Xeon(R) CPU E5-2680 chips      |
+| 2 sockets per node. 12 cores per socket |
+| 120Gb of memory per node                |
 
 #### Figure: {#OMPScaling}
 ![](./Figures/OMPScale.png)
 
 The scaling shows that Devito scales nearly perfectly for all four kernels that range from extremely memory bound to almost compute bound. This results demonstrates the the shared memory parallelism implemented in the Devito compiler generates the C code with the correct pragmas and vectorization statements.
 
-Second, we look at the weak saling from a distributed parallelism point of view. This time we ran the experiment on [@rhodri] and we show the results on Figure #MPIScaling.
+Second, we look at the weak scaling from a distributed parallelism point of view. The experiment on was again ran on CX2 and results are shown in Figure #MPIScaling.
 #### Figure: {#MPIScaling}
 ![](./Figures/MPIScale.png)
 
@@ -155,7 +176,7 @@ After discretization, the TTI wave-equation can be rewritten in a linear algebra
  \mathbf{m}  \begin{bmatrix}\frac{\mathrm{d}^2 \mathbf{p}}{\mathrm{d} t^2} \\\frac{\mathrm{d}^2 \mathbf{r}}{\mathrm{d} t^2} \end{bmatrix} &=  \begin{bmatrix} (1 + 2\mathbf{\epsilon})H_{\bar{x}\bar{y}} & \sqrt{1 + 2 \mathbf{\delta}}\ H_{\bar{z}} \\ \sqrt{1 + 2 \mathbf{\delta}} \ H_{\bar{x}\bar{y}} & H_{\bar{z}} \end{bmatrix} \begin{bmatrix} \mathbf{p} \\ \mathbf{r} \end{bmatrix} + \mathbf{P}_s^\top \mathbf{q}
 ```
 
-where the bold font represents discretized version of the wavefield and physical parameters. With this expression, we can rewrite the solution of the anisotropic wave equation as the solution of a linear system ``\mathbf{u}(\mathbf{m}) = \mathbf{A}(\mathbf{m})^{-1} \mathbf{P}_s^\top`` where ``\mathbf{u}(\mathbf{m})`` is a two component vector ``(\mathbf{p}(\mathbf{m})^\top, \mathbf{r}(\mathbf{m})^\top)^\top``. The matrix ``\mathbf{P}_s^\top`` injects the source in both wavefield components. This matricial formulation is extremely useful for the mathematical derivation of inversion opertion such as gradients.
+where the bold font represents discretized version of the wavefield and physical parameters. With this expression, we can rewrite the solution of the anisotropic wave equation as the solution of a linear system ``\mathbf{u}(\mathbf{m}) = \mathbf{A}(\mathbf{m})^{-1} \mathbf{P}_s^\top`` where ``\mathbf{u}(\mathbf{m})`` is a two component vector ``(\mathbf{p}(\mathbf{m})^\top, \mathbf{r}(\mathbf{m})^\top)^\top``. The matrix ``\mathbf{P}_s^\top`` injects the source in both wavefield components. This matricial formulation is extremely useful for the mathematical derivation of inversion operation such as gradients.
 
 As discussed in @zhang2011 and @duveneck, we choose a finite-difference discretization of the three differential operators ``H_{\bar{z}}, G_{\bar{x}\bar{x}}, G_{\bar{y}\bar{y}}`` that is self-adjoint to ensure numerical stability. For example, we define ``G_{\bar{x}\bar{x}}`` as a function of the discretized tilt ``\mathbf{\theta}`` and azymuth ``\mathbf{\phi}`` as:
 
@@ -191,7 +212,7 @@ One of the main challenges in modern HPC is to modernize legacy codes for the cl
 ***Computational performance***
 
 We briefly describe the computational setup and the performance achieved for this anisotropic imaging problem. Due to time constraints, and because the resources we were given access to for this Proof of concept with Microsoft Azure were limited, we did not have access to HPC virtual machines (BM) nor Infiniband enabled ones. The nodes we ran this experiment on are `Standard_E64_v3` and `Standard_E64s_v3` that while not HPC VM are memory optimized allowing to save the wavefield in memory for imaging (TTI adjoint state gradient [@virieux, @louboutin2018segeow]).
-These VMs are Intel® Broadwell E5-2673 v4 2.3GH taht are dual socket, 32 physical cores (and hyperthreading enabled) and 432Gb of memory CPUs. The overall inversion involved computing the image for 1500 source positions, i.e. solving 1500 forward and 1500 adjoint TTI wave-equation. A single image required 600Gb of memory and we used two VM per source with MPI with one rank per socket (4 MPI rank per source) and imaged 100 sources in parallel due to resources limitations (in theory we could have run the 1500 in parallel with the necessary quotas). The performance achieved was as follow:
+These VMs are Intel® Broadwell E5-2673 v4 2.3GH that are dual socket, 32 physical cores (and hyperthreading enabled) and 432Gb of memory CPUs. The overall inversion involved computing the image for 1500 source positions, i.e. solving 1500 forward and 1500 adjoint TTI wave-equation. A single image required 600Gb of memory and we used two VM per source with MPI with one rank per socket (4 MPI rank per source) and imaged 100 sources in parallel due to resources limitations (in theory we could have run the 1500 in parallel with the necessary quotas). The performance achieved was as follow:
 
 - 140 GFlop/s per VM
 - 280 GFlop/s per source
@@ -264,7 +285,7 @@ Each component of a vectorial or tensorial object is accessible via conventional
 
 ### 2D example
 
-We show the elastic particle velocity and stress for a well known 2D synthetic model, the elastic marmousi-ii[@versteeg927, @marmouelas] model. The wavefields are shown on Figure #ElasWf and its corresponding elastic shot records are displayed in Figure #ElasShot\.
+We show the elastic particle velocity and stress for a well known 2D synthetic model, the elastic Marmousi-ii[@versteeg927, @marmouelas] model. The wavefields are shown on Figure #ElasWf and its corresponding elastic shot records are displayed in Figure #ElasShot\.
 
 #### Figure: {#ElasWf}
 ![](./Figures/marmou_snap.png){width=100%}
@@ -291,7 +312,7 @@ These 21 fields, with the grid we just describe, leads to a minimum of 461Gb of 
 
 Can solve large scale and non-trivial physics problem both on conventional clusters and in the Cloud
 Good performance
-High level interface that allows simple and mathematical expression of cmplicated pgysics
+High level interface that allows simple and mathematically based expression of complicated physics.
 
 
 [fdelmodc]:https://github.com/JanThorbecke/OpenSource.git
