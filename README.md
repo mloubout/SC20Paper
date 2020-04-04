@@ -4,7 +4,7 @@ SC20 in Atlanta submission
 
 # Message of the paper
 
-Devito scales to real-worla pplication and non-trivial physics
+Devito scales to real-world application and non-trivial physics
 
 # TODO list
 
@@ -18,7 +18,10 @@ Devito scales to real-worla pplication and non-trivial physics
 - [x] Add description of data distribution over MPI (python/numpy-level, C-level including domain decompositon for both Function and SparseFunction)  (fabio)
 - [x] Add description of staggered and vectorial/matrix setup and API (mathias)
 - [ ] Discussion + conclusion
+- [ ] emphasize that MPI parallelism happens auto-magically -- no changes to source code necessary! (fabio)
+- [ ] explain how the GFlops/s performance was calculated (fabio)
+  
+
 - [ ] review + typos + ... (felix + gerard :D)
 - [ ] formating (mathias)
 
-- [ ] Add explanation on how we measure performance

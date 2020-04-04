@@ -276,6 +276,7 @@ We show the elastic particle velocity and stress for a well known 2D synthetic m
 : Seismic shot record for 5sec of modelling. `a` is the pressure (trace of stress tensor) at the surface (5m depth), `b` is the vertical particle velocity and `c` is the horizontal particle velocity at the ocean bottom (450m depth).
 
 ### 3D proof of concept in the cloud
+
 {>> This is the actual SEAM run but can't say it don't have license<<}
 
 Finally, we modelled three dimensional elastic data in the Cloud to demonstrate the scalability of Devito to cluster-size problems in the Cloud. The model we chose mimics the reference model in geophysics known as the SEAM model [@...] that is a three dimensional extreme scale synthetic representation of the subsurface. The physical dimension of the model are `45kmx35kmx15km` then discretized with a grid spacing of `20mx20mx10m` that led to a computational grid of `2250x1750x1500` grid points (5.9 billion grid points). One of the main challenges of elastic modelling is the extreme memory cost due to the number of wavefield. For a three dimensional propagator, a minimum of 21 fields need to be stored:
