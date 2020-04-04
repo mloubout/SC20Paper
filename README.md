@@ -21,3 +21,4 @@ Devito scales to real-worla pplication and non-trivial physics
 - [ ] review + typos + ... (felix + gerard :D)
 - [ ] formating (mathias)
 - [ ] emphasize that MPI parallelism happens auto-magically -- no changes to source code necessary! (fabio)
+- [ ] explain how the GFlops/s performance was calculated (fabio)
