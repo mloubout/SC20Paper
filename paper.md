@@ -59,6 +59,7 @@ rec = SparseTimeFunction(name="rec", grid=grid, npoint=1, nt=nt, coordinates=r_c
 ```
 
 From these object, we can define, as an example, the acoustic wave-equation in five lines as:
+{>> Add equation <<}
 
 ```python
 from devito import solve, Eq, Operator
@@ -91,66 +92,34 @@ will trigger the compiler to generate C with routines for halo exchanges. The ro
 The domain decomposition occurs in Python upon creation of a `Grid` object. Exploiting the MPI Cartesian topology abstraction, Devito logically splits a grid based on the number of available MPI processes (users are given an "escape hatch" to override Devito's default decomposition strategy). `Function` and `TimeFunction` objects inherit the `Grid` decomposition. For `SparseFunction` objects the approach is different. Since a `SparseFunction` represents a sparse set of points, Devito looks at the physical coordinates of each point and, based on the `Grid` decomposition, schedules the logical ownership to an MPI rank. If a sparse point lies along the boundary of two or more MPI ranks, then it is duplicated to be accessible by all neighboring processes. Eventually, a duplicated point may be redundantly computed by multiple processes, but any redundant increments will be discarded.
 
 When accessing or manipulating data in a Devito code, users have the illusion to be working with classic NumPy arrays, while underneath they actually are distributed. All manner of NumPy indexing schemes (basic, slicing, etc.) are supported. In the implementation, proper global-to-local and local-to-global index conversion routines are used to propagate a read/write access to the impacted subset of ranks. For example, consider the array
+
 ```python
-            A = [[ 1,  2,  3,  4],
-                 [ 5,  6,  7,  8],
-                 [ 9, 10, 11, 12],
-                 [13, 14, 15, 16]])
+A = [[ 1,  2,  3,  4],
+     [ 5,  6,  7,  8],
+     [ 9, 10, 11, 12],
+     [13, 14, 15, 16]])
 ```
+
 which is distributed across 4 ranks such that `rank 0` contains the elements reading `1, 2, 5, 6`, `rank 1` the elements `3, 4, 7, 8`,  `rank 2` the elements `9, 10, 13, 14` and `rank 3` the elements `11, 12, 15, 16`. The slicing operation `A[::-1, ::-1]` will then return
+
 ```python
-                [[ 16, 15, 14, 13],
-                 [ 12, 11, 10,  9],
-                 [  8,  7,  6,  5],
-                 [  4,  3,  2,  1]])
+    [[ 16, 15, 14, 13],
+     [ 12, 11, 10,  9],
+     [  8,  7,  6,  5],
+     [  4,  3,  2,  1]])
 ```
+
 such that now `rank 0` contains the elements `16, 15, 12, 11` and so forth.
 
-Finally, we remark that while providing abstractions for distributed data manipulation, Devito does not support natively any mechanisms for parallel I/O.
-
-### Scalability
-
-In previous work, we presented extensive benchmarking of Devito through the roofline model to demonstrate the performance of the generated code from an architecture point of view [@devito-compiler, @devito-api, ...]. We know show scaling benchmark for shared memory parallelism (openMP) and distributed-memory parallelism (MPI) for different kernels. This scalability analysis demonstrate that the generated code implements all the necessary statement for state of the art parallelism.
-
-We first look at the weak scaling for shared parallelism. This experiment was ran on the CX2 cluster located at Imperial College London (architecture detailed in #cx2-arch) and result is presented in Figure #OMPScaling.
-
-#### Table: {#cx2-arch}
-|   CX2 architecture                      |
-|:----------------------------------------|
-| Intel(R) Xeon(R) CPU E5-2680 chips      |
-| 2 sockets per node. 12 cores per socket |
-| 120Gb of memory per node                |
-
-#### Figure: {#OMPScaling}
-![](./Figures/OMPScale.png)
-
-The scaling shows that Devito scales nearly perfectly for all four kernels that range from extremely memory bound to almost compute bound. This result demonstrates the shared memory parallelism scaling implemented in the Devito compiler generates the C code with the correct pragmas and vectorization statements.
-
-Second, we look at the weak scaling from a distributed parallelism point of view. The experiment on was again ran on CX2 and results are shown in Figure #MPIScaling.
-#### Figure: {#MPIScaling}
-![](./Figures/MPIScale.png)
-
-The MPI scaling shows that for compute bound kernels such as TTI (c.f Eq #TTIfwd, Table #ttiflops), the scaling follows the expected near-optimal trend, while for memory bound kernels such as the acoustic wave equation, the scaling is sub-optimal. These results can be expected (see [put ref] for example) and hows that once again Devito implements distributed memory in an efficient way and performs as we would expect of a hand-coded implementation.
-
-### Performance comparison
-
-To furthermore validate the computational performance of Devito, and thanks to the vectorial extension we present in Section #elastic, we compared the runtime of Devito with a reference open source hand-coded propagator in collaboration with its author. This propagator, described in[@thorbecke] is a state of the art elastic kernel (Eq #elas1). In order the have a fair comparison, we ensure, in collaboration with the author of [fdelmodc] that the physical and computational settings were identical. THe setting were the following:
-
-- 2001 by 1001 physical grid points.
-- 200 grid points of dampening layer (absorbing layer [@cerjan]) on all four sides (total of 2401x1401 computational grid points).
-- 10001 time steps.
-- Single point source, 2001 receivers.
-- Same compiler (gcc/icc) to compile [fdelmodc] and run Devito.
-- Intel(R) Xeon(R) CPU E3-1270 v6 @ 3.8GHz.
-- Single socket, four physical cores, four physical threads, thread pinning to cores and hyperthreading off.
-
-The runtime obtained for this problem for both propagators were identical with less than one percent of difference. This similar runtime were obtained both with the Intel compiler and the gNU compiler and we ran the experiment with a fourth order and a sixth order discretization. The kernels were executed five time each to ensure consistency between the results and we consistently obtained similar runtimes. This comparison illustrate the performance achieved with Devito is at least on par with hand coded propagators. Future work will aim at providing a thorough benchmark by comparing first against a three dimensional implementation and second against state of the art stencil language.
+Finally, we remark that while providing abstractions for distributed data manipulation, Devito does not support natively any mechanisms for parallel I/O. {>> Add positive note<<}
 
 ## Industry-scale 3D seismic imaging in anisotropic media
 
 On of the main applications of seismic finite-difference modeling in exploration geophysics is reverse-time migration (RTM), a wave equation-based seismic imaging technique. Real-world seismic imaging presents a number of challenges that make applying this method to industry-scale problem sizes difficult. First of all, RTM requires an accurate representation of the physics through sophisticated wave equations such as the tilted-transverse isotropic (TTI) wave equation, for which both forward and adjoint implementations have to be provided. Second of all, wave equations have to be solved for a large number of independent experiments, where each individual PDE solve in itself is expensive in terms of FLOPs and memory usage and domain decomposition of wavefield checkpointing has to be applied. In the following section, we highlight Devito's capabilities to address these challenges, making it possible to use Devito for realistic seismic imaging on an industry scale. First, we address how forward and adjoint TTI equations can be implemented with Devito, and subsequently we carry out a 3D seismic imaging case study on Azure using a synthetic data set.
 
 ### Anisotorpic wave equations
+
+{{>> Remove PDE and show code for rotation<<}
 
 (section needs to be shortened)
 
@@ -207,6 +176,8 @@ Consequently, the implementation of a solver for this wave-equation can be time-
 Simulation of wave motion is only one aspect of solving problems in seismology. During wave-equation based imaging, we also need to compute sensitivities (gradient) with respect to the quantities of interest. This imposes additional constraints on the design and implementations of our simulation codes as outlined in [@virieux]. Among several factors, such as fast setup time etc., we focused on correct and testable implementations for the adjoint wave equation and the gradient (action of the adjoint Jacobian) [@louboutin2018segeow, @louboutin2020THmfi].
 
 ### 3D Imaging example on Azure
+
+{>> Remove lift and shift and just ref<<}
 
 One of the main challenges in modern HPC is to modernize legacy codes for the cloud, which are usually hand-tuned or designed for on-premise clusters with a known and fixed architecture and setup. Porting these codes and algorithms to the cloud can be straightforward using a lift-and-shift strategy that essentially boils down to renting a cluster in the cloud. However, this strategy is not cost-efficient. Pricing in the cloud is typically based on a pay-as-you-go model, which charges for requested computational resources, regardless of whether or not instances and cores are actively used or sit idle. This pricing model is disadvantageous for the lift-and-shift strategy and oftentimes incurs higher costs than required by the actual computations, especially for communication-heavy but task-based algorithms that only need partial resources depending of the stage of the computation. On the other hand, serverless software design provides flexible and cost efficient usage of cloud resources including for large scale inverse problem such as seismic inversion. With Devito, we had access to a portable yet computationally efficient framework for wave-equation based seismic exploration that allowed us to quickly develop a new strategy to execute seismic inversion algorithms in the cloud. This new serverless and event-driven approach led to significant early results [@witte2019TPDedas, @witte2019SEGedw] that caught the attention of both seismic inverse problems practitioners and cloud providers. This led to a proof of concept project on an industry size problem in collaboration with Microsoft Azure. The main objectives of this project were:
 
@@ -314,6 +285,46 @@ Finally, we modelled three dimensional elastic data in the Cloud to demonstrate 
 - Three model parameters `lamda`, `mu` and `rho`
 
 These 21 fields, with the grid we just describe, leads to a minimum of 461Gb of memory for modelling only. For this experiment, we obtained access to small HPC VM on azure called `Standard_H16r` that are 16 cores Intel Xeon E5 2667 v3 with no hyperthreading and used 32 nodes for a single source experiment (we solved a single wave equation). We used a 12th order discretization that leads to 2.8TFlop/time-step to be computed for this model and propagated the elastic wave for 16 seconds (23000 time steps). The modelling finished in 16 hours which converts to 1.1TFlop/s. While these number may seem low, the elastic kernel is extremely memory bound, while the TTI kernel is nearly compute bound (see rooflines in [@louboutin2016ppf, @devito-api, @devito-compiler]) making it more computationally efficient, in particular in combination with MPI. Future work with involve working on the InfiniBand enabled and true HPC VM on azure to achieve Cloud performance on par with state of the art Cluster performance.
+
+## Performance
+
+### Scalability
+
+In previous work, we presented extensive benchmarking of Devito through the roofline model to demonstrate the performance of the generated code from an architecture point of view [@devito-compiler, @devito-api, ...]. We know show scaling benchmark for shared memory parallelism (openMP) and distributed-memory parallelism (MPI) for different kernels. This scalability analysis demonstrate that the generated code implements all the necessary statement for state of the art parallelism.
+
+We first look at the weak scaling for shared parallelism. This experiment was ran on the CX2 cluster located at Imperial College London (architecture detailed in #cx2-arch) and result is presented in Figure #OMPScaling.
+
+#### Table: {#cx2-arch}
+|   CX2 architecture                      |
+|:----------------------------------------|
+| Intel(R) Xeon(R) CPU E5-2680 chips      |
+| 2 sockets per node. 12 cores per socket |
+| 120Gb of memory per node                |
+
+#### Figure: {#OMPScaling}
+![](./Figures/OMPScale.png)
+
+The scaling shows that Devito scales nearly perfectly for all four kernels that range from extremely memory bound to almost compute bound. This result demonstrates the shared memory parallelism scaling implemented in the Devito compiler generates the C code with the correct pragmas and vectorization statements.
+
+Second, we look at the weak scaling from a distributed parallelism point of view. The experiment on was again ran on CX2 and results are shown in Figure #MPIScaling.
+#### Figure: {#MPIScaling}
+![](./Figures/MPIScale.png)
+
+The MPI scaling shows that for compute bound kernels such as TTI (c.f Eq #TTIfwd, Table #ttiflops), the scaling follows the expected near-optimal trend, while for memory bound kernels such as the acoustic wave equation, the scaling is sub-optimal. These results can be expected (see [put ref] for example) and hows that once again Devito implements distributed memory in an efficient way and performs as we would expect of a hand-coded implementation.
+
+### Performance comparison
+
+To furthermore validate the computational performance of Devito, and thanks to the vectorial extension we present in Section #elastic, we compared the runtime of Devito with a reference open source hand-coded propagator in collaboration with its author. This propagator, described in[@thorbecke] is a state of the art elastic kernel (Eq #elas1). In order the have a fair comparison, we ensure, in collaboration with the author of [fdelmodc] that the physical and computational settings were identical. THe setting were the following:
+
+- 2001 by 1001 physical grid points.
+- 200 grid points of dampening layer (absorbing layer [@cerjan]) on all four sides (total of 2401x1401 computational grid points).
+- 10001 time steps.
+- Single point source, 2001 receivers.
+- Same compiler (gcc/icc) to compile [fdelmodc] and run Devito.
+- Intel(R) Xeon(R) CPU E3-1270 v6 @ 3.8GHz.
+- Single socket, four physical cores, four physical threads, thread pinning to cores and hyperthreading off.
+
+The runtime obtained for this problem for both propagators were identical with less than one percent of difference. This similar runtime were obtained both with the Intel compiler and the gNU compiler and we ran the experiment with a fourth order and a sixth order discretization. The kernels were executed five time each to ensure consistency between the results and we consistently obtained similar runtimes. This comparison illustrate the performance achieved with Devito is at least on par with hand coded propagators. Future work will aim at providing a thorough benchmark by comparing first against a three dimensional implementation and second against state of the art stencil language.
 
 ## Conclusions
 

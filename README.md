@@ -20,3 +20,5 @@ Devito scales to real-worla pplication and non-trivial physics
 - [ ] Discussion + conclusion
 - [ ] review + typos + ... (felix + gerard :D)
 - [ ] formating (mathias)
+
+- [ ] Add explanation on how we measure performance
