@@ -20,3 +20,4 @@ Devito scales to real-worla pplication and non-trivial physics
 - [ ] Discussion + conclusion
 - [ ] review + typos + ... (felix + gerard :D)
 - [ ] formating (mathias)
+- [ ] emphasize that MPI parallelism happens auto-magically -- no changes to source code necessary! (fabio)
