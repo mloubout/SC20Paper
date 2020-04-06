@@ -61,6 +61,8 @@ rec = SparseTimeFunction(name="rec", grid=grid, npoint=1, nt=nt, coordinates=r_c
 From these object, we can define, as an example, the acoustic wave-equation in five lines as:
 {>> Add equation <<}
 
+{>> Fabio: I have a feeling we should show some generated code here (do not forget the audience) and reiterate that the bulk of the computation is stencil-like <<}
+
 ```python
 from devito import solve, Eq, Operator
 eq = m * u.dt2 - u.laplace
@@ -74,7 +76,7 @@ The compiler then evaluates the finite-difference expressions and generate the C
 
 ### Overview of distributed-memory parallelism
 
-We here provide a minimal description of distributed-memory parallelism in Devito; the interested reader should refer to [@mpi-notebook] for thorough explanations and practical examples.
+We here provide a succinct description of distributed-memory parallelism in Devito; the interested reader should refer to [@mpi-notebook] for thorough explanations and practical examples.
 
 Devito implements distributed-memory parallelism on top of MPI. The design is such that users can almost entirely abstract away from it. Given *any* Devito code, just running it as
 
@@ -147,19 +149,23 @@ As discussed in @zhang2011 and @duveneck, we choose a finite-difference discreti
   D_{\bar{x}} &= \cos(\mathbf{\theta})\cos(\mathbf{\phi})\frac{\mathrm{d}}{\mathrm{d}x} + \cos(\mathbf{\theta})\sin(\mathbf{\phi})\frac{\mathrm{d}}{\mathrm{d}y} - \sin(\mathbf{\theta})\frac{\mathrm{d}}{\mathrm{d}z}.
 ```
 
+{>> Fabio: need to describe BCs here <<}
+
 Because of the very high number of floating-point operations (FLOP) needed per grid point for the weighted rotated Laplacian, this anisotropic wave-equation is extremely challenging to implement. As we show in Figure #ttiflops, and previously analysed in [@louboutin2016ppf], the computational cost with high-order finite-difference is in the order of thousands of FLOPs per grid point without optimizations.
 
 #### Table: {#ttiflops}
-|                 | Flops dse=noop   |  Flops dse=basic  | Flops dse=advanced | Flops dse=aggressive|
-|:----------------|:-----------------|:------------------|:-------------------|:---------------|
-| space_order=4   | 501              |  217              |     175            | 95             |
-| space_order=8   | 539              |  301              |     238            | 102            |
-| space_order=12  | 1613             |  860              |     653            | 160            |
-| space_order=16  | 5489             |  2839             |     2131           | 276            |
+|                 | w/o optimizations | w/  optimizations |
+|:----------------|:----------------- |:----------------- |
+| space_order=4   | 501               | 95                |
+| space_order=8   | 539               | 102               |
+| space_order=12  | 1613              | 160               |
+| space_order=16  | 5489              | 276               |
 
 : Per-grid-point flops of the finite-difference stencil for the TTI wave-equation with different spatial discretization orders.
 
-Consequently, the implementation of a solver for this wave-equation can be time-consuming and can lead to thousands of lines of code and the verification of its result becomes challenging as any small error is effectively untrackable and any change to the finite-difference scheme or to the time-stepper is nearly impossible to achieve without substantial re-coding. Another complication stems from the fact that practitioners of seismic inversion are often geoscientists and not computer scientists/programmers. Unfortunately, this background often either results in poorly written low performant codes or it leads to complications when research codes are handed off to computer scientists who know how to write fast codes but who often miss the necessary geophysical domain knowledge. Neither situation is conducive to addressing the complexities that come with implementing codes based on the latest geophysical insights in geophysics and high-performance computing. With Devito on the other hand, both the forward and adjoint equations can be implemented in a few lines of Python code:
+The version without flop-reducing optimizations is a direct translation of the discretized operators into stencil expressions. The version with optimizations employs transformations such as common sub-expressions elimination, factorization, and cross-iteration redundancy elimination -- the latter being key in removing the redundancies induced by mixed derivatives. Implementing of all these techniques manually is inherently difficult and laborous. Further, to obtain the desired performance improvements it is necessary to orchestrate them with aggressive loop fusion (for data locality), tiling (for data locality and tensor temporaries), and potentially ad-hoc vectorization strategies (if rotating registers are used as in [@cire1]). While an explanation of the optimization strategy employed by Devito is beyond the scope of this paper (see [@devito-compiler] for details), what should be appreciated here is that all this complexity is hidden away from the users.
+
+With such complex physics, mathematics, and engineering, it becomes evident that the implementation of a solver for this wave-equation is exceptionally time-consuming and can lead to thousands of lines of code even for a single type of discretization. The verification of the result is no less complicated, since any small error is effectively untrackable and any change to the finite-difference scheme or to the time-stepper is difficult to achieve without substantial re-coding. Another complication stems from the fact that practitioners of seismic inversion are often geoscientists and not computer scientists/programmers. Unfortunately, this background often either results in poorly written low performant codes or it leads to complications when research codes are handed off to computer scientists who know how to write fast codes but who often miss the necessary geophysical domain knowledge. Neither situation is conducive to addressing the complexities that come with implementing codes based on the latest geophysical insights in geophysics and high-performance computing. With Devito on the other hand, both the forward and adjoint equations can be implemented in a few lines of Python code:
 
 ```
 # Example of how to implement TTI w/ Devito
