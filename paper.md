@@ -16,7 +16,7 @@ bibliography:
 
 ## Introduction
 
-Devito is a symbolic domain specific language (DSL) originally deigned to accelerate research and development in exploration geophysics and more specifically wave-equation based seismic inverse problems. The high-level interface, previously described in detail in [@devito-api], is built on top of `Sympy` [@sympy] and is inspired by the underlying mathematics and similar high-level DSLs such as Firedrake [@firedrake] or Fenics [@fenics]. This interface allows user to formulate wave-equations, and more generally time-dependent partial differential equations(PDEs) in a simple and mathematically coherent way. The symbolic API then automatically generates finite-difference stencils from these mathematical expressions. One of the main advantages of [Devito] over other finite-difference DSLs is that generic expressions such as spares operations (i.e. point source injection or localized measurements) are fully supported and expressable in a high-level fashion as well. The second part of [Devito] is its compiler (c.f [@devito-compiler]), which generates highly optimized C code from the symbolic expressions and compiles it at runtime for the hardware at hand.
+Devito is a symbolic domain specific language (DSL) originally deigned to accelerate research and development in exploration geophysics and more specifically wave-equation based seismic inverse problems. The high-level interface, previously described in detail in [@devito-api], is built on top of `SymPy` [@sympy] and is inspired by the underlying mathematics and similar high-level DSLs such as FEniCS [@fenics] or Firedrake [@firedrake]. This interface allows user to formulate wave-equations, and more generally time-dependent partial differential equations(PDEs) in a simple and mathematically coherent way. The symbolic API then automatically generates finite-difference stencils from these mathematical expressions. One of the main advantages of [Devito] over other finite-difference DSLs is that generic expressions such as spares operations (i.e. point source injection or localized measurements) are fully supported and expressable in a high-level fashion as well. The second part of [Devito] is its compiler (c.f [@devito-compiler]), which generates highly optimized C code from the symbolic expressions and compiles it at runtime for the hardware at hand.
 
 Earlier work introduced Devito for fairly simple problems, such as the acoustic isotropic wave-equation, and limited its applications to simple two-dimensional cases, while the generated code was benchmarked on large-scale three-dimensional problems for single-source experiments. In the work we present here, we demonstrate the scalability of Devito to real-world problems such as industry-scale anisotropic subsurface imaging and elastic modeling. These proof of concepts highlight two main contributions: First, we show that the symbolic interface and the compiler translates to large-scale adjoint-based inverse problem that require both massive compute, as thousands of PDEs need to be solved, as well as large amounts of memory, since the adjoint state method requires the forward state to be saved in memory. Second of all, we demonstrate with an elastic modelling example that [Devito] now fully supports and automatizes vectorial and second order tensorial staggered-grid finite-difference with the same high-level interface previously presented for a scalar field and a cartesian grid.
 
@@ -70,11 +70,13 @@ rec_eq = rec.interpolate(u)
 wave_solve = Operator(stencil _ src_eq + rec_eq)
 ```
 
+{>> Fabio: I have a feeling we should show some generated code here (do not forget the audience) and reiterate that the bulk of the computation is stencil-like <<}
+
 The compiler then evaluates the finite-difference expressions and generate the C code associated with it threw passes such as common subexpression elimination, factorization, cross-iteration redundancies elimination or time-invariant extraction. These compiler details are described in [@devito-compiler] while the symbolic API is fully presented in [@devito-api]. We know give a brief description of the distributed memory parallelism implemented and available in Devito that has been used for the two applications we present in this paper.
 
 ### Overview of distributed-memory parallelism
 
-We here provide a minimal description of distributed-memory parallelism in Devito; the interested reader should refer to [@mpi-notebook] for thorough explanations and practical examples.
+We here provide a succinct description of distributed-memory parallelism in Devito; the interested reader should refer to [@mpi-notebook] for thorough explanations and practical examples.
 
 Devito implements distributed-memory parallelism on top of MPI. The design is such that users can almost entirely abstract away from it. Given *any* Devito code, just running it as
 
@@ -117,13 +119,17 @@ Finally, we remark that while providing abstractions for distributed data manipu
 
 On of the main applications of seismic finite-difference modeling in exploration geophysics is reverse-time migration (RTM), a wave equation-based seismic imaging technique. Real-world seismic imaging presents a number of challenges that make applying this method to industry-scale problem sizes difficult. First of all, RTM requires an accurate representation of the physics through sophisticated wave equations such as the tilted-transverse isotropic (TTI) wave equation, for which both forward and adjoint implementations have to be provided. Second of all, wave equations have to be solved for a large number of independent experiments, where each individual PDE solve in itself is expensive in terms of FLOPs and memory usage and domain decomposition of wavefield checkpointing has to be applied. In the following section, we highlight Devito's capabilities to address these challenges, making it possible to use Devito for realistic seismic imaging on an industry scale. First, we address how forward and adjoint TTI equations can be implemented with Devito, and subsequently we carry out a 3D seismic imaging case study on Azure using a synthetic data set.
 
-### Anisotorpic wave equations
+### Anisotropic wave equations
 
 {{>> Remove PDE and show code for rotation<<}
+
+{>> FAbio: say somewhere it's sigle precision (even in elastic)<<}
 
 (section needs to be shortened)
 
 In our seismic imaging case study, we use an anisotropic representation of the physics called tilted transverse isotropic modeling [@thomsen1986]. This representation for wave motion is one of the most widely used in exploration geophysics since it captures the leading order kinematics and dynamics of acoustic wave motion in highly heterogeneous elastic media where the medium properties vary more rapidly in the direction perpendicular to sedimentary strata [@alkhalifah2000; @baysal1983; @bubetti2012; @bubetti2014; @bubesatti2016; @chu2011; @duveneck; @fletcher; @fowlertti2010; @louboutin2018segeow; @whitmore1983; @witte2016segpve; @xu2014; @zhang2005; @zhang2011; @zhan2013]. The TTI wave equation is an acoustic, low dimensional (4 parameters, 2 wavefields) simplification of the 21 parameter and 12 wavefields tensorial equations of motions [@hooke]. This simplified representation is parametrized by the Thomsen parameters ``\epsilon(x), \delta(x)`` that relate to the global (many wavelength propagation) difference in propagation speed in the vertical and horizontal directions, and the tilt and azimuth angles ``\theta(x), \phi(x)`` that define the rotation of the vertical and horizontal axis around the cartesian directions. However, unlike the scalar isotropic acoustic wave-equation itself, the TTI wave equation is extremely computationally costly to solve and it is also not self-adjoint. The TTI wave-equation reads as follows:
+
+{>> fabio: "self-adjoint." is too much for the SC audience -- can we expand on this with very intuitive words ?<<} 
 
 ```math {#TTIfwd}
 &m(x) \frac{d^2 p(x,t)}{dt^2} - (1+2\epsilon(x))H_{\bar{x}\bar{y}}p(x,t) - \sqrt{1+2\delta(x)} \ H_{\bar{z}} r(x,t) = q,  \\
@@ -147,19 +153,23 @@ As discussed in @zhang2011 and @duveneck, we choose a finite-difference discreti
   D_{\bar{x}} &= \cos(\mathbf{\theta})\cos(\mathbf{\phi})\frac{\mathrm{d}}{\mathrm{d}x} + \cos(\mathbf{\theta})\sin(\mathbf{\phi})\frac{\mathrm{d}}{\mathrm{d}y} - \sin(\mathbf{\theta})\frac{\mathrm{d}}{\mathrm{d}z}.
 ```
 
+{>> Fabio: need to describe BCs here <<}
+
 Because of the very high number of floating-point operations (FLOP) needed per grid point for the weighted rotated Laplacian, this anisotropic wave-equation is extremely challenging to implement. As we show in Figure #ttiflops, and previously analysed in [@louboutin2016ppf], the computational cost with high-order finite-difference is in the order of thousands of FLOPs per grid point without optimizations.
 
 #### Table: {#ttiflops}
-|                 | Flops dse=noop   |  Flops dse=basic  | Flops dse=advanced | Flops dse=aggressive|
-|:----------------|:-----------------|:------------------|:-------------------|:---------------|
-| space_order=4   | 501              |  217              |     175            | 95             |
-| space_order=8   | 539              |  301              |     238            | 102            |
-| space_order=12  | 1613             |  860              |     653            | 160            |
-| space_order=16  | 5489             |  2839             |     2131           | 276            |
+|                 | w/o optimizations | w/  optimizations |
+|:----------------|:----------------- |:----------------- |
+| space_order=4   | 501               | 95                |
+| space_order=8   | 539               | 102               |
+| space_order=12  | 1613              | 160               |
+| space_order=16  | 5489              | 276               |
 
 : Per-grid-point flops of the finite-difference stencil for the TTI wave-equation with different spatial discretization orders.
 
-Consequently, the implementation of a solver for this wave-equation can be time-consuming and can lead to thousands of lines of code and the verification of its result becomes challenging as any small error is effectively untrackable and any change to the finite-difference scheme or to the time-stepper is nearly impossible to achieve without substantial re-coding. Another complication stems from the fact that practitioners of seismic inversion are often geoscientists and not computer scientists/programmers. Unfortunately, this background often either results in poorly written low performant codes or it leads to complications when research codes are handed off to computer scientists who know how to write fast codes but who often miss the necessary geophysical domain knowledge. Neither situation is conducive to addressing the complexities that come with implementing codes based on the latest geophysical insights in geophysics and high-performance computing. With Devito on the other hand, both the forward and adjoint equations can be implemented in a few lines of Python code:
+The version without flop-reducing optimizations is a direct translation of the discretized operators into stencil expressions. The version with optimizations employs transformations such as common sub-expressions elimination, factorization, and cross-iteration redundancy elimination -- the latter being key in removing the redundancies induced by mixed derivatives. Implementing all of these techniques manually is inherently difficult and laborous. Further, to obtain the desired performance improvements it is necessary to orchestrate them with aggressive loop fusion (for data locality), tiling (for data locality and tensor temporaries), and potentially ad-hoc vectorization strategies (if rotating registers are used as in [@cire1]). While an explanation of the optimization strategy employed by Devito is beyond the scope of this paper (see [@devito-compiler] for details), what should be appreciated here is that all this complexity is hidden away from the users.
+
+With such complex physics, mathematics, and engineering, it becomes evident that the implementation of a solver for this wave-equation is exceptionally time-consuming and can lead to thousands of lines of code even for a single type of discretization. The verification of the result is no less complicated, since any small error is effectively untrackable and any change to the finite-difference scheme or to the time-stepper is difficult to achieve without substantial re-coding. Another complication stems from the fact that practitioners of seismic inversion are often geoscientists and not computer scientists/programmers. Unfortunately, this background often either results in poorly written low performant codes or it leads to complications when research codes are handed off to computer scientists who know how to write fast codes but who often miss the necessary geophysical domain knowledge. Neither situation is conducive to addressing the complexities that come with implementing codes based on the latest geophysical insights in geophysics and high-performance computing. With Devito on the other hand, both the forward and adjoint equations can be implemented in a few lines of Python code:
 
 ```
 # Example of how to implement TTI w/ Devito
@@ -196,6 +206,14 @@ These VMs are Intel&reg; Broadwell E5-2673 v4 2.3GH that are dual socket, 32 phy
 - 280 GFlop/s per source
 - 28 TFlops/s for all 100 running sources. This would have led to 0.4PFlop/s with the quotas to run all sources at once instead of 100 at a time.
 - 110min runtime per source (forward + adjoint + image computation)
+
+{<< Fabio: The sentence "in theory we could have rUn the 1500 in parallel ..." is unclear >>}
+
+***How was the performance measured***
+
+The execution time is computed through Python-level timers prefixed by an MPI barrier. This includes the overhead due to processing the arguments supplied to `Operator` (see snippet ... TODO). Such overhead is however negligible.
+
+The floating-point operations are counted once all of the symbolic flop-reducing transformations have been performed during compilation. Devito uses an in-house estimate of cost, rather than `SymPy`'s estimate, to take care of some low-level intricacies. For example, Devito's estimate ignores the cost of integer arithmetic used for offset indexing into multi-dimensional arrays. To calculate the total number of FLOPs performed, Devito multiplies the floating-point operations calculated at compile time by the size of the iteration space, and it does that at the granularity of individual expressions. Thanks to aggressive code motion, the amount of innermost-loop-invariant sub-expressions in a Devito Operator is typically negligible, so the Devito estimate doesn't basically suffer from this issue, or at least not in a tangible way to the best of our knowledge. The produced GFlops/s has also been checked against that reported by Intel Advisor on several single-node experiments, and the results were extremely close, which gives confidence about the soundness of the Devito estimate.
 
 
 ***Imaging result***
@@ -287,35 +305,9 @@ Finally, we modelled three dimensional elastic data in the Cloud to demonstrate 
 
 These 21 fields, with the grid we just describe, leads to a minimum of 461Gb of memory for modelling only. For this experiment, we obtained access to small HPC VM on azure called `Standard_H16r` that are 16 cores Intel Xeon E5 2667 v3 with no hyperthreading and used 32 nodes for a single source experiment (we solved a single wave equation). We used a 12th order discretization that leads to 2.8TFlop/time-step to be computed for this model and propagated the elastic wave for 16 seconds (23000 time steps). The modelling finished in 16 hours which converts to 1.1TFlop/s. While these number may seem low, the elastic kernel is extremely memory bound, while the TTI kernel is nearly compute bound (see rooflines in [@louboutin2016ppf, @devito-api, @devito-compiler]) making it more computationally efficient, in particular in combination with MPI. Future work with involve working on the InfiniBand enabled and true HPC VM on azure to achieve Cloud performance on par with state of the art Cluster performance.
 
-## Performance
+## Performance comparison with other codes
 
-### Scalability
-
-In previous work, we presented extensive benchmarking of Devito through the roofline model to demonstrate the performance of the generated code from an architecture point of view [@devito-compiler, @devito-api, ...]. We know show scaling benchmark for shared memory parallelism (openMP) and distributed-memory parallelism (MPI) for different kernels. This scalability analysis demonstrate that the generated code implements all the necessary statement for state of the art parallelism.
-
-We first look at the weak scaling for shared parallelism. This experiment was ran on the CX2 cluster located at Imperial College London (architecture detailed in #cx2-arch) and result is presented in Figure #OMPScaling.
-
-#### Table: {#cx2-arch}
-|   CX2 architecture                      |
-|:----------------------------------------|
-| Intel(R) Xeon(R) CPU E5-2680 chips      |
-| 2 sockets per node. 12 cores per socket |
-| 120Gb of memory per node                |
-
-#### Figure: {#OMPScaling}
-![](./Figures/OMPScale.png)
-
-The scaling shows that Devito scales nearly perfectly for all four kernels that range from extremely memory bound to almost compute bound. This result demonstrates the shared memory parallelism scaling implemented in the Devito compiler generates the C code with the correct pragmas and vectorization statements.
-
-Second, we look at the weak scaling from a distributed parallelism point of view. The experiment on was again ran on CX2 and results are shown in Figure #MPIScaling.
-#### Figure: {#MPIScaling}
-![](./Figures/MPIScale.png)
-
-The MPI scaling shows that for compute bound kernels such as TTI (c.f Eq #TTIfwd, Table #ttiflops), the scaling follows the expected near-optimal trend, while for memory bound kernels such as the acoustic wave equation, the scaling is sub-optimal. These results can be expected (see [put ref] for example) and hows that once again Devito implements distributed memory in an efficient way and performs as we would expect of a hand-coded implementation.
-
-### Performance comparison
-
-To furthermore validate the computational performance of Devito, and thanks to the vectorial extension we present in Section #elastic, we compared the runtime of Devito with a reference open source hand-coded propagator in collaboration with its author. This propagator, described in[@thorbecke] is a state of the art elastic kernel (Eq #elas1). In order the have a fair comparison, we ensure, in collaboration with the author of [fdelmodc] that the physical and computational settings were identical. THe setting were the following:
+We also compared the runtime of Devito with a reference open source hand-coded propagator in collaboration with its author. This propagator, described in [@thorbecke] is a state of the art elastic kernel (Eq #elas1). For a fair comparison, we ensure, in collaboration with the author of [fdelmodc] that the physical and computational settings were identical. The setting were the following:
 
 - 2001 by 1001 physical grid points.
 - 200 grid points of dampening layer (absorbing layer [@cerjan]) on all four sides (total of 2401x1401 computational grid points).
@@ -325,7 +317,7 @@ To furthermore validate the computational performance of Devito, and thanks to t
 - Intel(R) Xeon(R) CPU E3-1270 v6 @ 3.8GHz.
 - Single socket, four physical cores, four physical threads, thread pinning to cores and hyperthreading off.
 
-The runtime obtained for this problem for both propagators were identical with less than one percent of difference. This similar runtime were obtained both with the Intel compiler and the gNU compiler and we ran the experiment with a fourth order and a sixth order discretization. The kernels were executed five time each to ensure consistency between the results and we consistently obtained similar runtimes. This comparison illustrate the performance achieved with Devito is at least on par with hand coded propagators. Future work will aim at providing a thorough benchmark by comparing first against a three dimensional implementation and second against state of the art stencil language.
+The runtime obtained for this problem for both propagators were identical with less than one percent of difference. This similar runtime were obtained both with the Intel compiler and the GNU compiler and we ran the experiment with a fourth order and a sixth order discretization. The kernels were executed five time each to ensure consistency between the results and we consistently obtained similar runtimes. This comparison illustrates the performance achieved with Devito is at least on par with hand-coded propagators.
 
 ## Conclusions
 
