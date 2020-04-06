@@ -61,8 +61,6 @@ rec = SparseTimeFunction(name="rec", grid=grid, npoint=1, nt=nt, coordinates=r_c
 From these object, we can define, as an example, the acoustic wave-equation in five lines as:
 {>> Add equation <<}
 
-{>> Fabio: I have a feeling we should show some generated code here (do not forget the audience) and reiterate that the bulk of the computation is stencil-like <<}
-
 ```python
 from devito import solve, Eq, Operator
 eq = m * u.dt2 - u.laplace
@@ -71,6 +69,8 @@ src_eq = s1.inject(u.forward, expr=s1 * dt**2 / m)
 rec_eq = rec.interpolate(u)
 wave_solve = Operator(stencil _ src_eq + rec_eq)
 ```
+
+{>> Fabio: I have a feeling we should show some generated code here (do not forget the audience) and reiterate that the bulk of the computation is stencil-like <<}
 
 The compiler then evaluates the finite-difference expressions and generate the C code associated with it threw passes such as common subexpression elimination, factorization, cross-iteration redundancies elimination or time-invariant extraction. These compiler details are described in [@devito-compiler] while the symbolic API is fully presented in [@devito-api]. We know give a brief description of the distributed memory parallelism implemented and available in Devito that has been used for the two applications we present in this paper.
 
@@ -206,6 +206,8 @@ These VMs are Intel&reg; Broadwell E5-2673 v4 2.3GH that are dual socket, 32 phy
 - 280 GFlop/s per source
 - 28 TFlops/s for all 100 running sources. This would have led to 0.4PFlop/s with the quotas to run all sources at once instead of 100 at a time.
 - 110min runtime per source (forward + adjoint + image computation)
+
+{<< Fabio: The sentence "in theory we could have rUn the 1500 in parallel ..." is unclear >>}
 
 ***How was the performance measured***
 
