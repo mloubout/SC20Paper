@@ -117,7 +117,7 @@ Finally, we remark that while providing abstractions for distributed data manipu
 
 On of the main applications of seismic finite-difference modeling in exploration geophysics is reverse-time migration (RTM), a wave equation-based seismic imaging technique. Real-world seismic imaging presents a number of challenges that make applying this method to industry-scale problem sizes difficult. First of all, RTM requires an accurate representation of the physics through sophisticated wave equations such as the tilted-transverse isotropic (TTI) wave equation, for which both forward and adjoint implementations have to be provided. Second of all, wave equations have to be solved for a large number of independent experiments, where each individual PDE solve in itself is expensive in terms of FLOPs and memory usage and domain decomposition of wavefield checkpointing has to be applied. In the following section, we highlight Devito's capabilities to address these challenges, making it possible to use Devito for realistic seismic imaging on an industry scale. First, we address how forward and adjoint TTI equations can be implemented with Devito, and subsequently we carry out a 3D seismic imaging case study on Azure using a synthetic data set.
 
-### Anisotorpic wave equations
+### Anisotropic wave equations
 
 {{>> Remove PDE and show code for rotation<<}
 
