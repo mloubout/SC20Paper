@@ -50,21 +50,21 @@ m = Function(name="m", grid=grid, space_order=so)
 u = TimeFunction(name="u", grid=grid, space_order=so, time_order=to)
 ```
 
-where `so` is the spatial discretization order and `to` the time discretization order that is used for the generation of the finite-difference stencil. Second, we can define point-wise objects such as point sources `src` located at a (limited number) of physical coordinates `s_coords` and receiver (measurement) objects `rec` with sensors located at the physical locations `r_coords`.
+where `so` is the spatial discretization order and `to` the time discretization order that is used for the generation of the finite-difference stencil. Second, we can define point-wise objects such as point sources `src` located at a (limited number) of physical coordinates `xs` and receiver (measurement) objects `rec` with sensors located at the physical locations `xr`.
 
 ```python
 from devito import Function, TimeFunction
-src = SparseFunction(name="src", grid=grid, npoint=1, coordinates=s_coords)
-rec = SparseTimeFunction(name="rec", grid=grid, npoint=1, nt=nt, coordinates=r_coords)
+src = SparseFunction(name="src", grid=grid, npoint=1, coordinates=xs)
+rec = SparseTimeFunction(name="rec", grid=grid, npoint=1, nt=nt, coordinates=xr)
 ```
 
-From these object, we can define, as an example, the acoustic wave-equation very easily. This equation, for a point source ``q(t)`` located at ``x_{src}`` and with measurements ``rec`` located at ``x_{rec}`` is defined as:
+From these object, we can define, as an example, the acoustic wave-equation very easily. This equation, for the above  point source with a time signature ``q(t)`` and receivers is defined as:
 
 ```math {#acou}
 \begin{cases}
- m \frac{d^2 u(t, x)}{dt^2} - Δ u(t, x) = \delta{x_{src}} q(t) \\
+ m \frac{d^2 u(t, x)}{dt^2} - Δ u(t, x) = \delta(xs) q(t) \\
  u(0, .) = \frac{d u(t, x)}{dt}(0, .) = 0 \\
- rec(t, .) = u(t, x_{rec}).
+ rec(t, .) = u(t, xr).
  \end{cases}
 ```
 
@@ -96,10 +96,10 @@ DEVITO_MPI=1 mpirun -n X python ...
 
 will trigger the compiler to generate C with routines for halo exchanges. The routines are scheduled at a suitable depth in the various loop nests thanks to data dependency analysis. The following optimizations are automatically applied:
 
-* redundant halo exchanges are detected and dropped;
-* computation/communication overlap, with prodding of the asynchronous progress engine by a designated thread through repeated calls to `MPI_Test`;
-* a halo exchange is placed as far as possible from where it is needed to maximize computation/communication overlap;
-* data packing and unpacking is threaded.
+- redundant halo exchanges are detected and dropped;
+- computation/communication overlap, with prodding of the asynchronous progress engine by a designated thread through repeated calls to `MPI_Test`;
+- a halo exchange is placed as far as possible from where it is needed to maximize computation/communication overlap;
+- data packing and unpacking is threaded.
 
 The domain decomposition occurs in Python upon creation of a `Grid` object. Exploiting the MPI Cartesian topology abstraction, Devito logically splits a grid based on the number of available MPI processes (users are given an "escape hatch" to override Devito's default decomposition strategy). `Function` and `TimeFunction` objects inherit the `Grid` decomposition. For `SparseFunction` objects the approach is different. Since a `SparseFunction` represents a sparse set of points, Devito looks at the physical coordinates of each point and, based on the `Grid` decomposition, schedules the logical ownership to an MPI rank. If a sparse point lies along the boundary of two or more MPI ranks, then it is duplicated to be accessible by all neighboring processes. Eventually, a duplicated point may be redundantly computed by multiple processes, but any redundant increments will be discarded.
 
@@ -182,8 +182,8 @@ We now demonstrate the scalability of [Devito] to real-world application with th
 
 ***Computational performance***
 
-We briefly describe the computational setup and the performance achieved for this anisotropic imaging problem. Due to time constraints, and because the resources we were given access to for this Proof of concept with Microsoft Azure were limited, we did not have access to HPC virtual machines (BM) nor Infiniband enabled ones. The nodes we ran this experiment on are `Standard_E64_v3` and `Standard_E64s_v3` that while not HPC VM are memory optimized allowing to save the wavefield in memory for imaging (TTI adjoint state gradient [@virieux, @louboutin2018segeow]).
-These VMs are Intel&reg; Broadwell E5-2673 v4 2.3GH that are dual socket, 32 physical cores (and hyperthreading enabled) and 432Gb of memory CPUs. The overall inversion involved computing the image for 1500 source positions, i.e. solving 1500 forward and 1500 adjoint TTI wave-equation. A single image required 600Gb of memory and we used two VM per source with MPI with one rank per socket (4 MPI ranks per source) and imaged 100 sources in parallel due to resources limitations but in theory, infinite resources are available in the Cloud and would allow to image all 1500 sources at once in parallel using 3000 nodes. The performance achieved was as follow:
+We briefly describe the computational setup and the performance achieved for this anisotropic imaging problem. Due to time constraints, and because the resources we were given access to for this Proof of concept with Microsoft Azure were limited, we did not have access to HPC virtual machines (VM) nor Infiniband enabled ones. The nodes we ran this experiment on are `Standard_E64_v3` and `Standard_E64s_v3` that while not HPC VM are memory optimized allowing to save the wavefield in memory for imaging (TTI adjoint state gradient [@virieux, @louboutin2018segeow]).
+These VMs are Intel&reg; Broadwell E5-2673 v4 2.3GH that are dual socket, 32 physical cores (and hyperthreading enabled) and 432Gb of memory CPUs. The overall inversion involved computing the image for 1500 source positions, i.e. solving 1500 forward and 1500 adjoint TTI wave-equation. A single image required 600Gb of memory and we used two VM per source with MPI with one rank per socket (4 MPI ranks per source) and imaged 100 sources in parallel due to resources limitations but in theory, infinite resources are available in the Cloud and would allow to image all 1500 sources at once in parallel using 3000 nodes. The performance achieved, in single precision, was as follow:
 
 - 140 GFlop/s per VM
 - 280 GFlop/s per source
@@ -286,7 +286,7 @@ Finally, we modelled three dimensional elastic data in the Cloud to demonstrate 
 - Six stress with two time steps (`tau.forward` and `tau`)
 - Three model parameters `lamda`, `mu` and `rho`
 
-These 21 fields, with the grid we just describe, leads to a minimum of 461Gb of memory for modelling only. For this experiment, we obtained access to small HPC VM on azure called `Standard_H16r` that are 16 cores Intel Xeon E5 2667 v3 with no hyperthreading and used 32 nodes for a single source experiment (we solved a single wave equation). We used a 12th order discretization that leads to 2.8TFlop/time-step to be computed for this model and propagated the elastic wave for 16 seconds (23000 time steps). The modelling finished in 16 hours which converts to 1.1TFlop/s. While these number may seem low, the elastic kernel is extremely memory bound, while the TTI kernel is nearly compute bound (see rooflines in [@louboutin2016ppf, @devito-api, @devito-compiler]) making it more computationally efficient, in particular in combination with MPI. Future work with involve working on the InfiniBand enabled and true HPC VM on azure to achieve Cloud performance on par with state of the art Cluster performance.
+These 21 fields, with the grid we just describe, leads to a minimum of 461Gb of memory for modelling only. For this experiment, we obtained access to small HPC VM on azure called `Standard_H16r` that are 16 cores Intel Xeon E5 2667 v3 with no hyperthreading and used 32 nodes for a single source experiment (we solved a single wave equation). We used a 12th order discretization that leads to 2.8TFlop/time-step to be computed for this model and propagated the elastic wave for 16 seconds (23000 time steps). The modelling ran in 16 hours which converts to 1.1TFlop/s. While these number may seem low, the elastic kernel is extremely memory bound, while the TTI kernel is nearly compute bound (see rooflines in [@louboutin2016ppf, @devito-api, @devito-compiler]) making it more computationally efficient, in particular in combination with MPI. Future work with involve working on the InfiniBand enabled and true HPC VM on azure to achieve Cloud performance on par with state of the art Cluster performance.
 
 ## Performance comparison with other codes
 

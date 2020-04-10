@@ -283,7 +283,9 @@
 }
 
 @misc{bisbas,
-title={Accelerating real-world stencil computations using temporal blocking: handling sparse sources and receivers}, url={https://figshare.com/articles/Accelerating_real-world_stencil_computations_using_temporal_blocking_handling_sparse_sources_and_receivers/9439829/1}, DOI={10.6084/m9.figshare.9439829.v1},
+title={Accelerating real-world stencil computations using temporal blocking: handling sparse sources and receivers},
+url={https://figshare.com/articles/Accelerating_real-world_stencil_computations_using_temporal_blocking_handling_sparse_sources_and_receivers/9439829/1},
+DOI={10.6084/m9.figshare.9439829.v1},
 abstract={Accelerating stencil computations has long been studied on a great variety of platforms and a lot of work has been done on enhancing data locality in order to optimize our computations through use of cache memory. Temporal blocking, also known as time-tiling is a well-known technique for accelerating stencil based computations by enhancing data locality. Solving partial differential equations with the finite difference method yields stencil codes that can solve complex problems described by PDEs. Related work is partly solving the issues encountered in this research area however there is no framework that currently supports the modelling of real-world problems, a high-level syntax of PDE’s, automatic parallel code generation (SIMD/OpenMP/MPI) and loop nest optimizations all together. We introduce an algorithm to apply temporal blocking to phenomena with source injection and is designed to be delivered, and automated as part of the Devito framework.},
 publisher={figshare},
 author={Bisbas, George and Luporini, Fabio and Louboutin, Mathias and Gorman, Gerard and H.J. Kelly, Paul},
@@ -460,6 +462,28 @@ month={Aug}
 	syst\`{e}mes d'\'{e}quations simultan\'{e}es}},
   volume	= {S\'{e}rie A},
   year		= {1847}
+}
+
+@article{cerjan,
+author = {Charles Cerjan and Dan Kosloff and Ronnie Kosloff and Moshe Reshef},
+title = {A nonreflecting boundary condition for discrete acoustic and elastic wave equations},
+journal = {GEOPHYSICS},
+volume = {50},
+number = {4},
+pages = {705-708},
+year = {1985},
+doi = {10.1190/1.1441945},
+
+URL = { 
+        https://doi.org/10.1190/1.1441945
+    
+},
+eprint = { 
+        https://doi.org/10.1190/1.1441945
+    
+}
+,
+    abstract = { One of the nagging problems which arises in application of discrete solution methods for wave‐propagation calculations is the presence of reflections or wraparound from the boundaries of the numerical mesh. These undesired events eventually override the actual seismic signals which propagate in the modeled region. The solution to avoiding boundary effects used to be to enlarge the numerical mesh, thus delaying the side reflections and wraparound longer than the range of times involved in the modeling. Obviously this solution considerably increases the expense of computation. More recently, nonreflecting boundary conditions were introduced for the finite‐difference method (Clayton and Enquist, 1977; Reynolds, 1978). These boundary conditions are based on replacing the wave equation in the boundary region by one‐way wave equations which do not permit energy to propagate from the boundaries into the numerical mesh. This approach has been relatively successful, except that its effectiveness degrades for events which impinge on the boundaries at shallow angles. It is also not clear how to apply this type of boundary condition to global discrete methods such as the Fourier method for which all grid points are coupled. }
 }
 
 @Misc{	cfd12,
@@ -3063,7 +3087,8 @@ eprint = {https://doi.org/10.1063/1.3060620}
 	Date-Modified = {2017-05-09 18:31:43 +0000},
 	Journal = {presentation},
 	Title = {Defining Software Requirements for Scientific Computing},
-	Year = {2004}}
+	Year = {2004}
+}
 
 @misc{shahbp2007tti,
 	Author = {H. Shah},
