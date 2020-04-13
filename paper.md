@@ -50,21 +50,21 @@ m = Function(name="m", grid=grid, space_order=so)
 u = TimeFunction(name="u", grid=grid, space_order=so, time_order=to)
 ```
 
-where `so` is the spatial discretization order and `to` the time discretization order that is used for the generation of the finite-difference stencil. Second, we can define point-wise objects such as point sources `src` located at a (limited number) of physical coordinates `s_coords` and receiver (measurement) objects `rec` with sensors located at the physical locations `r_coords`.
+where `so` is the spatial discretization order and `to` the time discretization order that is used for the generation of the finite-difference stencil. Second, we can define point-wise objects such as point sources `src` located at a (limited number) of physical coordinates `xs` and receiver (measurement) objects `rec` with sensors located at the physical locations `xr`.
 
 ```python
 from devito import Function, TimeFunction
-src = SparseFunction(name="src", grid=grid, npoint=1, coordinates=s_coords)
-rec = SparseTimeFunction(name="rec", grid=grid, npoint=1, nt=nt, coordinates=r_coords)
+src = SparseFunction(name="src", grid=grid, npoint=1, coordinates=xs)
+rec = SparseTimeFunction(name="rec", grid=grid, npoint=1, nt=nt, coordinates=xr)
 ```
 
-From these object, we can define, as an example, the acoustic wave-equation very easily. This equation, for a point source ``q(t)`` located at ``x_{src}`` and with measurements ``rec`` located at ``x_{rec}`` is defined as:
+From these object, we can define, as an example, the acoustic wave-equation very easily. This equation, for the above  point source with a time signature ``q(t)`` and receivers is defined as:
 
 ```math {#acou}
 \begin{cases}
- m \frac{d^2 u(t, x)}{dt^2} - Δ u(t, x) = \delta{x_{src}} q(t) \\
+ m \frac{d^2 u(t, x)}{dt^2} - Δ u(t, x) = \delta(xs) q(t) \\
  u(0, .) = \frac{d u(t, x)}{dt}(0, .) = 0 \\
- rec(t, .) = u(t, x_{rec}).
+ rec(t, .) = u(t, xr).
  \end{cases}
 ```
 
@@ -82,7 +82,7 @@ wave_solve = Operator(stencil _ src_eq + rec_eq)
 {>> Fabio: I have a feeling we should show some generated code here (do not forget the audience) and reiterate that the bulk of the computation is stencil-like <<}
 {>> Mathias: Generated the code andwi ll put link to it once decided where we put it<<}
 
-The compiler then evaluates the finite-difference expressions and generate the C code associated with it threw passes such as common subexpression elimination, factorization, cross-iteration redundancies elimination or time-invariant extraction. For illustration, the generated code can be found at [put code repo url] in `acou-so8.c`. These compiler details are described in [@devito-compiler] while the symbolic API is fully presented in [@devito-api]. We know give a brief description of the distributed memory parallelism implemented and available in Devito that has been used for the two applications we present in this paper.
+The compiler then evaluates the finite-difference expressions and generates the C code associated with it threw passes such as common subexpression elimination, factorization, cross-iteration redundancies elimination or time-invariant extraction. For illustration, the generated code can be found at [put code repo url] in `acou-so8.c`. These compiler details are described in [@devito-compiler] while the symbolic API is fully presented in [@devito-api]. We give a brief description of the distributed memory parallelism implemented and available in Devito that has been used for the two applications we present in this paper.
 
 ### Overview of distributed-memory parallelism
 
@@ -94,16 +94,16 @@ Devito implements distributed-memory parallelism on top of MPI. The design is su
 DEVITO_MPI=1 mpirun -n X python ...
 ```
 
-will trigger the compiler to generate C with routines for halo exchanges. The routines are scheduled at a suitable depth in the various loop nests thanks to data dependency analysis. The following optimizations are automatically applied:
+will trigger the compiler to generate C code with routines for halo exchanges. The routines are scheduled at a suitable depth in the various loop nests thanks to data dependency analysis. The following optimizations are automatically applied:
 
-* redundant halo exchanges are detected and dropped;
-* computation/communication overlap, with prodding of the asynchronous progress engine by a designated thread through repeated calls to `MPI_Test`;
-* a halo exchange is placed as far as possible from where it is needed to maximize computation/communication overlap;
-* data packing and unpacking is threaded.
+- redundant halo exchanges are detected and dropped;
+- computation/communication overlap, with prodding of the asynchronous progress engine by a designated thread through repeated calls to `MPI_Test`;
+- a halo exchange is placed as far as possible from where it is needed to maximize computation/communication overlap;
+- data packing and unpacking is threaded.
 
-The domain decomposition occurs in Python upon creation of a `Grid` object. Exploiting the MPI Cartesian topology abstraction, Devito logically splits a grid based on the number of available MPI processes (users are given an "escape hatch" to override Devito's default decomposition strategy). `Function` and `TimeFunction` objects inherit the `Grid` decomposition. For `SparseFunction` objects the approach is different. Since a `SparseFunction` represents a sparse set of points, Devito looks at the physical coordinates of each point and, based on the `Grid` decomposition, schedules the logical ownership to an MPI rank. If a sparse point lies along the boundary of two or more MPI ranks, then it is duplicated to be accessible by all neighboring processes. Eventually, a duplicated point may be redundantly computed by multiple processes, but any redundant increments will be discarded.
+The domain decomposition occurs in Python upon creation of a `Grid` object. Exploiting the MPI Cartesian topology abstraction, Devito logically splits a grid based on the number of available MPI processes (users are given an "escape hatch" to override Devito's default decomposition strategy). `Function` and `TimeFunction` objects inherit the `Grid` decomposition. For `SparseFunction` objects the approach is different. Since a `SparseFunction` represents a sparse set of points, Devito looks at the physical coordinates of each point and, based on the `Grid` decomposition, schedules the logical ownership to an MPI rank. If a sparse point lies along the boundary of two or more MPI ranks, then it is duplicated in each of these ranks to be accessible by all neighboring processes. Eventually, a duplicated point may be redundantly computed by multiple processes, but any redundant increments will be discarded.
 
-When accessing or manipulating data in a Devito code, users have the illusion to be working with classic NumPy arrays, while underneath they actually are distributed. All manner of NumPy indexing schemes (basic, slicing, etc.) are supported. In the implementation, proper global-to-local and local-to-global index conversion routines are used to propagate a read/write access to the impacted subset of ranks. For example, consider the array
+When accessing or manipulating data in a Devito code, users have the illusion to be working with classic NumPy arrays, while underneath they are actually distributed. All manner of NumPy indexing schemes (basic, slicing, etc.) are supported. In the implementation, proper global-to-local and local-to-global index conversion routines are used to propagate a read/write access to the impacted subset of ranks. For example, consider the array
 
 ```python
 A = [[ 1,  2,  3,  4],
@@ -127,7 +127,7 @@ Finally, we remark that while providing abstractions for distributed data manipu
 
 ## Industry-scale 3D seismic imaging in anisotropic media
 
-One of the main applications of seismic finite-difference modeling in exploration geophysics is reverse-time migration (RTM), a wave equation-based seismic imaging technique. Real-world seismic imaging presents a number of challenges that make applying this method to industry-scale problem sizes difficult. First of all, RTM requires an accurate representation of the physics through sophisticated wave equations such as the tilted-transverse isotropic (TTI) wave equation, for which both forward and adjoint implementations have to be provided. Second of all, wave equations have to be solved for a large number of independent experiments, where each individual PDE solve in itself is expensive in terms of FLOPs and memory usage and domain decomposition of wavefield checkpointing has to be applied. In the following section, we highlight Devito's capabilities to address these challenges, making it possible to use Devito for realistic seismic imaging on an industry scale. First, we address the main complexity of the implementation of the TTI wave-equation, and subsequently we carry out a 3D seismic imaging case study on Azure using a synthetic data set.
+One of the main applications of seismic finite-difference modeling in exploration geophysics is reverse-time migration (RTM), a wave equation-based seismic imaging technique. Real-world seismic imaging presents a number of challenges that make applying this method to industry-scale problem sizes difficult. First of all, RTM requires an accurate representation of the physics through sophisticated wave equations such as the tilted-transverse isotropic (TTI) wave equation, for which both forward and adjoint implementations have to be provided. Second of all, wave equations have to be solved for a large number of independent experiments, where each individual PDE solve in itself is expensive in terms of FLOPs and memory usage and domain decomposition of wavefield checkpointing has to be applied. In the following section, we highlight Devito's capabilities to address these challenges, making it possible to use Devito for realistic seismic imaging on an industrial scale. First, we address the main complexity of the implementation of the TTI wave-equation, and subsequently, we carry out a 3D seismic imaging case study on Azure using a synthetic data set.
 
 ### Anisotropic wave equation
 
@@ -153,7 +153,7 @@ dx_u = cos(theta) * cos(phi) * u.dx + cos(theta) * sin(phi) * u.dy - sin(theta) 
 dxx_u = (cos(theta) * cos(phi) * dx_u).dx.T + (cos(theta) * sin(phi) * dx_u).dy.T - (sin(theta) * dx_u).dz.T
 ```
 
-It is worth noting that while the adjoint of the finite-difference stencil is enabled via the standard Python `.T` shortcut, the expression needs to be reordered by hand as the tilt and azymuth angle are spatially dependent and require to be inside the second pass of first-order derivative. We can see from these simple two lines that the rotated stencil involves all second-order derivatives (`.dx.dx`, `.dy.dy` and `.dz.dz`) and all second-order cross-derivatives (`dx.dy`, `.dx.dz` and `.dy.dz`) that leads to a denser stencil support and higher computational complexity (c.f. [@louboutin2016ppf]).
+Note that while the adjoint of the finite-difference stencil is enabled via the standard Python `.T` shortcut, the expression needs to be reordered by hand as the tilt and azymuth angle are spatially dependent and require to be inside the second pass of first-order derivative. We can see from these simple two lines that the rotated stencil involves all second-order derivatives (`.dx.dx`, `.dy.dy` and `.dz.dz`) and all second-order cross-derivatives (`dx.dy`, `.dx.dz` and `.dy.dz`) that leads to a denser stencil support and higher computational complexity (c.f. [@louboutin2016ppf]).
 
 {>> Fabio: need to describe BCs here <<}
 {>> Mathias: not sure  about that, PDE is skipped to focus on the complexity of TTI that is rotated FD <<}
@@ -178,12 +178,12 @@ Simulation of wave motion is only one aspect of solving problems in seismology. 
 
 ### 3D Imaging example on Azure
 
-We now demonstrate the scalability of [Devito] to real-world application with the imaging of an industry-scale three-dimensional TTI subsurface model. THis imaging was carried out in the Cloud on Azure and takes advantage of recent work to port conventional cluster code to the Cloud wit ha serverless approach. The serverless implementation is described in detail in [@witte2019TPDedas, @witte2019SEGedw] and describes the steps to run HC workloads in the Cloud computationnaly and financially efficiently. This imaging project in collaboration with Azure demonstrates the scalability and robustness of [Devtio] to large scale wave-equation based inverse problems and its cost-effectiveness in combination with a serverless implementation of seismic imaging in the cloud. In this example, we imaged a synthetic three-dimensional anisotropic subsurface model that mimics a realistic industry size problem with a realistic representation of the physics (TTI). The physical size of the problem is `10kmx10kmx2.8km` discretized on a `12.5m` grid with 40 points of absorbing layer on each sides that leads to `881x881x371` computational grid points (300 Million grid points). The final image is the sum of 1500 single-source images and we computed 100 single-source images in parallel with the available resources (200 nodes available, 2 nodes per source). We now describe the computational performance achieved and then show the imaging results.
+We now demonstrate the scalability of [Devito] to real-world applications with the imaging of an industry-scale three-dimensional TTI subsurface model. This imaging was carried out in the cloud on Azure and takes advantage of recent work to port conventional cluster code to the Cloud using a serverless approach. The serverless implementation is described in detail in [@witte2019TPDedas, @witte2019SEGedw] and describes the steps to run computationnaly and financially efficient HPC workloads in the cloud. This imaging project, in collaboration with Azure demonstrates the scalability and robustness of [Devito] to large scale wave-equation based inverse problems and its cost-effectiveness in combination with a serverless implementation of seismic imaging in the cloud. In this example, we imaged a synthetic three-dimensional anisotropic subsurface model that mimics a realistic industry size problem with a realistic representation of the physics (TTI). The physical size of the problem is `10kmx10kmx2.8km` discretized on a `12.5m` grid with 40 points of absorbing layer on each sides that leads to `881x881x371` computational grid points (300 Million grid points). The final image is the sum of 1500 single-source images and we computed 100 single-source images in parallel with the available resources (200 nodes available, 2 nodes per source). We now describe the computational performance achieved and then show the imaging results.
 
 ***Computational performance***
 
-We briefly describe the computational setup and the performance achieved for this anisotropic imaging problem. Due to time constraints, and because the resources we were given access to for this Proof of concept with Microsoft Azure were limited, we did not have access to HPC virtual machines (BM) nor Infiniband enabled ones. The nodes we ran this experiment on are `Standard_E64_v3` and `Standard_E64s_v3` that while not HPC VM are memory optimized allowing to save the wavefield in memory for imaging (TTI adjoint state gradient [@virieux, @louboutin2018segeow]).
-These VMs are Intel&reg; Broadwell E5-2673 v4 2.3GH that are dual socket, 32 physical cores (and hyperthreading enabled) and 432Gb of memory CPUs. The overall inversion involved computing the image for 1500 source positions, i.e. solving 1500 forward and 1500 adjoint TTI wave-equation. A single image required 600Gb of memory and we used two VM per source with MPI with one rank per socket (4 MPI ranks per source) and imaged 100 sources in parallel due to resources limitations but in theory, infinite resources are available in the Cloud and would allow to image all 1500 sources at once in parallel using 3000 nodes. The performance achieved was as follow:
+We briefly describe the computational setup and the performance achieved for this anisotropic imaging problem. Due to time constraints, and because the resources we were given access to for this Proof of concept with Microsoft Azure were limited, we did not have access to HPC virtual machines (VM) nor Infiniband enabled ones. The nodes we ran this experiment on are `Standard_E64_v3` and `Standard_E64s_v3` that while not HPC VM are memory optimized allowing to save the wavefield in memory for imaging (TTI adjoint state gradient [@virieux, @louboutin2018segeow]).
+These VMs are Intel&reg; Broadwell E5-2673 v4 2.3GH that are dual socket, 32 physical cores (and hyperthreading enabled) and 432Gb of memory CPUs. The overall inversion involved computing the image for 1500 source positions, i.e. solving 1500 forward and 1500 adjoint TTI wave-equation. A single image required 600Gb of memory in single precision and we used two VM per source with MPI with one rank per socket (4 MPI ranks per source) and imaged 100 sources in parallel due to resources limitations. In theory, infinite resources are available in the Cloud and would allow to image all 1500 sources at once in parallel using 3000 nodes and we give an estimate of the performance that would be achieved in that case as well. The performance achieved, in single precision, was as follow:
 
 - 140 GFlop/s per VM
 - 280 GFlop/s per source
@@ -201,7 +201,7 @@ The floating-point operations are counted once all of the symbolic flop-reducing
 
 ***Imaging result***
 
-The subsurface velocity model that was used in this study is an artificial anisotropic model that is designed and built combining two broadly known and used open-source SEG/EAGE acoustic velocity models. The anisotropy parameters are derived from smoothed version of the velocity while the tilt angles were derived from a combination of the smooth velocity models and vertical and horizontal edge detection. The final seismic image of the subsurface model is plotted in Figure #OverTTI and highlights the fact that 3D seismic imaging based on a serverless approach and automatic code generation is feasible and provides good results on a realistic model.
+The subsurface velocity model that was used in this study is an artificial anisotropic model that is designed and built combining two broadly known and used open-source SEG/EAGE acoustic velocity models. The anisotropy parameters are derived from a smoothed version of the velocity while the tilt angles were derived from a combination of the smooth velocity models and vertical and horizontal edge detection. The final seismic image of the subsurface model is plotted in Figure #OverTTI and highlights the fact that 3D seismic imaging based on a serverless approach and automatic code generation is feasible and provides good results on a realistic model.
 
 
 #### Figure: {#OverTTI}
@@ -211,10 +211,9 @@ The subsurface velocity model that was used in this study is an artificial aniso
 ![](./Figures/OverTTI4.png){width=50%}\
 : 3D TTI imaging on a custom made model.
 
-@witte2019TPDedas fully describes the serverless implementation of seismic inverse problems, including iterative algorithms for least square minimization problems (LSRTM). The 3D anisotropic imaging results were presented as part of a keynote presentation at the EAGE HPC workshop in October 2019 [@herrmann2019EAGEHPCaii]. This work perfectly illustrates the flexibility and portability of Devito, as we were able to easily port a code only tested and developed on local hardware to the cloud, with only requiring minor adjustments. This portability included the possibility to run MPI-based code for domain decomposition in the cloud, after developing it on a desktop computer. The code for reproducibility can be found at [AzureTTI] that contains, the propagators and gradient computation, Dockerfiles and azure [batch-shipyard] setup for running the RTM.
+@witte2019TPDedas fully describes the serverless implementation of seismic inverse problems, including iterative algorithms for least-square minimization problems (LSRTM). The 3D anisotropic imaging results were presented as part of a keynote presentation at the EAGE HPC workshop in October 2019 [@herrmann2019EAGEHPCaii]. This work perfectly illustrates the flexibility and portability of Devito, as we were able to easily port a code only tested and developed on local hardware to the cloud, with only requiring minor adjustments. This portability included the possibility to run MPI-based code for domain decomposition in the cloud, after developing it on a desktop computer. The code for reproducibility can be found at [AzureTTI] that contains, the propagators and gradient computation, Dockerfiles and azure [batch-shipyard] setup for running the RTM.
 
-While this subsurface image is obtained with anisotropic propagators that mimic the real physics, in order to model both the kinematics and the amplitudes correctly, elastic propagator are required. Theses propagators are for example extremely important for global seismology as the Shear waves (component ignored in TTI) are the most hazardous ones. We know show that wit the new vectorial capabilities of Devito, we can model elastic waves while conserving a high-level symbolic interface.
-
+While this subsurface image is obtained with anisotropic propagators that mimic the real physics, in order to model both the kinematics and the amplitudes correctly, elastic propagator are required. These propagators are for example extremely important for global seismology as the Shear waves (component ignored in TTI) are the most hazardous ones. We know show that wit the new vectorial capabilities of Devito, we can model elastic waves while conserving a high-level symbolic interface.
 
 ## Elastic modelling
 
@@ -237,14 +236,12 @@ and the stress ``\tau`` is a symmetric second-order tensor-valued function:
     \tau = \begin{bmatrix}\tau_{xx}(t, x, y) & \tau_{xy}(t, x, y)\\\tau_{xy}t, x, y) & \tau_{yy}(t, x, y)\end{bmatrix}.
 ```
 
-The discretization of such a set of coupled PDEs requires five equations in two dimensions (two equations for the particle velocity and three for stress) and nine equations in three dimensions (three particle velocities and six stress equations). However the mathematical definition only requires two coupled vector/tensor-valued equations for any number of dimensions. We extend the previously scalar-only capabilities of Devito to vector and second-order tensors and allow a straightforward and mathematical definition of high-dimensional PDEs such as the elastic wave equation in Eq #elas1\.
+The discretization of such a set of coupled PDEs requires five equations in two dimensions (two equations for the particle velocity and three for stress) and nine equations in three dimensions (three particle velocities and six stress equations). However, the mathematical definition only requires two coupled vector/tensor-valued equations for any number of dimensions. We extend the previously scalar-only capabilities of Devito to vector and second-order tensors and allow a straightforward and mathematical definition of high-dimensional PDEs such as the elastic wave equation in Eq #elas1\.
 
 
 ### Vectorial and tensorial API
 
-Once again, based on `sympy`, we augmented the symbolic interface to vectorial and tensorial object to allow for a straightforward definition of equations such as the elastic wave-equation, as well as computational fluid dynamics equations. The extended API defines two new types, `VectorFunction` (and `VectorTimeFunction`) for vectorial objects such as the particle velocity, and `TensorFunction` (and `TensorTimeFunction`) for second-order tensor objects (matrices) such as the stress. These new objects are constructed the exact same way as the scalar `Function` objects and automatically implement staggered grid and staggered finite-differences with the possibility of half-node averaging. This new extended API now allows users to define the elastic wave-equation in four lines as follows:
-
-### Elastic modelling
+Once again, based on `Sympy`, we augmented the symbolic interface to vectorial and tensorial object to allow for a straightforward definition of equations such as the elastic wave-equation, as well as computational fluid dynamics equations. The extended API defines two new types, `VectorFunction` (and `VectorTimeFunction`) for vectorial objects such as the particle velocity, and `TensorFunction` (and `TensorTimeFunction`) for second-order tensor objects (matrices) such as the stress. These new objects are constructed the exact same way as the scalar `Function` objects and automatically implement staggered grid and staggered finite-differences with the possibility of half-node averaging. This new extended API now allows users to define the elastic wave-equation in four lines as follows:
 
 ```python
 v = VectorTimeFunction(name='v', grid=model.grid, space_order=so, time_order=1)
@@ -254,17 +251,17 @@ u_v = Eq(v.forward, model.damp * (v + s/rho*div(tau)))
 u_t = Eq(tau.forward,  model.damp *  (tau + s * (l * diag(div(v.forward)) + mu * (grad(v.forward) + grad(v.forward).T))))
 ```
 
-The `sympy` expressions created by these commands can be displayed via the `sympy` pretty printer (`sympy.pprint`) as shown in Figure #PrettyElas\. This representation reflects perfectly the mathematics while still providing computational portability and efficiency through the Devito compiler.
+The `Sympy` expressions created by these commands can be displayed with the `Sympy` pretty printer (`sympy.pprint`) as shown in Figure #PrettyElas\. This representation reflects perfectly the mathematics while still providing computational portability and efficiency through the Devito compiler.
 
 #### Figure: {#PrettyElas}
 ![](./Figures/vel_symb.png){width=100%}
-: Update stencil for the particle velocity. The stencil for updating the stress component is left out for readability, as the equation does not fit onto a single page. However, it can be found in the Devito tutorial on elastic modelling.
+: Update stencil for the particle velocity. The stencil for updating the stress component is left out for readability, as the equation does not fit onto a single page. However, it can be found in the Devito tutorial on elastic modelling on github.
 
-Each component of a vectorial or tensorial object is accessible via conventional vector and matrix indices (i.e. `v[0], t[0,1],....`).
+Each component of a vectorial or tensorial object is accessible via conventional vector and matrix indices (i.e. `v[0], t[0,1],....`) and each component is a Devito `Function` and implements all the previously introduced propetries such as the domain decomposed data.
 
 ### 2D example
 
-We show the elastic particle velocity and stress for a well known 2D synthetic model, the elastic Marmousi-ii[@versteeg927, @marmouelas] model. The wavefields are shown on Figure #ElasWf and its corresponding elastic shot records are displayed in Figure #ElasShot\.
+We show the elastic particle velocity and stress for a broadly recognized 2D synthetic model, the elastic Marmousi-ii[@versteeg927, @marmouelas] model. The wavefields are shown on Figure #ElasWf and its corresponding elastic shot records are displayed in Figure #ElasShot\.
 
 #### Figure: {#ElasWf}
 ![](./Figures/marmou_snap.png){width=100%}
@@ -280,13 +277,13 @@ We show the elastic particle velocity and stress for a well known 2D synthetic m
 
 {>> This is the actual SEAM run but can't say it don't have license<<}
 
-Finally, we modelled three dimensional elastic data in the Cloud to demonstrate the scalability of Devito to cluster-size problems in the Cloud. The model we chose mimics the reference model in geophysics known as the SEAM model [@...] that is a three dimensional extreme scale synthetic representation of the subsurface. The physical dimension of the model are `45kmx35kmx15km` then discretized with a grid spacing of `20mx20mx10m` that led to a computational grid of `2250x1750x1500` grid points (5.9 billion grid points). One of the main challenges of elastic modelling is the extreme memory cost due to the number of wavefield. For a three dimensional propagator, a minimum of 21 fields need to be stored:
+Finally, we modelled three dimensional elastic data in the Cloud to demonstrate the scalability of Devito to cluster-size problems in the Cloud. The model we chose mimics the reference model in geophysics known as the SEAM model [@...] that is a three dimensional extreme-scale synthetic representation of the subsurface. The physical dimension of the model are `45kmx35kmx15km` then discretized with a grid spacing of `20mx20mx10m` that led to a computational grid of `2250x1750x1500` grid points (5.9 billion grid points). One of the main challenges of elastic modelling is the extreme memory cost due to the number of wavefield. For a three dimensional propagator, a minimum of 21 fields need to be stored:
 
 - Three particle velocities with two time steps (`v.forward` and `v`)
 - Six stress with two time steps (`tau.forward` and `tau`)
 - Three model parameters `lamda`, `mu` and `rho`
 
-These 21 fields, with the grid we just describe, leads to a minimum of 461Gb of memory for modelling only. For this experiment, we obtained access to small HPC VM on azure called `Standard_H16r` that are 16 cores Intel Xeon E5 2667 v3 with no hyperthreading and used 32 nodes for a single source experiment (we solved a single wave equation). We used a 12th order discretization that leads to 2.8TFlop/time-step to be computed for this model and propagated the elastic wave for 16 seconds (23000 time steps). The modelling finished in 16 hours which converts to 1.1TFlop/s. While these number may seem low, the elastic kernel is extremely memory bound, while the TTI kernel is nearly compute bound (see rooflines in [@louboutin2016ppf, @devito-api, @devito-compiler]) making it more computationally efficient, in particular in combination with MPI. Future work with involve working on the InfiniBand enabled and true HPC VM on azure to achieve Cloud performance on par with state of the art Cluster performance.
+These 21 fields, with the grid we just describe, leads to a minimum of 461Gb of memory for modelling only. For this experiment, we obtained access to small HPC VM on azure called `Standard_H16r` that are 16 cores Intel Xeon E5 2667 v3 with no hyperthreading and used 32 nodes for a single source experiment (we solved a single wave equation). We used a 12th order discretization that leads to 2.8TFlop/time-step to be computed for this model and propagated the elastic wave for 16 seconds (23000 time steps). The modelling ran in 16 hours which converts to 1.1TFlop/s. While these number may seem low, the elastic kernel is extremely memory bound, while the TTI kernel is nearly compute bound (see rooflines in [@louboutin2016ppf, @devito-api, @devito-compiler]) making it more computationally efficient, in particular in combination with MPI. Future work with involve working on the InfiniBand enabled and true HPC VM on azure to achieve Cloud performance on par with state of the art Cluster performance.
 
 ## Performance comparison with other codes
 
@@ -306,7 +303,7 @@ The runtime obtained for this problem for both propagators were identical with l
 
 Can solve large scale and non-trivial physics problem both on conventional clusters and in the Cloud
 Good performance
-High level interface that allows simple and mathematically based expression of complicated physics.
+High-level interface that allows simple and mathematically based expression of complicated physics.
 
 
 [fdelmodc]:https://github.com/JanThorbecke/OpenSource.git
