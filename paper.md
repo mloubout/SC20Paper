@@ -153,7 +153,7 @@ dx_u = cos(theta) * cos(phi) * u.dx + cos(theta) * sin(phi) * u.dy - sin(theta) 
 dxx_u = (cos(theta) * cos(phi) * dx_u).dx.T + (cos(theta) * sin(phi) * dx_u).dy.T - (sin(theta) * dx_u).dz.T
 ```
 
-It is worth noting that while the adjoint of the finite-difference stencil is enabled via the standard Python `.T` shortcut, the expression needs to be reordered by hand as the tilt and azymuth angle are spatially dependent and require to be inside the second pass of first-order derivative. We can see from these simple two lines that the rotated stencil involves all second-order derivatives (`.dx.dx`, `.dy.dy` and `.dz.dz`) and all second-order cross-derivatives (`dx.dy`, `.dx.dz` and `.dy.dz`) that leads to a denser stencil support and higher computational complexity (c.f. [@louboutin2016ppf]).
+Note that while the adjoint of the finite-difference stencil is enabled via the standard Python `.T` shortcut, the expression needs to be reordered by hand as the tilt and azymuth angle are spatially dependent and require to be inside the second pass of first-order derivative. We can see from these simple two lines that the rotated stencil involves all second-order derivatives (`.dx.dx`, `.dy.dy` and `.dz.dz`) and all second-order cross-derivatives (`dx.dy`, `.dx.dz` and `.dy.dz`) that leads to a denser stencil support and higher computational complexity (c.f. [@louboutin2016ppf]).
 
 {>> Fabio: need to describe BCs here <<}
 {>> Mathias: not sure  about that, PDE is skipped to focus on the complexity of TTI that is rotated FD <<}
@@ -183,7 +183,7 @@ We now demonstrate the scalability of [Devito] to real-world application with th
 ***Computational performance***
 
 We briefly describe the computational setup and the performance achieved for this anisotropic imaging problem. Due to time constraints, and because the resources we were given access to for this Proof of concept with Microsoft Azure were limited, we did not have access to HPC virtual machines (VM) nor Infiniband enabled ones. The nodes we ran this experiment on are `Standard_E64_v3` and `Standard_E64s_v3` that while not HPC VM are memory optimized allowing to save the wavefield in memory for imaging (TTI adjoint state gradient [@virieux, @louboutin2018segeow]).
-These VMs are Intel&reg; Broadwell E5-2673 v4 2.3GH that are dual socket, 32 physical cores (and hyperthreading enabled) and 432Gb of memory CPUs. The overall inversion involved computing the image for 1500 source positions, i.e. solving 1500 forward and 1500 adjoint TTI wave-equation. A single image required 600Gb of memory and we used two VM per source with MPI with one rank per socket (4 MPI ranks per source) and imaged 100 sources in parallel due to resources limitations but in theory, infinite resources are available in the Cloud and would allow to image all 1500 sources at once in parallel using 3000 nodes. The performance achieved, in single precision, was as follow:
+These VMs are Intel&reg; Broadwell E5-2673 v4 2.3GH that are dual socket, 32 physical cores (and hyperthreading enabled) and 432Gb of memory CPUs. The overall inversion involved computing the image for 1500 source positions, i.e. solving 1500 forward and 1500 adjoint TTI wave-equation. A single image required 600Gb of memory in single precision and we used two VM per source with MPI with one rank per socket (4 MPI ranks per source) and imaged 100 sources in parallel due to resources limitations. In theory, infinite resources are available in the Cloud and would allow to image all 1500 sources at once in parallel using 3000 nodes and we give an estimate of the performance that would be achieved in that case as well. The performance achieved, in single precision, was as follow:
 
 - 140 GFlop/s per VM
 - 280 GFlop/s per source
@@ -201,7 +201,7 @@ The floating-point operations are counted once all of the symbolic flop-reducing
 
 ***Imaging result***
 
-The subsurface velocity model that was used in this study is an artificial anisotropic model that is designed and built combining two broadly known and used open-source SEG/EAGE acoustic velocity models. The anisotropy parameters are derived from smoothed version of the velocity while the tilt angles were derived from a combination of the smooth velocity models and vertical and horizontal edge detection. The final seismic image of the subsurface model is plotted in Figure #OverTTI and highlights the fact that 3D seismic imaging based on a serverless approach and automatic code generation is feasible and provides good results on a realistic model.
+The subsurface velocity model that was used in this study is an artificial anisotropic model that is designed and built combining two broadly known and used open-source SEG/EAGE acoustic velocity models. The anisotropy parameters are derived from a smoothed version of the velocity while the tilt angles were derived from a combination of the smooth velocity models and vertical and horizontal edge detection. The final seismic image of the subsurface model is plotted in Figure #OverTTI and highlights the fact that 3D seismic imaging based on a serverless approach and automatic code generation is feasible and provides good results on a realistic model.
 
 
 #### Figure: {#OverTTI}
@@ -211,10 +211,9 @@ The subsurface velocity model that was used in this study is an artificial aniso
 ![](./Figures/OverTTI4.png){width=50%}\
 : 3D TTI imaging on a custom made model.
 
-@witte2019TPDedas fully describes the serverless implementation of seismic inverse problems, including iterative algorithms for least square minimization problems (LSRTM). The 3D anisotropic imaging results were presented as part of a keynote presentation at the EAGE HPC workshop in October 2019 [@herrmann2019EAGEHPCaii]. This work perfectly illustrates the flexibility and portability of Devito, as we were able to easily port a code only tested and developed on local hardware to the cloud, with only requiring minor adjustments. This portability included the possibility to run MPI-based code for domain decomposition in the cloud, after developing it on a desktop computer. The code for reproducibility can be found at [AzureTTI] that contains, the propagators and gradient computation, Dockerfiles and azure [batch-shipyard] setup for running the RTM.
+@witte2019TPDedas fully describes the serverless implementation of seismic inverse problems, including iterative algorithms for least-square minimization problems (LSRTM). The 3D anisotropic imaging results were presented as part of a keynote presentation at the EAGE HPC workshop in October 2019 [@herrmann2019EAGEHPCaii]. This work perfectly illustrates the flexibility and portability of Devito, as we were able to easily port a code only tested and developed on local hardware to the cloud, with only requiring minor adjustments. This portability included the possibility to run MPI-based code for domain decomposition in the cloud, after developing it on a desktop computer. The code for reproducibility can be found at [AzureTTI] that contains, the propagators and gradient computation, Dockerfiles and azure [batch-shipyard] setup for running the RTM.
 
-While this subsurface image is obtained with anisotropic propagators that mimic the real physics, in order to model both the kinematics and the amplitudes correctly, elastic propagator are required. Theses propagators are for example extremely important for global seismology as the Shear waves (component ignored in TTI) are the most hazardous ones. We know show that wit the new vectorial capabilities of Devito, we can model elastic waves while conserving a high-level symbolic interface.
-
+While this subsurface image is obtained with anisotropic propagators that mimic the real physics, in order to model both the kinematics and the amplitudes correctly, elastic propagator are required. These propagators are for example extremely important for global seismology as the Shear waves (component ignored in TTI) are the most hazardous ones. We know show that wit the new vectorial capabilities of Devito, we can model elastic waves while conserving a high-level symbolic interface.
 
 ## Elastic modelling
 
@@ -237,14 +236,12 @@ and the stress ``\tau`` is a symmetric second-order tensor-valued function:
     \tau = \begin{bmatrix}\tau_{xx}(t, x, y) & \tau_{xy}(t, x, y)\\\tau_{xy}t, x, y) & \tau_{yy}(t, x, y)\end{bmatrix}.
 ```
 
-The discretization of such a set of coupled PDEs requires five equations in two dimensions (two equations for the particle velocity and three for stress) and nine equations in three dimensions (three particle velocities and six stress equations). However the mathematical definition only requires two coupled vector/tensor-valued equations for any number of dimensions. We extend the previously scalar-only capabilities of Devito to vector and second-order tensors and allow a straightforward and mathematical definition of high-dimensional PDEs such as the elastic wave equation in Eq #elas1\.
+The discretization of such a set of coupled PDEs requires five equations in two dimensions (two equations for the particle velocity and three for stress) and nine equations in three dimensions (three particle velocities and six stress equations). However, the mathematical definition only requires two coupled vector/tensor-valued equations for any number of dimensions. We extend the previously scalar-only capabilities of Devito to vector and second-order tensors and allow a straightforward and mathematical definition of high-dimensional PDEs such as the elastic wave equation in Eq #elas1\.
 
 
 ### Vectorial and tensorial API
 
-Once again, based on `sympy`, we augmented the symbolic interface to vectorial and tensorial object to allow for a straightforward definition of equations such as the elastic wave-equation, as well as computational fluid dynamics equations. The extended API defines two new types, `VectorFunction` (and `VectorTimeFunction`) for vectorial objects such as the particle velocity, and `TensorFunction` (and `TensorTimeFunction`) for second-order tensor objects (matrices) such as the stress. These new objects are constructed the exact same way as the scalar `Function` objects and automatically implement staggered grid and staggered finite-differences with the possibility of half-node averaging. This new extended API now allows users to define the elastic wave-equation in four lines as follows:
-
-### Elastic modelling
+Once again, based on `Sympy`, we augmented the symbolic interface to vectorial and tensorial object to allow for a straightforward definition of equations such as the elastic wave-equation, as well as computational fluid dynamics equations. The extended API defines two new types, `VectorFunction` (and `VectorTimeFunction`) for vectorial objects such as the particle velocity, and `TensorFunction` (and `TensorTimeFunction`) for second-order tensor objects (matrices) such as the stress. These new objects are constructed the exact same way as the scalar `Function` objects and automatically implement staggered grid and staggered finite-differences with the possibility of half-node averaging. This new extended API now allows users to define the elastic wave-equation in four lines as follows:
 
 ```python
 v = VectorTimeFunction(name='v', grid=model.grid, space_order=so, time_order=1)
@@ -254,17 +251,17 @@ u_v = Eq(v.forward, model.damp * (v + s/rho*div(tau)))
 u_t = Eq(tau.forward,  model.damp *  (tau + s * (l * diag(div(v.forward)) + mu * (grad(v.forward) + grad(v.forward).T))))
 ```
 
-The `sympy` expressions created by these commands can be displayed via the `sympy` pretty printer (`sympy.pprint`) as shown in Figure #PrettyElas\. This representation reflects perfectly the mathematics while still providing computational portability and efficiency through the Devito compiler.
+The `Sympy` expressions created by these commands can be displayed with the `Sympy` pretty printer (`sympy.pprint`) as shown in Figure #PrettyElas\. This representation reflects perfectly the mathematics while still providing computational portability and efficiency through the Devito compiler.
 
 #### Figure: {#PrettyElas}
 ![](./Figures/vel_symb.png){width=100%}
-: Update stencil for the particle velocity. The stencil for updating the stress component is left out for readability, as the equation does not fit onto a single page. However, it can be found in the Devito tutorial on elastic modelling.
+: Update stencil for the particle velocity. The stencil for updating the stress component is left out for readability, as the equation does not fit onto a single page. However, it can be found in the Devito tutorial on elastic modelling on github.
 
-Each component of a vectorial or tensorial object is accessible via conventional vector and matrix indices (i.e. `v[0], t[0,1],....`).
+Each component of a vectorial or tensorial object is accessible via conventional vector and matrix indices (i.e. `v[0], t[0,1],....`) and each component is a Devito `Function` and implements all the previously introduced propetries such as the domain decomposed data.
 
 ### 2D example
 
-We show the elastic particle velocity and stress for a well known 2D synthetic model, the elastic Marmousi-ii[@versteeg927, @marmouelas] model. The wavefields are shown on Figure #ElasWf and its corresponding elastic shot records are displayed in Figure #ElasShot\.
+We show the elastic particle velocity and stress for a broadly recognized 2D synthetic model, the elastic Marmousi-ii[@versteeg927, @marmouelas] model. The wavefields are shown on Figure #ElasWf and its corresponding elastic shot records are displayed in Figure #ElasShot\.
 
 #### Figure: {#ElasWf}
 ![](./Figures/marmou_snap.png){width=100%}
