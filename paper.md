@@ -23,11 +23,11 @@ Earlier work introduced Devito for fairly simple problems, such as the acoustic 
 This paper is organized as follows: First, we provide a brief overview of [Devito] and its symbolic API and present the distributed memory implementation that allows large-scale modeling and inversion with domain decomposition. We then provide a brief comparison with a state of the art hand-coded wave propagator to validate the performance previously benchmarked with the roofline model ([@patterson, @devito-compiler, @devito-api, @louboutin2016ppf]). Next, we describe the two applications the demonstrate the scalability and staggered capabilities of [Devito]: We conduct a three-dimensional imaging example in the cloud-based on the tilted transverse isotropic wave equation (TTI, [@zhang-tti, @duveneck, @louboutin2018segeow]), as well as an elastic modeling example that highlights the vectorial and tensorial capabilities.
 
 
-## Devito
+## Overview of Devito
 
 We first provide an overview of Devito [@devito-api, @devito-compiler] and describe the capabilities that enable real-world applications as presented in the subsequent sections. Devito is a finite-difference domain-specific language (DSL) built on top of `Sympy` [@sympy] and provides a high-level symbolic interface for the definition of partial differential equations. Devito automatically generates optimized finite-difference stencil associated with the PDE and supports both cartesian and staggered grids. The symbolic Devito stencils are then passed to the Devito compiler, which generates and compiles C-code that is optimized for the architecture at hand using its just-in-time (JIT) compiler. In previous work, we have focused on the DSL and the compiler to highlight the potential application and use cases of Devito, while in this paper, we present a series of extensions and applications to large-scale problem sizes as encountered in exploration geophysics, including elastic modelling using distributed-memory parallelism [@...], and multi-experiment seismic imaging in anisotropic media [@virieux, @thomsen, @zhang2011, @duveneck, @louboutin2018segeow]. We briefly describe the symbolic API and compiler and give a brief overview of the computational performance of the generated code.
 
-### Symbolic API
+### The symbolic language
 
 The core of Devito's symbolic API relies on three basic object classes for representing grids and state variables of partial differential equations. These classes are
 
