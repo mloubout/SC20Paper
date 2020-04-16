@@ -22,18 +22,19 @@ Earlier work introduced Devito for fairly simple problems, such as the acoustic 
 
 This paper is organized as follows: First, we provide a brief overview of [Devito] and its symbolic API and present the distributed memory implementation that allows large-scale modeling and inversion with domain decomposition. We then provide a brief comparison with a state of the art hand-coded wave propagator to validate the performance previously benchmarked with the roofline model ([@patterson, @devito-compiler, @devito-api, @louboutin2016ppf]). Next, we describe the two applications the demonstrate the scalability and staggered capabilities of [Devito]: We conduct a three-dimensional imaging example in the cloud-based on the tilted transverse isotropic wave equation (TTI, [@zhang-tti, @duveneck, @louboutin2018segeow]), as well as an elastic modeling example that highlights the vectorial and tensorial capabilities.
 
+In previous work, we have focused on the DSL and the compiler to highlight the potential application and use cases of Devito, while in this paper, we present a series of extensions and applications to large-scale problem sizes as encountered in exploration geophysics, including elastic modelling using distributed-memory parallelism [@...], and multi-experiment seismic imaging in anisotropic media [@virieux, @thomsen, @zhang2011, @duveneck, @louboutin2018segeow]. 
+
 
 ## Overview of Devito
 
 Devito provides a functional language built on top of `SymPy` [@sympy] to discretize PDEs with the finite difference method. The language is sufficiently flexible to express other types of operators, such as interpolation and tensor contractions. Several features are supported, among which staggered grids, sub-domains, and stencils with custom coefficients. Boundary conditions for finite difference methods are notoriously various and often complicated, so they are not offered natively by Devito. The choice made in Devito was to implement a flexible system that would have allowed the expression of any sort of boundary conditions through a set of "lower-level mechanisms". For example, free surface and perfectly-matched layers (PMLs) boundary conditions can be expressed as equations -- just like any other PDE equations -- over a suitable sub-domain. 
 
-The symbolic problem specification is passed to the Devito compiler, which generates C code. The lowering of the input language down to C constits of several compilation passes, some of which introducing performance optimizations that are the key to fast code. Next to classic stencil optimizations (e.g., cache blocking, alignment, SIMD and OpenMP parallelism), Devito applies a series of flop-reducing transformations as well as aggressive loop fusion. This is in part elaborated in 
+It is up to the Devito compiler to translate the symbolic specification into C code. The lowering of the input language down to C consists of several compilation passes, some of which introducing performance optimizations that are the key to fast code. Next to classic stencil optimizations (e.g., cache blocking, alignment, SIMD and OpenMP parallelism), Devito applies a series of flop-reducing transformations as well as aggressive loop fusion. This is to some extent elaborated in Section {TODO: PERF SECTIOn}, but for a complete treatment the interested reader should refer to [@devito-compiler].
 
-In previous work, we have focused on the DSL and the compiler to highlight the potential application and use cases of Devito, while in this paper, we present a series of extensions and applications to large-scale problem sizes as encountered in exploration geophysics, including elastic modelling using distributed-memory parallelism [@...], and multi-experiment seismic imaging in anisotropic media [@virieux, @thomsen, @zhang2011, @duveneck, @louboutin2018segeow]. We briefly describe the symbolic API and compiler and give a brief overview of the computational performance of the generated code.
 
 ### The symbolic language
 
-The core of Devito's symbolic API relies on three basic object classes for representing grids and state variables of partial differential equations. These classes are
+The core of Devito's symbolic API relies on three basic object classes for representing grids and state variables of partial differential equations:
 
 - `Grid` objects represent the discretized model.
 - `(Time)Function` objects represent spatially (and time-) varying variables defined on a `Grid` object.
