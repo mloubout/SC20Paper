@@ -17,9 +17,9 @@ Devito scales to real-world application and non-trivial physics
 - [ ] Trim down TTI (mathias+philipp)
 - [x] Add description of data distribution over MPI (python/numpy-level, C-level including domain decompositon for both Function and SparseFunction)  (fabio)
 - [x] Add description of staggered and vectorial/matrix setup and API (mathias)
-- [ ] Discussion + conclusion
-- [ ] emphasize that MPI parallelism happens auto-magically -- no changes to source code necessary! (fabio)
-- [ ] explain how the GFlops/s performance was calculated (fabio)
+- [x] Discussion + conclusion
+- [x] emphasize that MPI parallelism happens auto-magically -- no changes to source code necessary! (fabio)
+- [x] explain how the GFlops/s performance was calculated (fabio)
   
 
 - [ ] review + typos + ... (felix + gerard :D)
