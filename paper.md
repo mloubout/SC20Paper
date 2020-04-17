@@ -96,7 +96,7 @@ The first compilation passes process the equations individually. The equations a
 
 The output of the Devito compiler for the running example used in this section is available at [put code repo url] in `acou-so8.c`. 
 
-### Overview of distributed-memory parallelism
+### Distributed-memory parallelism
 
 We here provide a succinct description of distributed-memory parallelism in Devito; the interested reader should refer to [@mpi-notebook] for thorough explanations and practical examples.
 
