@@ -25,7 +25,7 @@ This paper is organized as follows: First, we provide a brief overview of [Devit
 
 ## Overview of Devito
 
-Devito provides a functional language built on top of `SymPy` [@sympy] to discretize PDEs with the finite difference method. The language is sufficiently flexible to express other types of operators, such as interpolation and tensor contractions. Several features are supported, among which staggered grids, sub-domains, and stencils with custom coefficients. Boundary conditions for finite difference methods are notoriously various and often complicated, so there are no native abstractions for them in Devito. The system is however sufficiently flexible to express them through composition of core mechanisms. For example, free surface and perfectly-matched layers (PMLs) boundary conditions can be expressed as equations -- just like any other PDE equations -- over a suitable sub-domain. 
+Devito [@devito-api] provides a functional language built on top of `SymPy` [@sympy] to symbolically express PDEs at a mathematical level and implements automatic discretization with the finite difference method. The language is by design flexible enough to express other types of non finite-diffrence operators, such as interpolation and tensor contractions, that are inherent to measurement-based inverse problems. Several additional features are supported, among which staggered grids, sub-domains, and stencils with custom coefficients. The last major buildign block of a good PDE solver are the boundary conditions, that for finite difference methods are notoriously various and often complicated. The system is however sufficiently flexible to express them through composition of core mechanisms. For example, free surface and perfectly-matched layers (PMLs) boundary conditions can be expressed as equations -- just like any other PDE equations -- over a suitable sub-domain.
 
 It is up to the Devito compiler to translate the symbolic specification into C code. The lowering of the input language down to C consists of several compilation passes, some of which introducing performance optimizations that are the key to fast code. Next to classic stencil optimizations (e.g., cache blocking, alignment, SIMD and OpenMP parallelism), Devito applies a series of flop-reducing transformations as well as aggressive loop fusion. This is to some extent elaborated in Section {TODO: PERF SECTIOn}, but for a complete treatment the interested reader should refer to [@devito-compiler].
 
@@ -81,10 +81,6 @@ src_eqns = s1.inject(u.forward, expr=s1 * dt**2 / m)
 rec_eqns = rec.interpolate(u)
 ```
 
-{>> Fabio: I have a feeling we should show some generated code here (do not forget the audience) and reiterate that the bulk of the computation is stencil-like <<}
-{>> Mathias: Generated the code andwi ll put link to it once decided where we put it<<}
-{>> Fabio: I'm OK with putting the link to the code of the running example right here}
-
 To trigger compilation one needs to pass the constructed equations to an `Operator`. 
 
 ```python
@@ -94,7 +90,9 @@ op = Operator(stencil + src_eqns + rec_eqns)
 
 The first compilation passes process the equations individually. The equations are lowered to an enriched representation, while the finite-difference constructs (e.g., derivatives) are translated into actual arithmetic operations. Subsequently, data dependency analysis is used to compute a performance-optimized topological ordering of the input equations (e.g., to maximize the likelihood of loop fusion) and to group them into so called "clusters". Basically, a cluster will eventually be a loop nest in the generated code, and consecutive clusters may share some outer loops. The ordered sequence of clusters undergoes several optimization passes, including cache blocking and flop-reducing transformations. It is then further lowered into an abstract syntax tree, and it is on such representation that parallelisms is introduced (SIMD, shared-memory, MPI). Finally, all remaining low-level aspects of code generation are handled, among which the most relevant one is the data management (e.g., definition of variables, transfers between host and device).
 
-The output of the Devito compiler for the running example used in this section is available at [put code repo url] in `acou-so8.c`.
+The output of the Devito compiler for the running example used in this section is available at [CodeSample] in `acou-so8.c`.
+
+[CodeSample]:https://github.com/mloubout/SC20Paper/tree/master/gencode
 
 ### Distributed-memory parallelism
 
