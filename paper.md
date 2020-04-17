@@ -23,42 +23,16 @@ Earlier work introduced Devito for fairly simple problems, such as the acoustic 
 This paper is organized as follows: First, we provide a brief overview of [Devito] and its symbolic API and present the distributed memory implementation that allows large-scale modeling and inversion with domain decomposition. We then provide a brief comparison with a state of the art hand-coded wave propagator to validate the performance previously benchmarked with the roofline model ([@patterson, @devito-compiler, @devito-api, @louboutin2016ppf]). Next, we describe the two applications the demonstrate the scalability and staggered capabilities of [Devito]: We conduct a three-dimensional imaging example in the cloud-based on the tilted transverse isotropic wave equation (TTI, [@zhang-tti, @duveneck, @louboutin2018segeow]), as well as an elastic modeling example that highlights the vectorial and tensorial capabilities.
 
 
-## Devito
+## Overview of Devito
 
-We first provide an overview of Devito [@devito-api, @devito-compiler] and describe the capabilities that enable real-world applications as presented in the subsequent sections. Devito is a finite-difference domain-specific language (DSL) built on top of `Sympy` [@sympy] and provides a high-level symbolic interface for the definition of partial differential equations. Devito automatically generates optimized finite-difference stencil associated with the PDE and supports both cartesian and staggered grids. The symbolic Devito stencils are then passed to the Devito compiler, which generates and compiles C-code that is optimized for the architecture at hand using its just-in-time (JIT) compiler. In previous work, we have focused on the DSL and the compiler to highlight the potential application and use cases of Devito, while in this paper, we present a series of extensions and applications to large-scale problem sizes as encountered in exploration geophysics, including elastic modelling using distributed-memory parallelism [@...], and multi-experiment seismic imaging in anisotropic media [@virieux, @thomsen, @zhang2011, @duveneck, @louboutin2018segeow]. We briefly describe the symbolic API and compiler and give a brief overview of the computational performance of the generated code.
+Devito provides a functional language built on top of `SymPy` [@sympy] to discretize PDEs with the finite difference method. The language is sufficiently flexible to express other types of operators, such as interpolation and tensor contractions. Several features are supported, among which staggered grids, sub-domains, and stencils with custom coefficients. Boundary conditions for finite difference methods are notoriously various and often complicated, so there are no native abstractions for them in Devito. The system is however sufficiently flexible to express them through composition of core mechanisms. For example, free surface and perfectly-matched layers (PMLs) boundary conditions can be expressed as equations -- just like any other PDE equations -- over a suitable sub-domain. 
 
-### Symbolic API
+It is up to the Devito compiler to translate the symbolic specification into C code. The lowering of the input language down to C consists of several compilation passes, some of which introducing performance optimizations that are the key to fast code. Next to classic stencil optimizations (e.g., cache blocking, alignment, SIMD and OpenMP parallelism), Devito applies a series of flop-reducing transformations as well as aggressive loop fusion. This is to some extent elaborated in Section {TODO: PERF SECTIOn}, but for a complete treatment the interested reader should refer to [@devito-compiler].
 
-The core of Devito's symbolic API relies on three basic object classes for representing grids and state variables of partial differential equations. These classes are
 
-- `Grid` objects represent the discretized model.
-- `(Time)Function` objects represent spatially (and time-) varying variables defined on a `Grid` object.
-- `Sparse(Time)Function` objects represent (time-varying) point objects on the specified grid.
+### Symbolic language and compilation
 
-A `Grid` represents a discretized finite n-dimensional space and is created as follows:
-
-```python
-from devito import Grid
-grid = Grid(shape=(nx, ny, nz), extent=(ext_x, ext_y, ext_z), origin=(o_x, o_y, o_z))
-```
-
-where `(nx, ny, nz)` are the number of grid points in each direction, `(ext_x, ext_y, ext_z)` is the physical extent of the domain in physical units (i.e `m`) and `(o_x, o_y, o_z)` is the origin of the domain in the same physical units. The `grid` contains all the information related to the discretization such as the grid spacing, and automatically initializes the `Dimension` that define the domain `x, y, z`. With this grid, the symbolic objects can be created for the discretization of a PDE. First, we can define a spatially varying model parameter `m` and a time-space varying field `u`
-
-```python
-from devito import Function, TimeFunction
-m = Function(name="m", grid=grid, space_order=so)
-u = TimeFunction(name="u", grid=grid, space_order=so, time_order=to)
-```
-
-where `so` is the spatial discretization order and `to` the time discretization order that is used for the generation of the finite-difference stencil. Second, we can define point-wise objects such as point sources `src` located at a (limited number) of physical coordinates `xs` and receiver (measurement) objects `rec` with sensors located at the physical locations `xr`.
-
-```python
-from devito import Function, TimeFunction
-src = SparseFunction(name="src", grid=grid, npoint=1, coordinates=xs)
-rec = SparseTimeFunction(name="rec", grid=grid, npoint=1, nt=nt, coordinates=xr)
-```
-
-From these object, we can define, as an example, the acoustic wave-equation very easily. This equation, for the above  point source with a time signature ``q(t)`` and receivers is defined as:
+In this section we illustrate the Devito language showing how to implement the acoustic wave-equation in isotropic media
 
 ```math {#acou}
 \begin{cases}
@@ -68,21 +42,59 @@ From these object, we can define, as an example, the acoustic wave-equation very
  \end{cases}
 ```
 
-The source term is then handled separately from the PDE as a pointwise operation called `injection` and the measurement is handle with an interpolation. By default, [Devito] initilizes its `TimeFunction`and automatically satisfies the zero Dirichlet condition at `t=0`. This acoustic wave-equation can then be implemented in [Devito] in five lines as:
+The core of the Devito symbolic API consists of three classes:
+
+- `Grid`, a representation of the discretized model.
+- `(Time)Function`, a representation of spatially (and time-) varying variables defined on a `Grid` object.
+- `Sparse(Time)Function` a represention of (time-varying) point objects on a `Grid` object, generally unaligned with respect to the grid points, hence called "sparse".
+
+A `Grid` represents a discretized finite n-dimensional space and is created as follows
+
+```python
+from devito import Grid
+grid = Grid(shape=(nx, ny, nz), extent=(ext_x, ext_y, ext_z), origin=(o_x, o_y, o_z))
+```
+
+where `(nx, ny, nz)` are the number of grid points in each direction, `(ext_x, ext_y, ext_z)` is the physical extent of the domain in physical units (i.e `m`) and `(o_x, o_y, o_z)` is the origin of the domain in the same physical units. The object `grid` contains all the information related to the discretization such as the grid spacing. We use `grid` to create the symbolic objects that will be used to express the wave equation. First, we define a spatially varying model parameter `m` and a time-space varying field `u`
+
+```python
+from devito import Function, TimeFunction
+m = Function(name="m", grid=grid, space_order=so)
+u = TimeFunction(name="u", grid=grid, space_order=so, time_order=to)
+```
+
+where `so` is the spatial discretization order and `to` the time discretization order that is used for the generation of the finite-difference stencil. Second, we define point-wise objects such as point sources `src`, located at physical coordinates `xs`, and receiver (measurement) objects `rec`, with sensors located at the physical locations `xr`
+
+```python
+from devito import Function, TimeFunction
+src = SparseFunction(name="src", grid=grid, npoint=1, coordinates=xs)
+rec = SparseTimeFunction(name="rec", grid=grid, npoint=1, nt=nt, coordinates=xr)
+```
+
+The source term is handled separately from the PDE as a pointwise operation called `injection`, while the measurement is handled with an interpolation. By default, [Devito] initializes all `Function` data to 0, and thus automatically satisfies the zero Dirichlet condition at `t=0`. The isotropic acoustic wave-equation can then be implemented in [Devito] as below
 
 ```python
 from devito import solve, Eq, Operator
 eq = m * u.dt2 - u.laplace
 stencil = [Eq(u.forward, solve(eq, u.forward))]
-src_eq = s1.inject(u.forward, expr=s1 * dt**2 / m)
-rec_eq = rec.interpolate(u)
-wave_solve = Operator(stencil _ src_eq + rec_eq)
+src_eqns = s1.inject(u.forward, expr=s1 * dt**2 / m)
+rec_eqns = rec.interpolate(u)
 ```
 
 {>> Fabio: I have a feeling we should show some generated code here (do not forget the audience) and reiterate that the bulk of the computation is stencil-like <<}
 {>> Mathias: Generated the code andwi ll put link to it once decided where we put it<<}
+{>> Fabio: I'm OK with putting the link to the code of the running example right here}
 
-The compiler then evaluates the finite-difference expressions and generates the C code associated with it threw passes such as common subexpression elimination, factorization, cross-iteration redundancies elimination or time-invariant extraction. For illustration, the generated code can be found at [put code repo url] in `acou-so8.c`. These compiler details are described in [@devito-compiler] while the symbolic API is fully presented in [@devito-api]. We give a brief description of the distributed memory parallelism implemented and available in Devito that has been used for the two applications we present in this paper.
+To trigger compilation one needs to pass the constructed equations to an `Operator`. 
+
+```python
+from devito import Operator
+op = Operator(stencil + src_eqns + rec_eqns)
+```
+
+The first compilation passes process the equations individually. The equations are lowered to an enriched representation, while the finite-difference constructs (e.g., derivatives) are translated into actual arithmetic operations. Subsequently, data dependency analysis is used to compute a performance-optimized topological ordering of the input equations (e.g., to maximize the likelihood of loop fusion) and to group them into so called "clusters". Basically, a cluster will eventually be a loop nest in the generated code, and consecutive clusters may share some outer loops. The ordered sequence of clusters undergoes several optimization passes, including cache blocking and flop-reducing transformations. It is then further lowered into an abstract syntax tree, and it is on such representation that parallelisms is introduced (SIMD, shared-memory, MPI). Finally, all remaining low-level aspects of code generation are handled, among which the most relevant one is the data management (e.g., definition of variables, transfers between host and device).
+
+The output of the Devito compiler for the running example used in this section is available at [put code repo url] in `acou-so8.c`. 
 
 ### Overview of distributed-memory parallelism
 
