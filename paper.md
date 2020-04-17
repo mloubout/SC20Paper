@@ -275,7 +275,7 @@ We show the elastic particle velocity and stress for a broadly recognized 2D syn
 
 {>> This is the actual SEAM run but can't say it don't have license<<}
 
-Finally, we modelled three dimensional elastic data in the Cloud to demonstrate the scalability of Devito to cluster-size problems in the Cloud. The model we chose mimics the reference model in geophysics known as the SEAM model [@...] that is a three dimensional extreme-scale synthetic representation of the subsurface. The physical dimension of the model are `45kmx35kmx15km` then discretized with a grid spacing of `20mx20mx10m` that led to a computational grid of `2250x1750x1500` grid points (5.9 billion grid points). One of the main challenges of elastic modelling is the extreme memory cost due to the number of wavefield. For a three dimensional propagator, a minimum of 21 fields need to be stored:
+Finally, we modelled three dimensional elastic data in the Cloud to demonstrate the scalability of Devito to cluster-size problems in the Cloud. The model we chose mimics the reference model in geophysics known as the SEAM model [@fehler2011seam] that is a three dimensional extreme-scale synthetic representation of the subsurface. The physical dimension of the model are `45kmx35kmx15km` then discretized with a grid spacing of `20mx20mx10m` that led to a computational grid of `2250x1750x1500` grid points (5.9 billion grid points). One of the main challenges of elastic modelling is the extreme memory cost due to the number of wavefield. For a three dimensional propagator, a minimum of 21 fields need to be stored:
 
 - Three particle velocities with two time steps (`v.forward` and `v`)
 - Six stress with two time steps (`tau.forward` and `tau`)
@@ -299,6 +299,8 @@ The runtime obtained for this problem for both propagators were identical with l
 
 ## Conclusions
 
+
+In this work, we extended previous simple example to realistic physics modeling and real-qorld scale inverse problem. 
 Can solve large scale and non-trivial physics problem both on conventional clusters and in the Cloud
 Good performance
 High-level interface that allows simple and mathematically based expression of complicated physics.
