@@ -299,11 +299,7 @@ The runtime obtained for this problem for both propagators were identical with l
 
 ## Conclusions
 
-
-In this work, we extended previous simple example to realistic physics modeling and real-qorld scale inverse problem. 
-Can solve large scale and non-trivial physics problem both on conventional clusters and in the Cloud
-Good performance
-High-level interface that allows simple and mathematically based expression of complicated physics.
+The transition from academic size problems, such as the two-dimensional acoustic wave-equation, to real-world application can be challenging in particular when attempted as an afterthought. In this work, we showed that thanks to design principles that aimed at this type of application from the beginning, [Devtio] provides the scalability necessary. Firstavall we showed that we provide a high-level interface not only for simple scalar equations but for coupled PDEs and allow the expression of non-trivial differential operators in a simple and concise way. Second and most importantly, we demonstrated that the compiler enables large-scale with state-f-the art computational performance and programming paradigm. The single-node performance is on par with hand-coded codes while providing the flexibility  from the symbolic interface, and multi-node parallelism is integrated in the compiler and interface in a conservative way. Finally, we demonstrated that our abstraction provides to performance portability that enables both on-premise HPC and Cloud HPC.
 
 
 [fdelmodc]:https://github.com/JanThorbecke/OpenSource.git
