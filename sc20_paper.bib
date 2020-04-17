@@ -1902,6 +1902,21 @@ url={http://lib.ugent.be/catalog/rug01:001559640}
   year		= {2014}
 }
 
+@article{krebsdg,
+   author = "Krebs, J.R. and Collis, S.S. and Downey, N.J. and Ober, C.C. and Overfelt, J.R. and Smith, T.M. and van Bloemen-Waanders, B.G. and Young, J.G.",
+   title = "Full Wave Inversion Using a Spectral-Element Discontinuous Galerkin Method", 
+   journal= "",
+   year = "2014",
+   volume = "2014",
+   number = "1",
+   pages = "1-5",
+   doi = "https://doi.org/10.3997/2214-4609.20140707",
+   url = "https://www.earthdoc.org/content/papers/10.3997/2214-4609.20140707",
+   publisher = "European Association of Geoscientists &amp; Engineers",
+   issn = "2214-4609",
+   type = "",
+  }
+
 @Article{krishnamoorthy07,
   acmid		= {1250761},
   address	= {New York, NY, USA},
@@ -2638,6 +2653,45 @@ eprint = {https://doi.org/10.1063/1.3060620}
   year		= {2014}
 }
 
+@article{osti_1468379,
+title = {Computation of Kernels for Full Waveform Seismic Inversion Using Parelasti.},
+author = {Preston, Leiph},
+abstractNote = {Full waveform inversion allows the seismologist to utilize an entire waveform and all the information it contains to help image the 3-D structure of the interior of the earth. This report summarizes the basic theory that has been developed in full waveform seismic inversion, primarily related to computation of sensitivity kernels. It then describes the implementation of this theory using Sandia Geophysics Department's Parelasti code, a 3-D full waveform elastic simulation algorithm. Finally, the code is validated using synthetics from simple homogeneous elastic earth models.},
+doi = {10.2172/1468379},
+journal = {},
+number = ,
+volume = ,
+place = {United States},
+year = {2018},
+month = {8}
+}
+
+ @article{osti_1561580,
+title = {Paraniso 1.0: 3-D Full Waveform Seismic Simulation in General Anisotropic Media.},
+author = {Preston, Leiph},
+abstractNote = {Many geologic materials and minerals are seismically anisotropic, with the most general anisotropic material having up to 21 independent elastic coefficients. This report outlines the development of a 3-D, generally anisotropic, linear elastic full waveform finite- difference solver. First, a mathematical description of the solution equations will be described. The finite-difference implementation of these equations will then be shown. Finally, a comparison of results from this new solver to other solutions will be provided as verification that the new algorithm can accurately replicate these solutions. ACKNOWLEDGEMENTS The author also acknowledges the National Nuclear Security Administration, Defense Nuclear Nonproliferation Research and Development (DNN R&D), and the Source Physics Experiment (SPE) working group, a multi-institutional and interdisciplinary group of scientists and engineers.},
+doi = {10.2172/1561580},
+journal = {},
+number = ,
+volume = ,
+place = {United States},
+year = {2019},
+month = {9}
+}
+
+@article{osti_1561581,
+title = {ParelastiFWI 1.0 User Guide.},
+author = {Preston, Leiph},
+abstractNote = {ParelastiFWl is a python-based frontend to the seismic full waveform inversion process using Sandia Geophysics Department's 3-D isotropic elastic full waveform simulation code, Parelasti. The arguments one provides to ParelastiFWl guide the full waveform inversion process, including resolution of the inversion grid and basic regularization. This report outlines the user flags and ParelastiFWI usage to control the full waveform inversion procedure. ACKNOWLEDGEMENTS The author also acknowledges the National Nuclear Security Administration, Defense Nuclear Nonproliferation Research and Development (DNN R&D), and the Source Physics Experiment (SPE) working group, a multi-institutional and interdisciplinary group of scientists and engineers.},
+doi = {10.2172/1561581},
+journal = {},
+number = ,
+volume = ,
+place = {United States},
+year = {2019},
+month = {9}
+}
+
 @article{pandolfo,
   author    = {Vincenzo Pandolfo},
   title     = {Investigating the {OPS} intermediate representation to target GPUs
@@ -3019,6 +3073,36 @@ eprint = {https://doi.org/10.1063/1.3060620}
   title		= {Performance tuning and analysis of future vector
 	processors based on the roofline model},
   year		= {2009}
+}
+
+@article{sava1,
+    author = {Köhn, D. and Hellwig, O. and De Nil, D. and Rabbel, W.},
+    title = "{Waveform inversion in triclinic anisotropic media—a resolution study}",
+    journal = {Geophysical Journal International},
+    volume = {201},
+    number = {3},
+    pages = {1642-1656},
+    year = {2015},
+    month = {04},
+    abstract = "{Seismic full waveform inversion (FWI) has been applied to simple elastic problems with certain symmetries, such as isotropic, transverse isotropic or vertical transversely isotropic media. In this study, the FWI concept is extended to the most general anisotropic case with 21 independent elastic material parameters and no symmetry plane (triclinic). Beside a short description of the 3-D finite-difference scheme to solve the forward problem and the FWI optimization algorithm, we present a sensitivity study for a simple anisotropic medium. This test problem consists of a homogenous triclinic anisotropic full space, which contains 21 spatially separated spheres. In each sphere one component of the elastic tensor deviates by 5 per cent from the background medium. The resolution of the different spheres, ambiguities between the different elastic parameters, as well as the effect of the acquisition geometry can be systematically investigated. Due to the high computational costs of the triclinic forward problem a few compromises have to be made regarding the acquisition geometries. Point sources are replaced by plane wave sources which lead to a limitation of incidence angles and therefore a strong decrease in resolution of the nondiagonal elastic tensor components. It is shown that, despite these limitations, a tomographic acquisition geometry would be able to resolve to some extent a monoclinic symmetry via FWI. Restricting the acquisition geometries (e.g. VSP combined with reflection seismic or reflection seismic only) significantly reduces the number of resolvable tensor elements in strict dependence of the covered incidence angles.}",
+    issn = {0956-540X},
+    doi = {10.1093/gji/ggv097},
+    url = {https://doi.org/10.1093/gji/ggv097},
+    eprint = {https://academic.oup.com/gji/article-pdf/201/3/1642/17367789/ggv097.pdf},
+}
+
+@article{sava2,
+title = "Rasterizing geological models for parallel finite difference simulation using seismic simulation as an example",
+journal = "Computers & Geosciences",
+volume = "86",
+pages = "83 - 91",
+year = "2016",
+issn = "0098-3004",
+doi = "https://doi.org/10.1016/j.cageo.2015.10.008",
+url = "http://www.sciencedirect.com/science/article/pii/S009830041530073X",
+author = "Björn Zehner and Olaf Hellwig and Maik Linke and Ines Görz and Stefan Buske",
+keywords = "3D, Rasterization, Voxelization, Scan conversion, Seismic, Finite difference simulation, Parallel computation",
+abstract = "3D geological underground models are often presented by vector data, such as triangulated networks representing boundaries of geological bodies and geological structures. Since models are to be used for numerical simulations based on the finite difference method, they have to be converted into a representation discretizing the full volume of the model into hexahedral cells. Often the simulations require a high grid resolution and are done using parallel computing. The storage of such a high-resolution raster model would require a large amount of storage space and it is difficult to create such a model using the standard geomodelling packages. Since the raster representation is only required for the calculation, but not for the geometry description, we present an algorithm and concept for rasterizing geological models on the fly for the use in finite difference codes that are parallelized by domain decomposition. As a proof of concept we implemented a rasterizer library and integrated it into seismic simulation software that is run as parallel code on a UNIX cluster using the Message Passing Interface. We can thus run the simulation with realistic and complicated surface-based geological models that are created using 3D geomodelling software, instead of using a simplified representation of the geological subsurface using mathematical functions or geometric primitives. We tested this set-up using an example model that we provide along with the implemented library."
 }
 
 @InProceedings{schmidtbergfriedlandermurphy:2009,
