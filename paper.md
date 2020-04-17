@@ -210,13 +210,13 @@ The subsurface velocity model that was used in this study is an artificial aniso
 ![](./Figures/OverTTI4.png){width=50%}\
 : 3D TTI imaging on a custom made model.
 
-@witte2019TPDedas fully describes the serverless implementation of seismic inverse problems, including iterative algorithms for least-square minimization problems (LSRTM). The 3D anisotropic imaging results were presented as part of a keynote presentation at the EAGE HPC workshop in October 2019 [@herrmann2019EAGEHPCaii]. This work perfectly illustrates the flexibility and portability of Devito, as we were able to easily port a code only tested and developed on local hardware to the cloud, with only requiring minor adjustments. This portability included the possibility to run MPI-based code for domain decomposition in the cloud, after developing it on a desktop computer. The code for reproducibility can be found at [AzureTTI] that contains, the propagators and gradient computation, Dockerfiles and azure [batch-shipyard] setup for running the RTM.
-
-While this subsurface image is obtained with anisotropic propagators that mimic the real physics, in order to model both the kinematics and the amplitudes correctly, elastic propagator are required. These propagators are for example extremely important for global seismology as the Shear waves (component ignored in TTI) are the most hazardous ones. We know show that wit the new vectorial capabilities of Devito, we can model elastic waves while conserving a high-level symbolic interface.
+@witte2019TPDedas fully describes the serverless implementation of seismic inverse problems, including iterative algorithms for least-square minimization problems (LSRTM). The 3D anisotropic imaging results were presented as part of a keynote presentation at the EAGE HPC workshop in October 2019 [@herrmann2019EAGEHPCaii]. This work perfectly illustrates the flexibility and portability of Devito, as we were able to easily port a code only tested and developed on local hardware to the cloud, with only minor adjustments. This portability included the possibility to run MPI-based code for domain decomposition in the cloud, after developing it on a desktop computer. Our experiments are reproducibile using the instructions in a public repository [AzureTTI], which contains, among the other things, the Dockerfiles and Azure [batch-shipyard] setup.
 
 ## Elastic modelling
 
-The elastic isotropic wave-equation, parametrized by the Lamé parameters ``\lambda, \mu`` and the density ``\rho`` reads:
+While the subsurface image in the previous Section is obtained with anisotropic propagators capable of mimicing the real physics, in order to model both the kinematics and the amplitudes correctly elastic propagator are required. These propagators are for example extremely important for global seismology, as the Shear waves (component ignored in TTI) are the most hazardous ones. In this section we exploit the tensor algebra language introduced in Devito v4.0 to express elastic waves in a compact and elegant notation.
+
+The elastic isotropic wave equation, parametrized by the Lamé parameters ``\lambda, \mu`` and the density ``\rho`` reads:
 
 ```math{#elas1}
 &\frac{1}{\rho}\frac{dv}{dt} = \nabla . \tau \\
@@ -235,12 +235,15 @@ and the stress ``\tau`` is a symmetric second-order tensor-valued function:
     \tau = \begin{bmatrix}\tau_{xx}(t, x, y) & \tau_{xy}(t, x, y)\\\tau_{xy}t, x, y) & \tau_{yy}(t, x, y)\end{bmatrix}.
 ```
 
-The discretization of such a set of coupled PDEs requires five equations in two dimensions (two equations for the particle velocity and three for stress) and nine equations in three dimensions (three particle velocities and six stress equations). However, the mathematical definition only requires two coupled vector/tensor-valued equations for any number of dimensions. We extend the previously scalar-only capabilities of Devito to vector and second-order tensors and allow a straightforward and mathematical definition of high-dimensional PDEs such as the elastic wave equation in Eq #elas1\.
+The discretization of such a set of coupled PDEs requires five equations in two dimensions (two equations for the particle velocity and three for stress) and nine equations in three dimensions (three particle velocities and six stress equations). However, the mathematical definition only requires two coupled vector/tensor-valued equations for any number of dimensions.
 
+### Tensor algebra language
 
-### Vectorial and tensorial API
+We have augmented the Devito language with tensorial objects to enable a straightforward -- and at the same time mathematically rigorous -- definition of high-dimensional PDEs, such as the elastic wave equation in Eq#elas1\. This effort was inspired by [@ufl], a functional language for finite element methods. 
 
-Once again, based on `Sympy`, we augmented the symbolic interface to vectorial and tensorial object to allow for a straightforward definition of equations such as the elastic wave-equation, as well as computational fluid dynamics equations. The extended API defines two new types, `VectorFunction` (and `VectorTimeFunction`) for vectorial objects such as the particle velocity, and `TensorFunction` (and `TensorTimeFunction`) for second-order tensor objects (matrices) such as the stress. These new objects are constructed the exact same way as the scalar `Function` objects and automatically implement staggered grid and staggered finite-differences with the possibility of half-node averaging. This new extended API now allows users to define the elastic wave-equation in four lines as follows:
+The extended Devito language introduces two new types, `VectorFunction` (and `VectorTimeFunction`) for vectorial objects such as the particle velocity, and `TensorFunction` (and `TensorTimeFunction`) for second-order tensor objects (matrices) such as the stress. These new objects are constructed the exact same way as the scalar `Function` objects. They also automatically implement staggered grid and staggered finite-differences with the possibility of half-node averaging. Each component of a tensorial object -- a (scalar) Devito `Function` -- is accessible via conventional vector notation (i.e. `v[0], t[0,1],....`).
+
+With this extended language, the elastic wave equation can be defined in only four lines as follows:
 
 ```python
 v = VectorTimeFunction(name='v', grid=model.grid, space_order=so, time_order=1)
@@ -250,13 +253,11 @@ u_v = Eq(v.forward, model.damp * (v + s/rho*div(tau)))
 u_t = Eq(tau.forward,  model.damp *  (tau + s * (l * diag(div(v.forward)) + mu * (grad(v.forward) + grad(v.forward).T))))
 ```
 
-The `Sympy` expressions created by these commands can be displayed with the `Sympy` pretty printer (`sympy.pprint`) as shown in Figure #PrettyElas\. This representation reflects perfectly the mathematics while still providing computational portability and efficiency through the Devito compiler.
+The `SymPy` expressions created by these commands can be displayed with `sympy.pprint` as shown in Figure #PrettyElas\. This representation reflects perfectly the mathematics while still providing computational portability and efficiency through the Devito compiler.
 
 #### Figure: {#PrettyElas}
 ![](./Figures/vel_symb.png){width=100%}
 : Update stencil for the particle velocity. The stencil for updating the stress component is left out for readability, as the equation does not fit onto a single page. However, it can be found in the Devito tutorial on elastic modelling on github.
-
-Each component of a vectorial or tensorial object is accessible via conventional vector and matrix indices (i.e. `v[0], t[0,1],....`) and each component is a Devito `Function` and implements all the previously introduced propetries such as the domain decomposed data.
 
 ### 2D example
 
