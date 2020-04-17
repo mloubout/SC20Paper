@@ -94,19 +94,19 @@ op = Operator(stencil + src_eqns + rec_eqns)
 
 The first compilation passes process the equations individually. The equations are lowered to an enriched representation, while the finite-difference constructs (e.g., derivatives) are translated into actual arithmetic operations. Subsequently, data dependency analysis is used to compute a performance-optimized topological ordering of the input equations (e.g., to maximize the likelihood of loop fusion) and to group them into so called "clusters". Basically, a cluster will eventually be a loop nest in the generated code, and consecutive clusters may share some outer loops. The ordered sequence of clusters undergoes several optimization passes, including cache blocking and flop-reducing transformations. It is then further lowered into an abstract syntax tree, and it is on such representation that parallelisms is introduced (SIMD, shared-memory, MPI). Finally, all remaining low-level aspects of code generation are handled, among which the most relevant one is the data management (e.g., definition of variables, transfers between host and device).
 
-The output of the Devito compiler for the running example used in this section is available at [put code repo url] in `acou-so8.c`. 
+The output of the Devito compiler for the running example used in this section is available at [put code repo url] in `acou-so8.c`.
 
 ### Distributed-memory parallelism
 
 We here provide a succinct description of distributed-memory parallelism in Devito; the interested reader should refer to [@mpi-notebook] for thorough explanations and practical examples.
 
-Devito implements distributed-memory parallelism on top of MPI. The design is such that users can almost entirely abstract away from it. Given *any* Devito code, just running it as
+Devito implements distributed-memory parallelism on top of MPI. The design is such that users can almost entirely abstract away from it. Given any Devito code, just running it as
 
 ```python
 DEVITO_MPI=1 mpirun -n X python ...
 ```
 
-will trigger the compiler to generate C code with routines for halo exchanges. The routines are scheduled at a suitable depth in the various loop nests thanks to data dependency analysis. The following optimizations are automatically applied:
+triggers the generation of code with routines for halo exchanges. The routines are scheduled at a suitable depth in the various loop nests thanks to data dependency analysis. The following optimizations are automatically applied:
 
 - redundant halo exchanges are detected and dropped;
 - computation/communication overlap, with prodding of the asynchronous progress engine by a designated thread through repeated calls to `MPI_Test`;
@@ -135,7 +135,7 @@ which is distributed across 4 ranks such that `rank 0` contains the elements rea
 
 such that now `rank 0` contains the elements `16, 15, 12, 11` and so forth.
 
-Finally, we remark that while providing abstractions for distributed data manipulation, Devito does not support natively any mechanisms for parallel I/O. {>>Mathias: Add positive note<<}
+Finally, we remark that while providing abstractions for distributed data manipulation, Devito does not support natively any mechanisms for parallel I/O. The distributed NumPy arrays, however, provide a generic and flexible infrastructure for the implementation of parallel I/O for any sort of file format.
 
 ## Industry-scale 3D seismic imaging in anisotropic media
 
