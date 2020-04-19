@@ -50,7 +50,7 @@ In this section we illustrate the Devito language showing how to implement the a
 \begin{cases}
  m \frac{d^2 u(t, x)}{dt^2} - Δ u(t, x) = \delta(xs) q(t) \\
  u(0, .) = \frac{d u(t, x)}{dt}(0, .) = 0 \\
- rec(t, .) = u(t, xr).
+ d(t, .) = u(t, xr).
  \end{cases}
 ```
 
@@ -80,7 +80,7 @@ where `so` is the spatial discretization order and `to` the time discretization 
 ```python
 from devito import Function, TimeFunction
 src = SparseFunction(name="src", grid=grid, npoint=1, coordinates=xs)
-rec = SparseTimeFunction(name="rec", grid=grid, npoint=1, nt=nt, coordinates=xr)
+d = SparseTimeFunction(name="d", grid=grid, npoint=1, nt=nt, coordinates=xr)
 ```
 
 The source term is handled separately from the PDE as a pointwise operation called `injection`, while the measurement is handled with an interpolation. By default, [Devito] initializes all `Function` data to 0, and thus automatically satisfies the zero Dirichlet condition at `t=0`. The isotropic acoustic wave-equation can then be implemented in [Devito] as below
@@ -90,14 +90,14 @@ from devito import solve, Eq, Operator
 eq = m * u.dt2 - u.laplace
 stencil = [Eq(u.forward, solve(eq, u.forward))]
 src_eqns = s1.inject(u.forward, expr=s1 * dt**2 / m)
-rec_eqns = rec.interpolate(u)
+d_eqns = d.interpolate(u)
 ```
 
 To trigger compilation one needs to pass the constructed equations to an `Operator`. 
 
 ```python
 from devito import Operator
-op = Operator(stencil + src_eqns + rec_eqns)
+op = Operator(stencil + src_eqns + d_eqns)
 ```
 
 The first compilation passe processes the equations individually. The equations are lowered to an enriched representation, while the finite-difference constructs (e.g., derivatives) are translated into actual arithmetic operations. Subsequently, data dependency analysis is used to compute a performance-optimized topological ordering of the input equations (e.g., to maximize the likelihood of loop fusion) and to group them into so called "clusters". Basically, a cluster will eventually be a loop nest in the generated code, and consecutive clusters may share some outer loops. The ordered sequence of clusters undergoes several optimization passes, including cache blocking and flop-reducing transformations. It is then further lowered into an abstract syntax tree, and it is on such representation that parallelisms is introduced (SIMD, shared-memory, MPI). Finally, all remaining low-level aspects of code generation are handled, among which the most relevant one is the data management (e.g., definition of variables, transfers between host and device).
@@ -169,7 +169,7 @@ dx_u = cos(theta) * cos(phi) * u.dx + cos(theta) * sin(phi) * u.dy - sin(theta) 
 dxx_u = (cos(theta) * cos(phi) * dx_u).dx.T + (cos(theta) * sin(phi) * dx_u).dy.T - (sin(theta) * dx_u).dz.T
 ```
 
-Note that while the adjoint of the finite-difference stencil is enabled via the standard Python `.T` shortcut, the expression needs to be reordered by hand as the tilt and azymuth angle are spatially dependent and require to be inside the second pass of first-order derivative. We can see from these simple two lines that the rotated stencil involves all second-order derivatives (`.dx.dx`, `.dy.dy` and `.dz.dz`) and all second-order cross-derivatives (`dx.dy`, `.dx.dz` and `.dy.dz`) that leads to a denser stencil support and higher computational complexity (c.f. [@louboutin2016ppf]).
+Note that while the adjoint of the finite-difference stencil is enabled via the standard Python `.T` shortcut, the expression needs to be reordered by hand as the tilt and azymuth angle are spatially dependent and require to be inside the second pass of first-order derivative. We can see from these simple two lines that the rotated stencil involves all second-order derivatives (`.dx.dx`, `.dy.dy` and `.dz.dz`) and all second-order cross-derivatives (`dx.dy`, `.dx.dz` and `.dy.dz`) that leads to a denser stencil support and higher computational complexity (c.f. [@louboutin2016ppf]). For illustration purpose, the complete generated code for tti modeling with and without MPI is made available at [CodeSample] in `tti-so8.c` and `tti-so8-mpi.c.
 
 Because of the very high number of floating-point operations (FLOP) needed per grid point for the weighted rotated Laplacian, this anisotropic wave equation is extremely challenging to implement. As we show in Figure #ttiflops, and previously analysed in [@louboutin2016ppf], the computational cost with high-order finite-difference is in the order of thousands of FLOPs per grid point without optimizations.
 
@@ -263,7 +263,7 @@ u_v = Eq(v.forward, model.damp * (v + s/rho*div(tau)))
 u_t = Eq(tau.forward,  model.damp *  (tau + s * (l * diag(div(v.forward)) + mu * (grad(v.forward) + grad(v.forward).T))))
 ```
 
-The `SymPy` expressions created by these commands can be displayed with `sympy.pprint` as shown in Figure #PrettyElas\. This representation reflects perfectly the mathematics while still providing computational portability and efficiency through the Devito compiler.
+The `SymPy` expressions created by these commands can be displayed with `sympy.pprint` as shown in Figure #PrettyElas\. This representation reflects perfectly the mathematics while still providing computational portability and efficiency through the Devito compiler. The complete generated code for the elastic wave equation with and without MPI is made available at [CodeSample] in `elastic-so8.c` and `elastic-so8-mpi.c.
 
 #### Figure: {#PrettyElas}
 ![](./Figures/vel_symb.png){width=100%}
