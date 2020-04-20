@@ -134,7 +134,7 @@ mlouboutin3@gatech.edu}
 \IEEEauthorblockN{7\textsuperscript{th} Felix J. Herrmann}
 \IEEEauthorblockA{\textit{Georgia Institute of Technology}}
 \and
-\IEEEauthorblockN{8\textsuperscript{th} Geragd J. Gorman}
+\IEEEauthorblockN{8\textsuperscript{th} Gerard J. Gorman}
 \IEEEauthorblockA{\textit{Imperial College London}}
 }
 
@@ -195,7 +195,7 @@ inversion workflow must satisfy the following criteria
 memory requirement of the modeling - The ability of a parallel algorithm
 to use an increasing number of processors - Ability of the method to
 process models of arbitrary levels of heterogeneity - Reduce the
-nonlinearity of FWI - Feasibility of the extension of the modeling
+non-linearity of FWI - Feasibility of the extension of the modeling
 approach to more realistic physical descriptions of the media.
 
 It is with these specifications in mind that
@@ -235,7 +235,7 @@ saved in memory). Secondly, through the elastic modelling example, we
 demonstrate that \href{https://github.com/devitocodes/devito}{Devito}
 now fully supports and automates vectorial and second order tensorial
 staggered-grid finite-differences with the same high-level API
-previously presented for a scalar fields defined on cartesian grids.
+previously presented for scalar fields defined on cartesian grids.
 
 This paper is organized as follows: first, we provide a brief overview
 of \href{https://github.com/devitocodes/devito}{Devito} and its symbolic
@@ -408,7 +408,7 @@ in \texttt{acou-so8.c}.
 parallelism}\label{distributed-memory-parallelism}
 
 We here provide a succinct description of distributed-memory parallelism
-in Devito; the interested reader should refer to the mpi tutorial at
+in Devito; the interested reader should refer to the MPI tutorial at
 \href{https://github.com/devitocodes/devito/blob/master/examples/mpi/overview.ipynb}{mpi-notebook}
 for thorough explanations and practical examples.
 
@@ -524,7 +524,7 @@ wave-equations must be solved for a large number of independent
 experiments, where each individual PDE solve in itself is expensive in
 terms of FLOPs and memory usage. For certain workloads, limited domain
 decomposition, that balances the domain size and the number of
-independent experiment, and checkpointing techniques have to be applied.
+independent experiments, and checkpointing techniques have to be applied.
 In the following sections, we describe an industry-scale seismic imaging
 problem presenting all of the aforementioned challenges, its
 implementation with Devito, and the results of an experimentation
@@ -541,7 +541,7 @@ heterogeneous elastic media where the medium properties vary more
 rapidly in the direction perpendicular to sedimentary strata
 \cite{alkhalifah2000, baysal1983, bubetti2012, bubetti2014, bubesatti2016, chu2011, duveneck, fletcher, fowlertti2010, louboutin2018segeow, whitmore1983, witte2016segpve, xu2014, zhang2005, zhang2011, zhan2013}.
 The TTI wave-equation is an acoustic, low dimensional (4 parameters, 2
-wavefields) simplification of the 21 parameter and 12 wavefields
+wavefields) simplification of the 21 parameters and 12 wavefields
 tensorial equations of motions \cite{hooke}. This simplified
 representation is parametrized by the Thomsen parameters
 $\epsilon(x), \delta(x)$ that relate to the global (many wavelength
@@ -661,7 +661,7 @@ codes based on the latest geophysical insights and high-performance
 computing. With \href{https://github.com/devitocodes/devito}{Devito} on
 the other hand, both the forward and adjoint equations can be
 implemented in a few lines of Python code as illustrated with the
-rotated operator in \#rotxpy.
+rotational operator in \#rotxpy.
 
 Simulation of wave motion is only one aspect of solving problems in
 seismology. During wave-equation based imaging, we also need to compute
@@ -698,7 +698,7 @@ a \texttt{12.5m} grid with 40 points of absorbing layer on each sides
 that leads to \texttt{881x881x371} computational grid points (300
 Million grid points). The final image is the sum of 1500 single-source
 images and we computed 100 single-source images in parallel on 200 nodes
-available using two ndes per source experiment.
+available using two nodes per source experiment.
 
 \textbf{\emph{Computational performance}}
 
@@ -734,7 +734,7 @@ precision, was as follow:
 
 We also observe that if we had had access to more resources, and because
 the imaging problem is embarassingly parallel over sources and can scale
-to any computational ressource, we could have attempted imaging of all
+to any computational resources, we could have attempted imaging of all
 of the 1500 sources in parallel, which theoretically leads to a
 performance of 0.4PFLOP/s.
 
@@ -806,13 +806,13 @@ are reproducible using the instructions in a public repository
 among the other things, the Dockerfiles and Azure
 \href{https://batch-shipyard.readthedocs.io}{batch-shipyard} setup. This
 example can also easily ber un on a traditional HPC cluster environment
-using for exaple \href{https://github.com/slimgroup/JUDI.jl}{JUDI} or
+using for example \href{https://github.com/slimgroup/JUDI.jl}{JUDI} or
 Dask \cite{dask} for parallelization over sources.
 
 \section{Elastic modelling}\label{elastic-modelling}
 
 While the subsurface image in the previous Section is obtained with
-anisotropic propagators capable of mimicing the real physics, in order
+anisotropic propagators capable of mimicking the real physics, in order
 to model both the kinematics and the amplitudes correctly elastic
 propagators are required. These propagators are for example extremely
 important for global seismology, as the Shear surface waves (component
@@ -932,7 +932,7 @@ wavefield is as expected purely acoustic in the water layer
 (\texttt{t\_\{xy\}=0}) and transition perfectly at the ocean bottom to
 an elastic wavefield. We can also clearly see the Shear wave wavefront
 in the subsurface (around 1km depth). Thes two plots show that we
-effectively solve the elastic wave-equation with an high-level
+effectively solve the elastic wave-equation with a high-level
 mathematical definition of the PDE that abstracts away all the
 computational technicalities such as staggered grid analysis. The shot
 records in Figure~\ref{ElasShot} also match the original data generated
@@ -1000,21 +1000,21 @@ making it more computationally efficient, in particular in combination
 with MPI. Future work with involve working on the InfiniBand enabled and
 true HPC VM on azure to achieve Cloud performance on par with state of
 the art Cluster performance. From the performance obtained in this
-experiement, and assuming a fairly standard setup of 5000 independent
-source experiements, computing a synthetic dataset would require 322
+experiment, and assuming a fairly standard setup of 5000 independent
+source experiments, computing a synthetic dataset would require 322
 EFLOP to be computed (23k time-steps x 2.8TFLOP/time-step x 500
 sources), or using the full scalability and computing all sources in
-parallel would lead to 5.5PFLOP/s from our single source experiement
+parallel would lead to 5.5PFLOP/s from our single source experiment
 result.
 
 \section{Performance comparison with other
 codes}\label{performance-comparison-with-other-codes}
 
-Because earlier performance benchmark focuse mainly on roofline model
+Because earlier performance benchmarks focus mainly on roofline model
 analysis, we also compared the runtime of
 \href{https://github.com/devitocodes/devito}{Devito} with a reference
 open source hand-coded propagator in collaboration with its author for
-compeleteness. This propagator, described in \cite{thorbecke} is a
+completeness. This propagator, described in \cite{thorbecke} is a
 state of the art elastic kernel (Equation~\ref{elas1}). For a fair
 comparison, we ensure, in collaboration with the author of
 \href{https://github.com/JanThorbecke/OpenSource.git}{fdelmodc} that the
@@ -1033,7 +1033,7 @@ following:
 \item
   Single point source, 2001 receivers.
 \item
-  Same compiler (gcc/icc) to compile
+  Same compiler (GCC/ICC) to compile
   \href{https://github.com/JanThorbecke/OpenSource.git}{fdelmodc} and
   run Devito.
 \item
