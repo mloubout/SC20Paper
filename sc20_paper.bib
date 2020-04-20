@@ -2658,9 +2658,6 @@ title = {Computation of Kernels for Full Waveform Seismic Inversion Using Parela
 author = {Preston, Leiph},
 abstractNote = {Full waveform inversion allows the seismologist to utilize an entire waveform and all the information it contains to help image the 3-D structure of the interior of the earth. This report summarizes the basic theory that has been developed in full waveform seismic inversion, primarily related to computation of sensitivity kernels. It then describes the implementation of this theory using Sandia Geophysics Department's Parelasti code, a 3-D full waveform elastic simulation algorithm. Finally, the code is validated using synthetics from simple homogeneous elastic earth models.},
 doi = {10.2172/1468379},
-journal = {},
-number = ,
-volume = ,
 place = {United States},
 year = {2018},
 month = {8}
@@ -2671,9 +2668,6 @@ title = {Paraniso 1.0: 3-D Full Waveform Seismic Simulation in General Anisotrop
 author = {Preston, Leiph},
 abstractNote = {Many geologic materials and minerals are seismically anisotropic, with the most general anisotropic material having up to 21 independent elastic coefficients. This report outlines the development of a 3-D, generally anisotropic, linear elastic full waveform finite- difference solver. First, a mathematical description of the solution equations will be described. The finite-difference implementation of these equations will then be shown. Finally, a comparison of results from this new solver to other solutions will be provided as verification that the new algorithm can accurately replicate these solutions. ACKNOWLEDGEMENTS The author also acknowledges the National Nuclear Security Administration, Defense Nuclear Nonproliferation Research and Development (DNN R&D), and the Source Physics Experiment (SPE) working group, a multi-institutional and interdisciplinary group of scientists and engineers.},
 doi = {10.2172/1561580},
-journal = {},
-number = ,
-volume = ,
 place = {United States},
 year = {2019},
 month = {9}
@@ -2684,9 +2678,6 @@ title = {ParelastiFWI 1.0 User Guide.},
 author = {Preston, Leiph},
 abstractNote = {ParelastiFWl is a python-based frontend to the seismic full waveform inversion process using Sandia Geophysics Department's 3-D isotropic elastic full waveform simulation code, Parelasti. The arguments one provides to ParelastiFWl guide the full waveform inversion process, including resolution of the inversion grid and basic regularization. This report outlines the user flags and ParelastiFWI usage to control the full waveform inversion procedure. ACKNOWLEDGEMENTS The author also acknowledges the National Nuclear Security Administration, Defense Nuclear Nonproliferation Research and Development (DNN R&D), and the Source Physics Experiment (SPE) working group, a multi-institutional and interdisciplinary group of scientists and engineers.},
 doi = {10.2172/1561581},
-journal = {},
-number = ,
-volume = ,
 place = {United States},
 year = {2019},
 month = {9}
@@ -3093,7 +3084,7 @@ month = {9}
 
 @article{sava2,
 title = "Rasterizing geological models for parallel finite difference simulation using seismic simulation as an example",
-journal = "Computers & Geosciences",
+journal = "Computers \& Geosciences",
 volume = "86",
 pages = "83 - 91",
 year = "2016",
@@ -4281,20 +4272,28 @@ abstract = { In passive seismic interferometry, new reflection data can be retri
 }
 
 @Article{peter2011,
-  author	= {Peter, D., D. Komatitsch, Y. Luo, R. Martin, N. Le Goff, E. Casarotti, P. Le Loher, F. Magnoni, Q. Liu, C. Blitz, T. Nissen-Meyer, P. Basini, and J. Tromp},
-  title		= {Forward and adjoint simulations of seismic wave propagation on fully unstructured hexahedral meshes},
-  journal	= {Geophysical Journal International},
-  year		= 2011,
-  volume	= 186,
-  pages		= {721--739},
-  doi           = {10.1111/j.1365-246X.2011.05044.x}
+author = {Peter, Daniel and Komatitsch, Dimitri and Luo, Yang and Martin, Roland and Le Goff, Nicolas and Casarotti, Emanuele and Le Loher, Pieyre and Magnoni, Federica and Liu, Qinya and Blitz, Céline and Nissen-Meyer, Tarje and Basini, Piero and Tromp, Jeroen},
+title = {Forward and adjoint simulations of seismic wave propagation on fully unstructured hexahedral meshes},
+journal = {Geophysical Journal International},
+volume = {186},
+number = {2},
+pages = {721-739},
+keywords = {Tomography, Interferometry, Computational seismology, Wave propagation},
+doi = {10.1111/j.1365-246X.2011.05044.x},
+url = {https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1365-246X.2011.05044.x},
+eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1111/j.1365-246X.2011.05044.x},
+abstract = {SUMMARY We present forward and adjoint spectral-element simulations of coupled acoustic and (an)elastic seismic wave propagation on fully unstructured hexahedral meshes. Simulations benefit from recent advances in hexahedral meshing, load balancing and software optimization. Meshing may be accomplished using a mesh generation tool kit such as CUBIT, and load balancing is facilitated by graph partitioning based on the SCOTCH library. Coupling between fluid and solid regions is incorporated in a straightforward fashion using domain decomposition. Topography, bathymetry and Moho undulations may be readily included in the mesh, and physical dispersion and attenuation associated with anelasticity are accounted for using a series of standard linear solids. Finite-frequency Fréchet derivatives are calculated using adjoint methods in both fluid and solid domains. The software is benchmarked for a layercake model. We present various examples of fully unstructured meshes, snapshots of wavefields and finite-frequency kernels generated by Version 2.0 ‘Sesame’ of our widely used open source spectral-element package SPECFEM3D.},
+year = {2011}
 }
 
 @Manual{petersson2013,
-  author	= {Petersson, N. A., and B. Sjögreen},
-  title		= {User’s guide to SW4, version 1.1},
-  url		= {www.geodynamics.org},
-  year		= 2013
+	author = "Petersson, N.A. and Sj{\"o}green, B.", 
+	title="SW4 v1.1 [software]", 
+	year="2014", 
+	organization="Computational Infrastructure for Geodynamics", 
+	optkeywords="SW4", 
+	doi="http://doi.org/10.5281/zenodo.571844", 
+	opturl="https://geodynamics.org/cig/software/sw4/"
 }
 
 @article{lyu2020,
@@ -4309,4 +4308,24 @@ doi = {10.1190/geo2019-0087.1},
 URL = {https://doi.org/10.1190/geo2019-0087.1},
 eprint = { https://doi.org/10.1190/geo2019-0087.1},
 abstract = { ABSTRACTThe spectral element method (SEM) has gained tremendous popularity within the seismological community to solve the wave equation at all scales. Classic SEM applications mostly rely on degrees 4–8 elements in each tensorial direction. Higher degrees are usually not considered due to two main reasons. First, high degrees imply large elements, which make the meshing of mechanical discontinuities difficult. Second, the SEM’s collocation points cluster toward the edge of the elements with the degree, degrading the time-marching stability criteria and imposing a small time step and a high numerical cost. Recently, the homogenization method has been introduced in seismology. This method can be seen as a preprocessing step before solving the wave equation that smooths out the internal mechanical discontinuities of the elastic model. It releases the meshing constraint and makes use of very high degree elements more attractive. Thus, we address the question of memory and computing time efficiency of very high degree elements in SEM, up to degree 40. Numerical analyses reveal that, for a fixed accuracy, very high degree elements require less computer memory than low-degree elements. With minimum sampling points per minimum wavelength of 2.5, the memory needed for a degree 20 is about a quarter that of the one necessary for a degree 4 in two dimensions and about one-eighth in three dimensions. Moreover, for the SEM codes tested in this work, the computation time with degrees 12–24 can be up to twice faster than the classic degree 4. This makes SEM with very high degrees attractive and competitive for solving the wave equation in many situations. }
+}
+
+@unpublished {witte2019RHPCssi,
+	title = {Serverless seismic imaging in the cloud},
+	year = {2019},
+	note = {Submitted to Rice Oil and Gas High Performance Computing Conference 2020 on November 27, 2019},
+	abstract = {This talk presents a serverless approach to seismic imaging in the cloud based on high-throughput containerized batch processing, event-driven computations and a domain-specific language compiler for solving the underlying wave equations. A 3D case study on Azure demonstrates that this approach allows reducing the operating cost of up to a factor of 6, making the cloud a viable alternative to on-premise HPC clusters for seismic imaging.},
+	keywords = {cloud, HPC, reverse-time migration, serverless},
+	url = {https://slim.gatech.edu/Publications/Public/Submitted/2019/witte2019RHPCssi/witte2019RHPCssi.html},
+	author = {Philipp A. Witte and Mathias Louboutin and Charles Jones and Felix J. Herrmann}
+}
+
+
+@InProceedings{dask,
+  author    = { Matthew Rocklin },
+  title     = { Dask: Parallel Computation with Blocked algorithms and Task Scheduling },
+  booktitle = { Proceedings of the 14th Python in Science Conference },
+  pages     = { 130 - 136 },
+  year      = { 2015 },
+  editor    = { Kathryn Huff and James Bergstra }
 }
