@@ -16,6 +16,41 @@
     numbers=left,
     captionpos=b,
 }
+
+% Default fixed font does not support bold face
+\DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{9} % for bold
+\DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{9}  % for normal
+
+% Custom colors
+\usepackage{color}
+\definecolor{deepblue}{rgb}{0,0,0.5}
+\definecolor{deepred}{rgb}{0.6,0,0}
+\definecolor{deepgreen}{rgb}{0,0.5,0}
+
+% Python style for highlighting
+\newcommand\pythonstyle{\lstset{
+    language=Python,
+    basicstyle=\ttm,
+    aboveskip=10pt,
+    belowskip=10pt,
+    otherkeywords={self},             % Add keywords here
+    keywordstyle=\ttb\color{deepblue},
+    emph={MyClass,__init__},          % Custom highlighting
+    emphstyle=\ttb\color{deepred},    % Custom highlighting style
+    stringstyle=\color{deepgreen},
+    frame=tb,                         % Any extra options here
+    showstringspaces=false            % 
+}}
+
+
+% Python environment
+\lstnewenvironment{python}[1][]
+{
+    \pythonstyle
+    \lstset{#1}
+}
+{}
+
 \usepackage{color}
 \usepackage{fancyvrb}
 \usepackage{fvextra}
@@ -162,27 +197,25 @@ process models of arbitrary levels of heterogeneity - Reduce the
 nonlinearity of FWI - Feasibility of the extension of the modeling
 approach to more realistic physical descriptions of the media.
 
-It is with these specifications in mind that Devito, a symbolic domain
+It is with these specifications in mind that
+\href{https://github.com/devitocodes/devito}{Devito}, a symbolic domain
 specific language (DSL) and compiler for the automatic generation of
 finite-difference stencils, has been developed. Originally deigned to
-accelerate research and development in exploration geophysics, the
-high-level interface, previously described in detail in
-\cite{devito-api}, is built on top of \texttt{SymPy} \cite{sympy} and
-is inspired by the underlying mathematical formulations and other
-high-level DSLs such as FEniCS \cite{fenics} and Firedrake
-\cite{firedrake}. This interface allows the user to formulate
-wave-equations, and more generally time-dependent PDEs in a simple and
-mathematically coherent way. The symbolic API then automatically
-generates finite-difference stencils from these mathematical
-expressions. One of the main advantages of
+accelerate research and development in exploration geophysics, the high-level
+interface, previously described in detail in \cite{devito-api}, is built on top
+of \texttt{SymPy} \cite{sympy} and is inspired by the underlying mathematical
+formulations and other DSLs such as FEniCS \cite{fenics} and Firedrake
+\cite{firedrake}. This interface allows the user to formulate wave-equations,
+and more generally time-dependent PDEs in a simple and mathematically coherent
+way. The Devito compiler then automatically generates finite-difference
+stencils from these mathematical expressions. One of the main advantages of
 \href{https://github.com/devitocodes/devito}{Devito} over other
-finite-difference DSLs is that generic expressions such as sparse
-operations (i.e.~point source injection or localized measurements) are
-fully supported and expressible in a high-level fashion. The second
-component of \href{https://github.com/devitocodes/devito}{Devito} is its
-compiler (c.f \cite{devito-compiler}) that generates highly optimized C
-code. Generated code is then compiled at runtime for the hardware at
-hand.
+finite-difference DSLs is that generic expressions such as sparse operations
+(i.e.~point source injection or localized measurements) are fully supported and
+expressible in a high-level fashion. The second component of
+\href{https://github.com/devitocodes/devito}{Devito} is its compiler (c.f
+\cite{devito-compiler}) that generates highly optimized C code. The generated
+code is then compiled at runtime for the hardware at hand.
 
 Previous work focused on the DSL and compiler to highlight the potential
 application and use cases of Devito. Here, we present a series of
@@ -192,7 +225,7 @@ carried out in Cloud-based HPC systems and include elastic forward
 modelling using distributed-memory parallelism and imaging based on the
 tilted transverse isotropic (TTI) wave-equation
 (\cite{virieux, thomsen1986, zhang-tti, duveneck, louboutin2018segeow}).
-These proof of concepts highlight two critical features: First, the
+These proof of concepts highlight two critical features: first, the
 ability of the symbolic interface and the compiler to translate to
 large-scale adjoint-based inversion problems that require massive
 compute (since thousands of PDEs are solved) as well as large amounts of
@@ -203,7 +236,7 @@ now fully supports and automates vectorial and second order tensorial
 staggered-grid finite-differences with the same high-level API
 previously presented for a scalar fields defined on cartesian grids.
 
-This paper is organized as follows: First, we provide a brief overview
+This paper is organized as follows: first, we provide a brief overview
 of \href{https://github.com/devitocodes/devito}{Devito} and its symbolic
 API and present the distributed memory implementation that allows
 large-scale modeling and inversion by means of domain decomposition. We
@@ -228,7 +261,7 @@ supported, among which staggered grids, sub-domains, and stencils with
 custom coefficients. The last major building block of a good PDE solver
 are the boundary conditions, that for finite-difference methods are
 notoriously various and often complicated. The system is, however,
-sufficiently flexible to express them through composition of core
+sufficiently general to express them through composition of core
 mechanisms. For example, free surface and perfectly-matched layers
 (PMLs) boundary conditions can be expressed as equations -- just like
 any other PDE equations -- over a suitable sub-domain.
@@ -279,12 +312,12 @@ symbolic API consists of three classes:
 A \texttt{Grid} represents a discretized finite n-dimensional space and
 is created as follows
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\CharTok{from} \NormalTok{devito }\CharTok{import} \NormalTok{Grid}
-\NormalTok{grid = Grid(shape=(nx, ny, nz), extent=(ext_x, ext_y, ext_z), origin=(o_x, o_y, o_z))}
-\end{Highlighting}
-\end{Shaded}
+\begin{python}
+from devito import Grid
+grid = Grid(shape=(nx, ny, nz),
+            extent=(ext_x, ext_y, ext_z),
+            origin=(o_x, o_y, o_z))
+\end{python}
 
 where \texttt{(nx,\phantom{\ }ny,\phantom{\ }nz)} are the number of grid
 points in each direction,
@@ -297,28 +330,31 @@ We use \texttt{grid} to create the symbolic objects that will be used to
 express the wave-equation. First, we define a spatially varying model
 parameter \texttt{m} and a time-space varying field \texttt{u}
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\CharTok{from} \NormalTok{devito }\CharTok{import} \NormalTok{Function, TimeFunction}
-\NormalTok{m = Function(name=}\StringTok{"m"}\NormalTok{, grid=grid, space_order=so)}
-\NormalTok{u = TimeFunction(name=}\StringTok{"u"}\NormalTok{, grid=grid, space_order=so, time_order=to)}
-\end{Highlighting}
-\end{Shaded}
+\begin{python}
+from devito import Function, TimeFunction
+m = Function(name="m", grid=grid,
+             space_order=so)
+u = TimeFunction(name="u", grid=grid,
+                 space_order=so,
+                 time_order=to)
+\end{python}
 
 where \texttt{so} is the spatial discretization order and \texttt{to}
 the time discretization order that is used for the generation of the
 finite-difference stencil. Second, we define point-wise objects such as
 point sources \texttt{src}, located at physical coordinates $x_s$, and
-receiver (measurement) objects \texttt{rec}, with sensors located at the
+receiver (measurement) objects \texttt{d}, with sensors located at the
 physical locations $x_r$
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\CharTok{from} \NormalTok{devito }\CharTok{import} \NormalTok{Function, TimeFunction}
-\NormalTok{src = SparseFunction(name=}\StringTok{"src"}\NormalTok{, grid=grid, npoint=}\DecValTok{1}\NormalTok{, coordinates=x_s)}
-\NormalTok{d = SparseTimeFunction(name=}\StringTok{"d"}\NormalTok{, grid=grid, npoint=}\DecValTok{1}\NormalTok{, nt=nt, coordinates=x_r)}
-\end{Highlighting}
-\end{Shaded}
+\begin{python}
+from devito import SparseTimeFunction
+src = SparseTimeFunction(name="src", grid=grid,
+                         npoint=1,
+                         coordinates=x_s)
+d = SparseTimeFunction(name="d", grid=grid,
+                       npoint=1, nt=nt,
+                       coordinates=x_r)
+\end{python}
 
 The source term is handled separately from the PDE as a pointwise
 operation called \texttt{injection}, while the measurement is handled
@@ -329,25 +365,21 @@ Dirichlet condition at \texttt{t=0}. The isotropic acoustic
 wave-equation can then be implemented in
 \href{https://github.com/devitocodes/devito}{Devito} as below
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\CharTok{from} \NormalTok{devito }\CharTok{import} \NormalTok{solve, Eq, Operator}
-\NormalTok{eq = m * u.dt2 - u.laplace}
-\NormalTok{stencil = [Eq(u.forward, solve(eq, u.forward))]}
-\NormalTok{src_eqns = s1.inject(u.forward, expr=s1 * dt**}\DecValTok{2} \NormalTok{/ m)}
-\NormalTok{d_eqns = d.interpolate(u)}
-\end{Highlighting}
-\end{Shaded}
+\begin{python}
+from devito import solve, Eq, Operator
+eq = m * u.dt2 - u.laplace
+update = Eq(u.forward, solve(eq, u.forward))
+src_eqns = s1.inject(u.forward, expr=s1*dt**2/m)
+d_eqns = d.interpolate(u)
+\end{python}
 
 To trigger compilation one needs to pass the constructed equations to an
 \texttt{Operator}.
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\CharTok{from} \NormalTok{devito }\CharTok{import} \NormalTok{Operator}
-\NormalTok{op = Operator(stencil + src_eqns + d_eqns)}
-\end{Highlighting}
-\end{Shaded}
+\begin{python}
+from devito import Operator
+op = Operator(update + src_eqns + d_eqns)
+\end{python}
 
 The first compilation pass processes the equations individually. The
 equations are lowered to an enriched representation, while the
