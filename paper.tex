@@ -792,17 +792,17 @@ for parallelization over sources.
 
 \section{Elastic modelling}\label{elastic-modelling}
 
-While the subsurface image in the previous Section is obtained with
-anisotropic propagators capable of mimicking the real physics, in order
-to model both the kinematics and the amplitudes correctly elastic
-propagators are required. These propagators are for example extremely
-important for global seismology, as the Shear surface waves (component
-ignored in TTI) are the most hazardous ones. In this section, we exploit
+While the subsurface image obtained in section \ref{d-imaging-example-on-azure}
+utilized anisotropic propagators capable of mimicking intricate physics, in order
+to model both the wave kinematics and amplitudes correctly, elastic
+propagators are required. These propagators are, for example, extremely
+important in global seismology since shear surface waves (which are
+ignored in acoustic models) are the most hazardous. In this section, we exploit
 the tensor algebra language introduced in
 \href{https://github.com/devitocodes/devito}{Devito} v4.0 to express
-elastic waves in a compact and elegant notation.
+an elastic model with compact and elegant notation.
 
-The elastic isotropic wave-equation, parametrized by the Lamé parameters
+The isotropic elastic wave-equation, parametrized by the so-called Lamé parameters
 $\lambda, \mu$ and the density $\rho$ reads:
 %
 \begin{equation}
@@ -833,29 +833,29 @@ function:
 \label{stress}
 \end{equation}
 %
- The discretization of such a set of coupled PDEs requires five
+ The discretization of \eqref{elas1} and \eqref{stress} requires five
 equations in two dimensions (two equations for the particle velocity and
-three for stress) and nine equations in three dimensions (three particle
-velocities and six stress equations). However, the mathematical
-definition only requires two coupled vector/tensor-valued equations for
+three for the stress) and nine equations in three dimensions (three for velocity
+and six for stress). However, the mathematical
+definition only require two coupled vector/tensor-valued equations for
 any number of dimensions.
 
 \subsection{Tensor algebra language}\label{tensor-algebra-language}
 
 We have augmented the
 \href{https://github.com/devitocodes/devito}{Devito} language with
-tensorial objects to enable a straightforward -- and at the same time
-mathematically rigorous -- definition of high-dimensional PDEs, such as
-the elastic wave-equation in Equation~\ref{elas1}. This effort was
+tensorial objects to enable straightforward and
+mathematically rigorous definitions of high-dimensional PDEs, such as
+the elastic wave-equation defined in \eqref{elas1}. This implementation was
 inspired by \cite{ufl}, a functional language for finite element
 methods.
 
 The extended \href{https://github.com/devitocodes/devito}{Devito}
-language introduces two new types, \texttt{VectorFunction} (and
-\texttt{VectorTimeFunction}) for vectorial objects such as the particle
-velocity, and \texttt{TensorFunction} (and \texttt{TensorTimeFunction})
+language introduces two new types, \texttt{VectorFunction}/
+\texttt{VectorTimeFunction} for vectorial objects such as the particle
+velocity, and \texttt{TensorFunction}/\texttt{TensorTimeFunction}
 for second-order tensor objects (matrices) such as the stress. These new
-objects are constructed the exact same way as the scalar
+objects are constructed in the same manner as scalar
 \texttt{Function} objects. They also automatically implement staggered
 grid and staggered finite-differences with the possibility of half-node
 averaging. Each component of a tensorial object -- a (scalar)
@@ -863,8 +863,9 @@ averaging. Each component of a tensorial object -- a (scalar)
 -- is accessible via conventional vector notation (i.e.
 \texttt{v{[}0{]},\phantom{\ }t{[}0,1{]},....}).
 
-With this extended language, the elastic wave-equation can be defined in
-only four lines as follows:
+With this extended language, the elastic wave-equation defined in
+\eqref{elas1} and \eqref{stress} can be expressed in only four lines
+of code:
 
 \begin{python}
 from devito import VectorTimeFunction,
@@ -884,7 +885,7 @@ u_t = Eq(tau.forward,
 The \texttt{SymPy} expressions created by these commands can be
 displayed with \texttt{sympy.pprint} as shown in
 Figure~\ref{PrettyElas}. This representation reflects perfectly the
-mathematics while still providing computational portability and
+mathematics while maintaining computational portability and
 efficiency through the
 \href{https://github.com/devitocodes/devito}{Devito} compiler. The
 complete generated code for the elastic wave-equation with and without
@@ -895,35 +896,39 @@ in \texttt{elastic-so8.c} and \texttt{elastic-so8-mpi.c}.
 \begin{figure*}
 \centering
 \includegraphics[width=1.000\hsize]{./Figures/vel_symb.png}
-\caption{Update stencil for the particle velocity. The stencil for
-updating the stress component is left out for readability, as the
-equation does not fit onto a single page. However, it can be found in
+\caption{Particle velocity update stencil. The stress update
+is omitted for readability (the
+equation does not fit into a single page). However, it can be found in
 the \href{https://github.com/devitocodes/devito}{Devito} tutorial on
 elastic modelling on github.}\label{PrettyElas}
 \end{figure*}
 
 \subsection{2D example}\label{d-example}
 
-We show the elastic particle velocity and stress for a broadly
-recognized 2D synthetic model, the elastic
+To demonstrate the efficacy of the elastic implementation outlined
+above we utilized a broadly recognized 2D synthetic model, the elastic
 Marmousi-ii\cite{versteeg927, marmouelas} model. The wavefields are
 shown on Figure~\ref{ElasWf} and its corresponding elastic shot records
-are displayed in Figure~\ref{ElasShot}. Thes two figures show that the
-wavefield is as expected purely acoustic in the water layer
-(\texttt{t\_\{xy\}=0}) and transition perfectly at the ocean bottom to
-an elastic wavefield. We can also clearly see the Shear wave wavefront
-in the subsurface (around 1km depth). Thes two plots show that we
-effectively solve the elastic wave-equation with a high-level
-mathematical definition of the PDE that abstracts away all the
-computational technicalities such as staggered grid analysis. The shot
-records in Figure~\ref{ElasShot} also match the original data generated
-by the creator of the elastic model in \cite{marmouelas}.
+are displayed in Figure~\ref{ElasShot}. These two figures show that the
+wavefield is, as expected, purely acoustic in the water layer
+(\texttt{t\_\{xy\}=0}) and transitions correctly at the ocean bottom to
+an elastic wavefield. We can also clearly see the shear wave-front
+in the subsurface (at a depth of approximately 1km). Figures \ref{ElasWf}
+and \ref{ElasShot} demonstrate that this high-level
+\href{https://github.com/devitocodes/devito}{Devito} implementation
+of the elastic wave-equation is effective and accurate.
+Importantly, in constructing this model within the
+\href{https://github.com/devitocodes/devito}{Devito} DSL framework,
+computational technicalities such as the staggered grid analysis are
+abstracted away. We note that the shot records displayed in Figure~\ref{ElasShot}
+match the original data generated by the creator of this elastic model
+(\cite{marmouelas}).
 
 \begin{figure*}
 \centering
 \includegraphics[width=1.000\hsize]{./Figures/marmou_snap.png}
 \caption{Particle velocities and stress at time $t=3\text{s}$ for a
-source at 10m depth and \texttt{x=5\textbackslash{}text\{km\}} in the
+10m deep source and \texttt{x=5\textbackslash{}text\{km\}} in the
 marmousi-ii model.}\label{ElasWf}
 \end{figure*}
 
@@ -935,25 +940,25 @@ marmousi-ii model.}\label{ElasWf}
 \subfloat[]{\includegraphics[width=0.300\hsize]{./Figures/vx_marmou.png}}
 \caption{Seismic shot record for 5sec of modelling. \texttt{a} is the
 pressure (trace of stress tensor) at the surface (5m depth), \texttt{b}
-is the vertical particle velocity and \texttt{c} is the horizontal
+and \texttt{c} display, respectively, the vertical and horizontal
 particle velocity at the ocean bottom (450m depth).}\label{ElasShot}
 \end{figure*}
 
 \subsection{3D proof of concept}\label{d-proof-of-concept}
 
-Finally, we modelled three dimensional elastic data in the Cloud to
+Finally, three dimensional elastic data was modelled in the Cloud to
 demonstrate the scalability of
 \href{https://github.com/devitocodes/devito}{Devito} to cluster-size
-problems in the Cloud. The model we chose mimics the reference model in
-geophysics known as the SEAM model \cite{fehler2011seam} that is a
-three dimensional extreme-scale synthetic representation of the
-subsurface. The physical dimension of the model are
-\texttt{45kmx35kmx15km} then discretized with a grid spacing of
-\texttt{20mx20mx10m} that led to a computational grid of
+problems. The model used in this experiment mimics a reference model in
+geophysics known as the SEAM model \cite{fehler2011seam}, a
+three dimensional extreme-scale synthetic representation of a
+subsurface. The physical dimensions of the model are
+\texttt{45kmx35kmx15km} discretized with a grid spacing of
+\texttt{20mx20mx10m} leading to a computational grid of
 \texttt{2250x1750x1500} grid points (5.9 billion grid points). One of
-the main challenges of elastic modelling is the extreme memory cost due
-to the number of wavefield. For a three dimensional propagator, a
-minimum of 21 fields need to be stored:
+the main challenges of elastic modelling is the extreme memory cost owing
+to the number of wavefields (a minimum of 21 fields in a three dimensional
+propagator) that need to be stored:
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -966,27 +971,27 @@ minimum of 21 fields need to be stored:
   Three model parameters \texttt{lamda}, \texttt{mu} and \texttt{rho}
 \end{itemize}
 
-These 21 fields, with the grid we just describe, leads to a minimum of
-461Gb of memory for modelling only. For this experiment, we obtained
-access to small HPC VM on azure called \texttt{Standard\_H16r} that are
-16 cores Intel Xeon E5 2667 v3 with no hyperthreading and used 32 nodes
-for a single source experiment (we solved a single wave-equation). We
-used a 12th order discretization that leads to 2.8TFLOP/time-step to be
-computed for this model and propagated the elastic wave for 16 seconds
-(23000 time steps). The modelling ran in 16 hours which converts to
-1.1TFLOP/s. While these number may seem low, the elastic kernel is
-extremely memory bound, while the TTI kernel is nearly compute bound
-(see rooflines in \cite{louboutin2016ppf, devito-api, devito-compiler})
-making it more computationally efficient, in particular in combination
-with MPI. Future work with involve working on the InfiniBand enabled and
-true HPC VM on azure to achieve Cloud performance on par with state of
-the art Cluster performance. From the performance obtained in this
+These 21 fields, for the 5.9 billion point grid defined above, lead to a
+minimum memory requirement of 461Gb for modelling alone. For this experiment,
+access was obtained for small HPC VMs (on azure) called \texttt{Standard\_H16r}.
+These VMs contain 16 core Intel Xeon E5 2667 v3 chips, with no hyperthreading,
+and 32 nodes were used for a single source experiment
+(i.e. a single wave-equation was solved). We
+used a 12th order discretization in space that led to 2.8TFLOP/time-step being
+computed by this model and the elastic wave was propagated for 16 seconds
+(23000 time steps). Completion of this modelling run took 16 hours, converting to
+1.1TFLOP/s. While these numbers may appear low, it should be noted that
+the elastic kernel is extremely memory bound, while the TTI kernel is nearly
+compute bound (see rooflines in \cite{louboutin2016ppf, devito-api, devito-compiler})
+making it more computationally efficient, particularly in combination
+with MPI. Future work will involve working on InfiniBand enabled and
+true HPC VMs on azure to achieve Cloud performance on par with that of state of
+the art HPC clusters. Extrapolating from the performance obtained in this
 experiment, and assuming a fairly standard setup of 5000 independent
-source experiments, computing a synthetic dataset would require 322
-EFLOP to be computed (23k time-steps x 2.8TFLOP/time-step x 500
-sources), or using the full scalability and computing all sources in
-parallel would lead to 5.5PFLOP/s from our single source experiment
-result.
+source experiments, computing an elastic synthetic dataset would require 322
+EFLOPs (23k time-steps x 2.8TFLOP/time-step x 500
+sources), or utilizing the full scalability and computing all sources in
+parallel this becomes 5.5PFLOP/s.
 
 \section{Performance comparison with other
 codes}\label{performance-comparison-with-other-codes}
