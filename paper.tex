@@ -513,52 +513,50 @@ file format (e.g., see \cite{witte2018alf}).
 media}\label{industry-scale-3d-seismic-imaging-in-anisotropic-media}
 
 One of the main applications of seismic finite-difference modeling in
-exploration geophysics is reverse-time migration (RTM), a wave-equation
-based seismic imaging technique. Real-world seismic imaging presents a
-number of challenges that make applying this method to industry-scale
-problem sizes difficult. First of all, RTM requires an accurate
-representation of the physics through sophisticated wave-equations such
-as the tilted-transverse isotropic (TTI) wave-equation, for which both
-forward and adjoint implementations have to be provided. Secondly,
-wave-equations must be solved for a large number of independent
-experiments, where each individual PDE solve in itself is expensive in
+exploration geophysics is reverse-time migration (RTM), a wave-equation based
+seismic imaging technique. Real-world seismic imaging presents a number of
+challenges that make applying this method to industry-scale problem sizes
+difficult. Firstly, RTM requires an accurate representation of the underlying
+physics via sophisticated wave-equations such as the tilted-transverse isotropic
+(TTI) wave-equation, for which both forward and adjoint implementations must to
+be provided. Secondly, wave-equations must be solved for a large number of
+independent experiments, where each individual PDE solve is itself expensive in
 terms of FLOPs and memory usage. For certain workloads, limited domain
-decomposition, that balances the domain size and the number of
-independent experiments, and checkpointing techniques have to be applied.
-In the following sections, we describe an industry-scale seismic imaging
-problem presenting all of the aforementioned challenges, its
-implementation with Devito, and the results of an experimentation
-carried out on the Azure Cloud using a synthetic data set.
+decomposition, that balances the domain size and the number of independent
+experiments, and checkpointing techniques must to be adopted. In the following
+sections, we describe an industry-scale seismic imaging problem that poses all
+the aforementioned challenges, its implementation with Devito, and the results
+of an experiment carried out on the Azure Cloud using a synthetic data set.
 
 \subsection{Anisotropic wave-equation}\label{anisotropic-wave-equation}
 
-In our seismic imaging case study, we use an anisotropic representation
-of the physics called Tilted Transverse Isotropic (TTI) modeling
-\cite{thomsen1986}. This representation for wave motion is one of the
-most widely used in exploration geophysics since it captures the leading
-order kinematics and dynamics of acoustic wave motion in highly
-heterogeneous elastic media where the medium properties vary more
-rapidly in the direction perpendicular to sedimentary strata
-\cite{alkhalifah2000, baysal1983, bubetti2012, bubetti2014, bubesatti2016, chu2011, duveneck, fletcher, fowlertti2010, louboutin2018segeow, whitmore1983, witte2016segpve, xu2014, zhang2005, zhang2011, zhan2013}.
-The TTI wave-equation is an acoustic, low dimensional (4 parameters, 2
-wavefields) simplification of the 21 parameters and 12 wavefields
-tensorial equations of motions \cite{hooke}. This simplified
-representation is parametrized by the Thomsen parameters
-$\epsilon(x), \delta(x)$ that relate to the global (many wavelength
-propagation) difference in propagation speed in the vertical and
-horizontal directions, and the tilt and azimuth angles
-$\theta(x), \phi(x)$ that define the rotation of the vertical and
-horizontal axis around the cartesian directions. However, unlike the
-scalar isotropic acoustic wave-equation itself, the TTI wave-equation is
-extremely computationally costly to solve and it is also not
-self-adjoint as shown in \cite{louboutin2018segeow}.
+In our seismic imaging case study, we use an anisotropic representation of the
+physics called Tilted Transverse Isotropic (TTI) modeling \cite{thomsen1986}. This
+representation for wave motion is one of the most widely used in exploration
+geophysics since it captures the leading order kinematics and dynamics of
+acoustic wave motion in highly heterogeneous elastic media where the medium
+properties vary more rapidly in the direction perpendicular to sedimentary
+strata \cite{alkhalifah2000, baysal1983, bubetti2012, bubetti2014,
+bubesatti2016, chu2011, duveneck, fletcher, fowlertti2010,
+louboutin2018segeow, whitmore1983, witte2016segpve, xu2014, ,zhang2005,
+zhang2011, zhan2013}. The TTI wave-equation is an acoustic, low dimensional (4
+parameters, 2 wavefields) simplification of the 21 parameter and 12 wavefields
+tensorial equations of motions \cite{hooke}. This simplified representation is
+parametrized by the Thomsen parameters $\epsilon(x), \delta(x)$ that relate to
+the global (propagation over many wavelengths) difference in propagation speed
+in the vertical and horizontal directions, and the tilt and azimuth angles
+$\theta(x), \phi(x)$ that define the rotation of the vertical and horizontal
+axis around the cartesian directions. However, unlike the scalar isotropic
+acoustic wave-equation itself, the TTI wave-equation is extremely
+computationally costly to solve and it is also not self-adjoint as shown in
+\cite{louboutin2018segeow}.
 
-The main complexity of the TTI wave-equation is due to rotation of the
-symmetry axis of the physics that leads to rotated second-order
-finite-difference stencils. In order to ensure numerical stability,
-these rotated finite-difference operators are designed to be
-self-adjoint (c.f. \cite{zhang2011, duveneck}). For example, we define
-the rotated second order derivative with respect to $x$ as:
+The main complexity of the TTI wave-equation is that the rotation of the
+symmetry axis of the physics leads to rotated second-order finite-difference
+stencils. In order to ensure numerical stability, these rotated
+finite-difference operators are designed to be self-adjoint (c.f.
+\cite{zhang2011, duveneck}). For example, we define the rotated second order
+derivative with respect to $x$ as:
 %
 \begin{equation}
 \begin{aligned}
@@ -568,11 +566,11 @@ the rotated second order derivative with respect to $x$ as:
 \label{rot}
 \end{equation}
 %
- We enable the simple expression of these complex stencils in
+ We enable the simple expression of these complicated stencils in
 \href{https://github.com/devitocodes/devito}{Devito} as
-finite-difference shortcuts, such as \texttt{u.dx} where \texttt{u} is a
-\texttt{Function}, are enabled not only for the basic types but for
-generic expressions, for example
+finite-difference shortcuts such as \texttt{u.dx} where \texttt{u}
+is a \texttt{Function}. Such shortcuts are enabled not only for the
+basic types but for generic composite expressions, for example
 \texttt{(u\phantom{\ }+\phantom{\ }v.dx).dy}. As a consequence, the
 rotated derivative defined in~\ref{rot} is implemented with
 \href{https://github.com/devitocodes/devito}{Devito} in two lines as:
@@ -586,28 +584,39 @@ dxx_u = (cos(theta) * cos(phi) * dx_u).dx.T +
         (sin(theta) * dx_u).dz.T
 \end{python}
 
-Note that while the adjoint of the finite-difference stencil is enabled
-via the standard Python \texttt{.T} shortcut, the expression needs to be
-reordered by hand as the tilt and azymuth angle are spatially dependent
-and require to be inside the second pass of first-order derivative. We
-can see from these simple two lines that the rotated stencil involves
-all second-order derivatives (\texttt{.dx.dx}, \texttt{.dy.dy} and
-\texttt{.dz.dz}) and all second-order cross-derivatives (\texttt{dx.dy},
-\texttt{.dx.dz} and \texttt{.dy.dz}) that leads to a denser stencil
-support and higher computational complexity (c.f.
-\cite{louboutin2016ppf}). For illustration purpose, the complete
+Note that while the adjoint of the finite-difference stencil is enabled via the
+standard Python \texttt{.T} shortcut, the expression needs to be reordered by hand
+since the tilt and azymuth angles are spatially dependent and require to be
+inside the second pass of first-order derivative. We can see from these simple
+two lines that the rotated stencil involves all second-order derivatives
+(\texttt{.dx.dx}, \texttt{.dy.dy} and \texttt{.dz.dz}) and all second-order
+cross-derivatives (\texttt{dx.dy}, \texttt{.dx.dz} and \texttt{.dy.dz}) which
+leads to a denser stencil support and higher computational complexity
+(c.f. \cite{louboutin2016ppf}). For illustrative purposes, the complete
 generated code for tti modeling with and without MPI is made available
-at
-\href{https://github.com/mloubout/SC20Paper/tree/master/gencode}{CodeSample}
+at \href{https://github.com/mloubout/SC20Paper/tree/master/gencode}{CodeSample}
 in \texttt{tti-so8.c} and \texttt{tti-so8-mpi.c}.
 
-Because of the very high number of floating-point operations (FLOP)
-needed per grid point for the weighted rotated Laplacian, this
-anisotropic wave-equation is extremely challenging to implement. As we
-show in Table~\ref{ttiFLOPs}, and previously analysed in
-\cite{louboutin2016ppf}, the computational cost with high-order
-finite-difference is in the order of thousands of FLOPs per grid point
-without optimizations.
+Owing to the very high number of floating-point operations (FLOPs) needed per
+grid point for the weighted rotated Laplacian, this anisotropic wave-equation is
+extremely challenging to implement. As we show in Table Table~\ref{ttiFLOPs},
+and previously analysed in \cite{louboutin2016ppf}, the computational cost with
+high-order finite-difference is in the order of thousands of FLOPs per grid
+point without optimizations. The version without FLOP-reducing optimizations is
+a direct translation of the discretized operators into stencil expressions. The
+version with optimizations employs transformations such as common
+sub-expressions elimination, factorization, and cross-iteration redundancy
+elimination -- the latter being key in removing redundancies introduced by mixed
+derivatives. Implementing all of these techniques manually is inherently
+difficult and laborious. Further, to obtain the desired performance improvements
+it is necessary to orchestrate them with aggressive loop fusion (for data
+locality), tiling (for data locality and tensor temporaries), and potentially
+ad-hoc vectorization strategies (if rotating registers are used). While an
+explanation of the optimization strategies employed by
+\href{https://github.com/devitocodes/devito}{Devito} is beyond the scope of this
+paper (see \cite{devito-compiler} for details), what is emphasized here is that
+users can easily take full advantage of these optimization without needed to
+concern themselves with the details.
 
 \begin{table}
 \centering
@@ -621,104 +630,81 @@ spatial order & w/o optimizations & w/ optimizations\tabularnewline
 16 & 5489 & 276\tabularnewline
 \bottomrule
 \end{tabular}
-\caption{Per-grid-point FLOPs of the finite-difference stencil for the
-TTI wave-equation with different spatial discretization
-orders.}\label{ttiFLOPs}
+\caption{Per-grid-point FLOPs of the finite-difference TTI wave-equation stencil
+with different spatial discretization orders.}\label{ttiFLOPs}
 \end{table}
 
-The version without FLOP-reducing optimizations is a direct translation
-of the discretized operators into stencil expressions. The version with
-optimizations employs transformations such as common sub-expressions
-elimination, factorization, and cross-iteration redundancy elimination
--- the latter being key in removing the redundancies induced by mixed
-derivatives. Implementing all of these techniques manually is inherently
-difficult and laborious. Further, to obtain the desired performance
-improvements it is necessary to orchestrate them with aggressive loop
-fusion (for data locality), tiling (for data locality and tensor
-temporaries), and potentially ad-hoc vectorization strategies (if
-rotating registers are used). While an explanation of the optimization
-strategy employed by
-\href{https://github.com/devitocodes/devito}{Devito} is beyond the scope
-of this paper (see \cite{devito-compiler} for details), what should be
-appreciated here is that all this complexity is hidden away from the
-users.
+It is evident that developing an appropriate solver for the TTI wave-equation,
+an endeavor involving complicated physics, mathematics, and engineering, is
+exceptionally time-consuming and can lead to thousands of lines of code even for
+a single choice of discretization. Verification of the results is no less
+complicated, any minor error is effectively untrackable and any change to the
+finite-difference scheme or to the time-stepping algorithm is difficult to
+achieve without substantial re-coding. Another complication stems from the fact
+that practitioners of seismic inversion are often geoscientists, not computer
+scientists/programmers. Low level implementations from non-specialists can often
+often lead to poorly performing code. However, if research codes are passed to
+specialists in the domain of low level code optimization they often lack the
+necessary geophysical domain knowledge, resulting in code that may lack a key
+feature required by the geoscientist. Neither situation is conducive to
+addressing the complexities that come with implementing codes based on the
+latest geophysical insights in tandem with those from high-performance
+computing. With \href{https://github.com/devitocodes/devito}{Devito} on the
+other hand, both the forward and adjoint equations can be implemented in a few
+lines of Python code as illustrated with the rotated operator in \#rotxpy. The
+low level optimization element of the development is then taken care of under
+the hood by the \href{https://github.com/devitocodes/devito}{Devito} compiler.
 
-With such complex physics, mathematics, and engineering, it becomes
-evident that the implementation of a solver for this wave-equation is
-exceptionally time-consuming and can lead to thousands of lines of code
-even for a single type of discretization. The verification of the result
-is no less complicated, since any small error is effectively untrackable
-and any change to the finite-difference scheme or to the time-stepper is
-difficult to achieve without substantial re-coding. Another complication
-stems from the fact that practitioners of seismic inversion are often
-geoscientists and not computer scientists/programmers. Unfortunately,
-this background often either results in poorly written low performant
-codes or it leads to complications when research codes are handed off to
-computer scientists who know how to write fast codes but who often miss
-the necessary geophysical domain knowledge. Neither situation is
-conducive to addressing the complexities that come with implementing
-codes based on the latest geophysical insights and high-performance
-computing. With \href{https://github.com/devitocodes/devito}{Devito} on
-the other hand, both the forward and adjoint equations can be
-implemented in a few lines of Python code as illustrated with the
-rotational operator in \#rotxpy.
-
-Simulation of wave motion is only one aspect of solving problems in
-seismology. During wave-equation based imaging, we also need to compute
-sensitivities (gradient) with respect to the quantities of interest.
-This imposes additional constraints on the design and implementations of
-our simulation codes as outlined in \cite{virieux}. Among several
-factors, such as fast setup time, we focused on correct and testable
-implementations for the adjoint wave-equation and the gradient (action
-of the adjoint Jacobian)
-\cite{louboutin2018segeow, louboutin2020THmfi}, which exactness is
-mandatory requirements for gradient based iterative optimization
-algorithms.
+The simulation of wave motion is only one aspect of solving problems in
+seismology. During wave-equation based imaging, it is also required to compute
+sensitivities (gradient) with respect to the quantities of interest. This
+requirement imposes additional constraints on the design and implementation of
+model codes as outlined in \cite{virieux}. Along with several factors, such as
+fast setup time, we focused on correct and testable implementations for the
+adjoint wave-equation and the gradient (action of the adjoint Jacobian)
+\cite{louboutin2018segeow, louboutin2020THmfi}; exactness being a mandatory
+requirement of gradient based iterative optimization algorithms.
 
 \subsection{3D Imaging example on Azure}\label{d-imaging-example-on-azure}
 
 We now demonstrate the scalability of
-\href{https://github.com/devitocodes/devito}{Devito} to real-world
-applications with the imaging of an industry-scale three-dimensional TTI
-subsurface model. This imaging was carried out in the Cloud on Azure and
-takes advantage of recent work to port conventional cluster code to the
-Cloud using a serverless approach. The serverless implementation is
-described in detail in \cite{witte2019TPDedas, witte2019SEGedw} and
-describes the steps to run computationnaly and financially efficient HPC
-workloads in the Cloud. This imaging project, in collaboration with
-Azure, demonstrates the scalability and robustness of
+\href{https://github.com/devitocodes/devito}{Devito} to real-world applications
+by imaging an industry-scale three-dimensional TTI subsurface model. This
+imaging was carried out in the Cloud on Azure and takes advantage of recent work
+to port conventional cluster code to the Cloud using a serverless approach. The
+serverless implementation is detailed in \cite{witte2019TPDedas,
+witte2019SEGedw} where the steps to run computationally and financially
+efficient HPC workloads in the Cloud are described. This imaging project, in
+collaboration with Azure, demonstrates the scalability and robustness of
 \href{https://github.com/devitocodes/devito}{Devito} to large scale
-wave-equation based inverse problems and its cost-effectiveness in
-combination with a serverless implementation of seismic imaging in the
-Cloud. In this example, we imaged a synthetic three-dimensional
-anisotropic subsurface model that mimics a realistic industry size
-problem with a realistic representation of the physics (TTI). The
-physical size of the problem is \texttt{10kmx10kmx2.8km} discretized on
-a \texttt{12.5m} grid with 40 points of absorbing layer on each sides
-that leads to \texttt{881x881x371} computational grid points (300
-Million grid points). The final image is the sum of 1500 single-source
-images and we computed 100 single-source images in parallel on 200 nodes
-available using two nodes per source experiment.
+wave-equation based inverse problems in combination with a cost-effective
+serverless implementation of seismic imaging in the Cloud. In this example, we
+imaged a synthetic three-dimensional anisotropic subsurface model that mimics a
+realistic industry size problem with a realistic representation of the physics
+(TTI). The physical size of the problem is \texttt{10kmx10kmx2.8km} discretized
+on a \texttt{12.5m} grid with absorbing layers of width 40 grid points on each
+side leading to \texttt{881x881x371} computational grid points ($\approx300$
+Million grid points). The final image is the sum of 1500 single-source images:
+100 single-source images were computed in parallel on the 200 nodes available
+using two nodes per source experiment.
 
 \textbf{\emph{Computational performance}}
 
-We briefly describe the computational setup and the performance achieved
-for this anisotropic imaging problem. Due to time constraints, and
-because the resources we were given access to for this proof of concept
-with Azure were somewhat limited, we did not have access to HPC virtual
-machines (VM) nor Infiniband enabled ones. The nodes we ran this
-experiment on are \texttt{Standard\_E64\_v3} and
-\texttt{Standard\_E64s\_v3} that while not HPC VM are memory optimized
-allowing to save the wavefield in memory for imaging (TTI adjoint state
-gradient \cite{virieux, louboutin2018segeow}). These VMs are Intel®
-Broadwell E5-2673 v4 2.3GH that are dual socket, 32 physical cores (and
-hyperthreading enabled) and 432Gb of DRAM. The overall inversion
-involved computing the image for 1500 source positions, i.e.~solving
-1500 forward and 1500 adjoint TTI wave-equations. A single image
-required 600Gb of memory in single precision and we used two VMs per
-source with MPI with one rank per socket (4 MPI ranks per source) and
-imaged 100 sources in parallel. The performance achieved, in single
-precision, was as follow:
+We briefly describe the computational setup and the performance achieved for
+this anisotropic imaging problem. Due to time constraints, and because the
+resources we were given access to for this proof of concept with Azure were
+somewhat limited, we did not have access to HPC virtual machines (VM) nor
+Infiniband enabled ones. This experiment was carried out on
+\texttt{Standard\_E64\_v3} and \texttt{Standard\_E64s\_v3} nodes which, while
+not HPC VM nodes, are memory optimized thus allowing to the wavefield to be
+stored in memory for imaging (TTI adjoint state gradient \cite{virieux,
+louboutin2018segeow}). These VMs are Intel® Broadwell E5-2673 v4 2.3GH that are
+dual socket, 32 physical cores (with hyperthreading enabled) and 432Gb of DRAM.
+The overall inversion involved computing the image for 1500 source positions,
+i.e.~solving 1500 forward and 1500 adjoint TTI wave-equations. A single image
+required, in single precision, 600Gb of memory. Two VMs were used per source and
+MPI set with one rank per socket (4 MPI ranks per source) and 100 sources were
+imaged in parallel. The performance achieved was as follows:
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -732,51 +718,47 @@ precision, was as follow:
   110min runtime per source (forward + adjoint + image computation).
 \end{itemize}
 
-We also observe that if we had had access to more resources, and because
-the imaging problem is embarassingly parallel over sources and can scale
-to any computational resources, we could have attempted imaging of all
-of the 1500 sources in parallel, which theoretically leads to a
-performance of 0.4PFLOP/s.
+We comment that if more resources were available, and because the imaging
+problem is embarrassingly parallel over sources and can scale arbitrarily,the
+imaging of all of the 1500 sources in parallel could have been attempted, which
+theoretically leads to a performance of 0.4PFLOP/s.
 
-\textbf{\emph{How was the performance measured}}
+\textbf{\emph{How performance was measured}}
 
-The execution time is computed through Python-level timers prefixed by
-an MPI barrier. The floating-point operations are counted once all of
-the symbolic FLOP-reducing transformations have been performed during
-compilation. \href{https://github.com/devitocodes/devito}{Devito} uses
-an in-house estimate of cost, rather than \texttt{SymPy}'s estimate, to
-take care of some low-level intricacies. For example, Devito's estimate
-ignores the cost of integer arithmetic used for offset indexing into
-multi-dimensional arrays. To calculate the total number of FLOPs
-performed, \href{https://github.com/devitocodes/devito}{Devito}
-multiplies the floating-point operations calculated at compile time by
-the size of the iteration space, and it does that at the granularity of
-individual expressions. Thanks to aggressive code motion, the amount of
-innermost-loop-invariant sub-expressions in a
-\href{https://github.com/devitocodes/devito}{Devito} Operator is
-typically negligible, so the
-\href{https://github.com/devitocodes/devito}{Devito} estimate does not
-basically suffer from this issue, or at least not in a tangible way to
-the best of our knowledge. The Devito-reported GFLOP/s were also checked
-against those produced by Intel Advisor on several single-node
-experiments: the differences -- typically
+The execution time is computed through Python-level timers prefixed by an MPI
+barrier. The floating-point operations are counted once all of the symbolic
+FLOP-reducing transformations have been performed during compilation.
+\href{https://github.com/devitocodes/devito}{Devito} uses an in-house estimate
+of cost, rather than \texttt{SymPy}'s estimate, to take care of some low-level
+intricacies. For example, Devito's estimate ignores the cost of integer
+arithmetic used for offset indexing into multi-dimensional arrays. To calculate
+the total number of FLOPs performed,
+\href{https://github.com/devitocodes/devito}{Devito} multiplies the
+floating-point operations calculated at compile time by the size of the
+iteration space, and it does that at the granularity of individual expressions.
+Thanks to aggressive code motion, the amount of innermost-loop-invariant
+sub-expressions in a \href{https://github.com/devitocodes/devito}{Devito}
+Operator is typically negligible and therefore the
+\href{https://github.com/devitocodes/devito}{Devito} estimate does not suffer
+from this issue, or at least not, to the best of our knowledge, in a tangible
+way. The Devito-reported GFLOP/s were also checked against those produced by
+Intel Advisor on several single-node experiments: the differences -- typically
 \href{https://github.com/devitocodes/devito}{Devito} underestimating the
-achieved performance -- were always at most in the order of units, and
-therefore negligible.
+achieved performance -- were always at most in the order of units, and therefore
+negligible.
 
 \textbf{\emph{Imaging result}}
 
-The subsurface velocity model that was used in this study is an
-artificial anisotropic model that is designed and built combining two
-broadly known and used open-source SEG/EAGE acoustic velocity models
-that come each with realistic geophysical imaging challenges such as
-sub-salt imaging. The anisotropy parameters are derived from a smoothed
-version of the velocity while the tilt angles were derived from a
-combination of the smooth velocity models and vertical and horizontal
-edge detection. The final seismic image of the subsurface model is
-plotted in Figure~\ref{OverTTI} and highlights the fact that 3D seismic
-imaging based on a serverless approach and automatic code generation is
-feasible and provides good results on a realistic model.
+The subsurface velocity model used in this study is an artificial anisotropic
+model that is designed and built combining two broadly known and used
+open-source SEG/EAGE acoustic velocity models that each come with realistic
+geophysical imaging challenges such as sub-salt imaging. The anisotropy
+parameters are derived from a smoothed version of the velocity while the tilt
+angles were derived from a combination of the smooth velocity models and
+vertical and horizontal edge detection. The final seismic image of the
+subsurface model is displayed in Figure~\ref{OverTTI} and highlights the fact
+that 3D seismic imaging based on a serverless approach and automatic code
+generation is feasible and provides good results.
 
 \begin{figure*}
 \centering
@@ -789,25 +771,24 @@ feasible and provides good results on a realistic model.
 \caption{3D TTI imaging on a custom made model.}\label{OverTTI}
 \end{figure*}
 
-\cite{witte2019TPDedas} fully describes the serverless implementation
-of seismic inverse problems, including iterative algorithms for
-least-square minimization problems (LSRTM). The 3D anisotropic imaging
-results were presented as part of a keynote presentation at the EAGE HPC
-workshop in October 2019 \cite{herrmann2019EAGEHPCaii} and at the Rice
-O\&G HPC workshop \cite{witte2019RHPCssi} where we focused on the
-serverless implementation of seismic inversion algorithms in the Cloud.
-This work illustrates the flexibility and portability of Devito, as we
-were able to easily port a code only tested and developed on local
-hardware to the Cloud, with only minor adjustments. This portability
-included the possibility to run MPI-based code for domain decomposition
-in the Cloud, after developing it on a desktop computer. Our experiments
-are reproducible using the instructions in a public repository
-\href{https://github.com/slimgroup/Azure2019}{AzureTTI}, which contains,
-among the other things, the Dockerfiles and Azure
-\href{https://batch-shipyard.readthedocs.io}{batch-shipyard} setup. This
-example can also easily ber un on a traditional HPC cluster environment
-using for example \href{https://github.com/slimgroup/JUDI.jl}{JUDI} or
-Dask \cite{dask} for parallelization over sources.
+\cite{witte2019TPDedas} describe the serverless implementation of seismic
+inverse problems in detail, including iterative algorithms for least-square
+minimization problems (LSRTM). The 3D anisotropic imaging results were presented
+as part of a keynote presentation at the EAGE HPC workshop in October 2019
+\cite{herrmann2019EAGEHPCaii} and at the Rice O\&G HPC workshop
+\cite{witte2019RHPCssi} in which the focus was on the serverless implementation
+of seismic inversion algorithms in the Cloud. This work illustrates the
+flexibility and portability of Devito: we were able to easily port a code
+developed and tested on local hardware to the Cloud, with only minor
+adjustments. Further, note that this experiment included the porting of
+MPI-based code for domain decomposition developed on desktop computers to the
+Cloud. Our experiments are reproducible using the instructions in a public
+repository \href{https://github.com/slimgroup/Azure2019}{AzureTTI}, which
+contains, among the other things, the Dockerfiles and Azure
+\href{https://batch-shipyard.readthedocs.io}{batch-shipyard} setup. This example
+can also be easily run on a traditional HPC cluster environment using, for
+example, \href{https://github.com/slimgroup/JUDI.jl}{JUDI} or Dask~\cite{dask}
+for parallelization over sources.
 
 \section{Elastic modelling}\label{elastic-modelling}
 
