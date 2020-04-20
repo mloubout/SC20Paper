@@ -18,8 +18,8 @@
 }
 
 % Default fixed font does not support bold face
-\DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{9} % for bold
-\DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{9}  % for normal
+\DeclareFixedFont{\ttb}{T1}{txtt}{bx}{n}{8.5} % for bold
+\DeclareFixedFont{\ttm}{T1}{txtt}{m}{n}{8.5}  % for normal
 
 % Custom colors
 \usepackage{color}
@@ -38,6 +38,7 @@
     emph={MyClass,__init__},          % Custom highlighting
     emphstyle=\ttb\color{deepred},    % Custom highlighting style
     stringstyle=\color{deepgreen},
+    numbers=none,
     frame=tb,                         % Any extra options here
     showstringspaces=false            % 
 }}
@@ -348,9 +349,9 @@ physical locations $x_r$
 
 \begin{python}
 from devito import SparseTimeFunction
-src = SparseTimeFunction(name="src", grid=grid,
-                         npoint=1,
-                         coordinates=x_s)
+s = SparseTimeFunction(name="src",
+                       grid=grid, npoint=1,
+                       coordinates=x_s)
 d = SparseTimeFunction(name="d", grid=grid,
                        npoint=1, nt=nt,
                        coordinates=x_r)
@@ -369,7 +370,7 @@ wave-equation can then be implemented in
 from devito import solve, Eq, Operator
 eq = m * u.dt2 - u.laplace
 update = Eq(u.forward, solve(eq, u.forward))
-src_eqns = s1.inject(u.forward, expr=s1*dt**2/m)
+src_eqns = s.inject(u.forward, expr=s*dt**2/m)
 d_eqns = d.interpolate(u)
 \end{python}
 
@@ -576,12 +577,14 @@ generic expressions, for example
 rotated derivative defined in~\ref{rot} is implemented with
 \href{https://github.com/devitocodes/devito}{Devito} in two lines as:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{dx_u = cos(theta) * cos(phi) * u.dx + cos(theta) * sin(phi) * u.dy - sin(theta) * u.dz}
-\NormalTok{dxx_u = (cos(theta) * cos(phi) * dx_u).dx.T + (cos(theta) * sin(phi) * dx_u).dy.T - (sin(theta) * dx_u).dz.T}
-\end{Highlighting}
-\end{Shaded}
+\begin{python}
+dx_u = cos(theta) * cos(phi) * u.dx +
+       cos(theta) * sin(phi) * u.dy -
+       sin(theta) * u.dz
+dxx_u = (cos(theta) * cos(phi) * dx_u).dx.T +
+        (cos(theta) * sin(phi) * dx_u).dy.T -
+        (sin(theta) * dx_u).dz.T
+\end{python}
 
 Note that while the adjoint of the finite-difference stencil is enabled
 via the standard Python \texttt{.T} shortcut, the expression needs to be
@@ -608,7 +611,7 @@ without optimizations.
 
 \begin{table}
 \centering
-\begin{tabular}{lll}
+\begin{tabular}{ccc}
 \toprule\addlinespace
 spatial order & w/o optimizations & w/ optimizations\tabularnewline
 \midrule
@@ -672,8 +675,7 @@ of the adjoint Jacobian)
 mandatory requirements for gradient based iterative optimization
 algorithms.
 
-\subsection{3D Imaging example on
-Azure}\label{d-imaging-example-on-azure}
+\subsection{3D Imaging example on Azure}\label{d-imaging-example-on-azure}
 
 We now demonstrate the scalability of
 \href{https://github.com/devitocodes/devito}{Devito} to real-world
@@ -883,15 +885,20 @@ averaging. Each component of a tensorial object -- a (scalar)
 With this extended language, the elastic wave-equation can be defined in
 only four lines as follows:
 
-\begin{Shaded}
-\begin{Highlighting}[]
-\NormalTok{v = VectorTimeFunction(name=}\StringTok{'v'}\NormalTok{, grid=model.grid, space_order=so, time_order=}\DecValTok{1}\NormalTok{)}
-\NormalTok{tau = TensorTimeFunction(name=}\StringTok{'t'}\NormalTok{, grid=model.grid, space_order=so, time_order=}\DecValTok{1}\NormalTok{)}
-
-\NormalTok{u_v = Eq(v.forward, model.damp * (v + s/rho*div(tau)))}
-\NormalTok{u_t = Eq(tau.forward,  model.damp *  (tau + s * (l * diag(div(v.forward)) + mu * (grad(v.forward) + grad(v.forward).T))))}
-\end{Highlighting}
-\end{Shaded}
+\begin{python}
+from devito import VectorTimeFunction,
+                   TensorTimeFunction
+v = VectorTimeFunction(name="v", grid=grid,
+                       space_order=so,
+                       time_order=1)
+tau = TensorTimeFunction(name="t", grid=grid,
+                         space_order=so,
+                         time_order=1)
+u_v = Eq(v.forward,
+         damp * (v + s/rho*div(tau)))
+u_t = Eq(tau.forward,
+         damp * (tau + s * (l * diag(div(v.forward)) + mu * (grad(v.forward) + grad(v.forward).T))))
+\end{python}
 
 The \texttt{SymPy} expressions created by these commands can be
 displayed with \texttt{sympy.pprint} as shown in
