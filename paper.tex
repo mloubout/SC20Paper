@@ -117,32 +117,46 @@ Antlanta, GA \\
 mlouboutin3@gatech.edu}
 \and
 \IEEEauthorblockN{2\textsuperscript{nd} Fabio Luporini}
-\IEEEauthorblockA{\textit{Devito Codes}}
+\IEEEauthorblockA{\textit{Devito Codes}\\
+London, UK \\
+fabio@devitocodes.com}
 \and
 \IEEEauthorblockN{3\textsuperscript{th} Rhodri Nelson}
-\IEEEauthorblockA{\textit{Imperial College London}}
+\IEEEauthorblockA{\textit{Imperial College London}\\
+London, UK \\
+rhodri.nelson@imperial.ac.uk}
 \and
 \IEEEauthorblockN{4\textsuperscript{rd} Philipp Witte}
-\IEEEauthorblockA{\textit{Georgia Institute of Technology}}
+\IEEEauthorblockA{\textit{Georgia Institute of Technology}\\
+Atlanta, GA \\
+pwitte3@gatech.edu}
 \and
 \IEEEauthorblockN{5\textsuperscript{th} George Bisbas}
-\IEEEauthorblockA{\textit{Imperial College London}}
+\IEEEauthorblockA{\textit{Imperial College London}\\
+London, UK \\
+g.bisbas18@imperial.ac.uk}
 \and
 \IEEEauthorblockN{6\textsuperscript{th} Jan Thorbecke}
-\IEEEauthorblockA{\textit{TU-Delft}}
+\IEEEauthorblockA{\textit{TU-Delft}\\
+Delft, NL \\
+J.W.Thorbecke@tudelft.nl}
 \and
 \IEEEauthorblockN{7\textsuperscript{th} Felix J. Herrmann}
-\IEEEauthorblockA{\textit{Georgia Institute of Technology}}
+\IEEEauthorblockA{\textit{Georgia Institute of Technology}\\
+Atlanta, GA\\
+felix.herrmann@gatech.edu}
 \and
 \IEEEauthorblockN{8\textsuperscript{th} Gerard J. Gorman}
-\IEEEauthorblockA{\textit{Imperial College London}}
+\IEEEauthorblockA{\textit{Imperial College London}\\
+London, UK \\
+g.gorma@imperial.ac.uk&}
 }
 
 \maketitle
 
 \begin{abstract}\label{abstract}
 
-\href{https://github.com/devitocodes/devito}{Devito} is an open-source
+ \href{https://github.com/devitocodes/devito}{Devito}  is an open-source
 Python project based on domain-specific language and compiler
 technology. Driven by the requirements of rapid HPC applications
 development in exploration seismology, the language and compiler have
@@ -175,7 +189,7 @@ detailed in \cite{fichtner2011}.
 
 Despite the theory of FWI dating back to the 1980s
 \cite{tarantola}, among the first successful
-expositions on real 3D data was presented in \cite{sirgue2009}. Other
+expositions on real 3D data was presented in \cite{sirgue}. Other
 studies utilizing FDM within the FWI workflow include
 \cite{ratcliffe2011, petersson2013}. The aforementioned studies
 approximate the underlying physics via the acoustic wave-equation;
@@ -207,13 +221,13 @@ is built on top of \texttt{SymPy} \cite{sympy} and is inspired by the
 underlying mathematical formulations and other DSLs such as FEniCS
 \cite{fenics} and Firedrake \cite{firedrake}. This interface allows the
 user to formulate wave-equations, and more generally time-dependent PDEs
-in a simple and mathematically coherent way. The\href{https://github.com/devitocodes/devito}{Devito}compiler then
+in a simple and mathematically coherent way. The \href{https://github.com/devitocodes/devito}{Devito} compiler then
 automatically generates finite-difference stencils from these mathematical
-expressions. One of the main advantages of\href{https://github.com/devitocodes/devito}{Devito}over other
+expressions. One of the main advantages of \href{https://github.com/devitocodes/devito}{Devito} over other
 finite-difference DSLs is that generic expressions such as sparse
 operations (i.e.~point source injection or localized measurements) are
 fully supported and expressible in a high-level fashion. The second
-component of\href{https://github.com/devitocodes/devito}{Devito}is its compiler (c.f \cite{devito-compiler}) that
+component of \href{https://github.com/devitocodes/devito}{Devito} is its compiler (c.f \cite{devito-compiler}) that
 generates highly optimized C code. The generated code is then compiled at
 runtime for the hardware at hand.
 
@@ -230,7 +244,7 @@ compiler to translate to large-scale adjoint-based inversion problems that
 require massive compute (since thousands of PDEs are solved) as well as
 large amounts of memory (since the adjoint state method requires the
 forward model to be saved in memory). Secondly, through the elastic
-modelling example, we demonstrate that\href{https://github.com/devitocodes/devito}{Devito}now fully supports and
+modelling example, we demonstrate that \href{https://github.com/devitocodes/devito}{Devito} now fully supports and
 automates vectorial and second order tensorial staggered-grid
 finite-differences with the same high-level API previously presented for
 scalar fields defined on cartesian grids.
@@ -263,19 +277,19 @@ mechanisms. For example, free surface and perfectly-matched layers
 (PMLs) boundary conditions can be expressed as equations -- just like
 any other PDE equations -- over a suitable sub-domain.
 
-It is up to the\href{https://github.com/devitocodes/devito}{Devito}compiler to translate the symbolic specification
+It is up to the \href{https://github.com/devitocodes/devito}{Devito} compiler to translate the symbolic specification
 into C code. The lowering of the input language down to C consists of
 several compilation passes, some of which introducing performance
 optimizations that are the key to fast code. Next to classic stencil
 optimizations (e.g., cache blocking, alignment, SIMD and OpenMP
-parallelism),\href{https://github.com/devitocodes/devito}{Devito}applies a series of FLOP-reducing transformations as
+parallelism), \href{https://github.com/devitocodes/devito}{Devito} applies a series of FLOP-reducing transformations as
 well as aggressive loop fusion. For a complete treatment, the interested
 reader should refer to \cite{devito-compiler}.
 
 \subsection{Symbolic language and
 compilation}\label{symbolic-language-and-compilation}
 
-In this section we illustrate the\href{https://github.com/devitocodes/devito}{Devito}language showing how to implement
+In this section we illustrate the \href{https://github.com/devitocodes/devito}{Devito} language showing how to implement
 the acoustic wave-equation in isotropic media
 %
 \begin{equation}
@@ -307,7 +321,7 @@ A \texttt{Grid} represents a discretized finite n-dimensional space and
 is created as follows
 
 \begin{python}
-from\href{https://github.com/devitocodes/devito}{Devito}import Grid
+from devito import Grid
 grid = Grid(shape=(nx, ny, nz),
             extent=(ext_x, ext_y, ext_z),
             origin=(o_x, o_y, o_z))
@@ -325,7 +339,7 @@ express the wave-equation. First, we define a spatially varying model
 parameter \texttt{m} and a time-space varying field \texttt{u}
 
 \begin{python}
-from\href{https://github.com/devitocodes/devito}{Devito}import Function, TimeFunction
+from devito import Function, TimeFunction
 m = Function(name="m", grid=grid,
              space_order=so)
 u = TimeFunction(name="u", grid=grid,
@@ -341,7 +355,7 @@ receiver (measurement) objects \texttt{d}, with sensors located at the
 physical locations $x_r$
 
 \begin{python}
-from\href{https://github.com/devitocodes/devito}{Devito}import SparseTimeFunction
+from devito import SparseTimeFunction
 s = SparseTimeFunction(name="src",
                        grid=grid, npoint=1,
                        coordinates=x_s)
@@ -352,13 +366,13 @@ d = SparseTimeFunction(name="d", grid=grid,
 
 The source term is handled separately from the PDE as a pointwise
 operation called injection, while the measurement is handled with an
-interpolation. By default,\href{https://github.com/devitocodes/devito}{Devito}initializes all \texttt{Function} data
+interpolation. By default, \href{https://github.com/devitocodes/devito}{Devito} initializes all \texttt{Function} data
 to 0, and thus automatically satisfies the zero Dirichlet condition at
 \texttt{t=0}. The isotropic acoustic wave-equation can then be implemented
-in\href{https://github.com/devitocodes/devito}{Devito}as below
+in \href{https://github.com/devitocodes/devito}{Devito} as below
 
 \begin{python}
-from\href{https://github.com/devitocodes/devito}{Devito}import solve, Eq, Operator
+from devito import solve, Eq, Operator
 eq = m * u.dt2 - u.laplace
 update = Eq(u.forward, solve(eq, u.forward))
 src_eqns = s.inject(u.forward, expr=s*dt**2/m)
@@ -369,7 +383,7 @@ To trigger compilation one needs to pass the constructed equations to an
 \texttt{Operator}.
 
 \begin{python}
-from\href{https://github.com/devitocodes/devito}{Devito}import Operator
+from devito import Operator
 op = Operator(update + src_eqns + d_eqns)
 \end{python}
 
@@ -390,7 +404,7 @@ low-level aspects of code generation are handled, among which the most
 relevant one is the data management (e.g., definition of variables,
 transfers between host and device).
 
-The output of the\href{https://github.com/devitocodes/devito}{Devito}compiler for the running example used in this
+The output of the \href{https://github.com/devitocodes/devito}{Devito} compiler for the running example used in this
 section is available at
 \href{https://github.com/mloubout/SC20Paper/tree/master/gencode}{CodeSample}
 in \texttt{acou-so8.c}.
@@ -405,7 +419,7 @@ for thorough explanations and practical examples.
 
 Devito implements distributed-memory parallelism on top of MPI. The design
 is such that users can almost entirely abstract away from it and reuse
-non-distributed code as is. Given any\href{https://github.com/devitocodes/devito}{Devito}code, just running it as
+non-distributed code as is. Given any \href{https://github.com/devitocodes/devito}{Devito} code, just running it as
 
 \begin{Shaded}
 \begin{Highlighting}[]
@@ -440,7 +454,7 @@ logically splits a grid based on the number of available MPI processes
 decomposition strategy).  \texttt{Function} and \texttt{TimeFunction}
 objects inherit the \texttt{Grid} decomposition. For
 \texttt{SparseFunction} objects the approach is different. Since a
-\texttt{SparseFunction} represents a sparse set of points,\href{https://github.com/devitocodes/devito}{Devito}looks at
+\texttt{SparseFunction} represents a sparse set of points, \href{https://github.com/devitocodes/devito}{Devito} looks at
 the physical coordinates of each point and, based on the \texttt{Grid}
 decomposition, schedules the logical ownership to an MPI rank. If a sparse
 point lies along the boundary of two or more MPI ranks, then it is
@@ -448,7 +462,7 @@ duplicated in each of these ranks to be accessible by all neighboring
 processes. Eventually, a duplicated point may be redundantly computed by
 multiple processes, but any redundant increments will be discarded.
 
-When accessing or manipulating data in a\href{https://github.com/devitocodes/devito}{Devito}code, users have the
+When accessing or manipulating data in a \href{https://github.com/devitocodes/devito}{Devito} code, users have the
 illusion to be working with classic NumPy arrays, while underneath they
 are actually distributed. All manner of NumPy indexing schemes (basic,
 slicing, etc.) are supported. In the implementation, proper
@@ -558,7 +572,7 @@ as finite-difference shortcuts such as \texttt{u.dx} where \texttt{u} is
 a \texttt{Function}. Such shortcuts are enabled not only for the basic
 types but for generic composite expressions, for example
 \texttt{(u\phantom{\ }+\phantom{\ }v.dx).dy}. As a consequence, the
-rotated derivative defined in~\ref{rot} is implemented with\href{https://github.com/devitocodes/devito}{Devito}in two
+rotated derivative defined in~\ref{rot} is implemented with \href{https://github.com/devitocodes/devito}{Devito} in two
 lines as:
 
 \begin{python}
@@ -599,7 +613,7 @@ the desired performance improvements it is necessary to orchestrate them with
 aggressive loop fusion (for data locality), tiling (for data locality and
 tensor temporaries), and potentially ad-hoc vectorization strategies (if
 rotating registers are used). While an explanation of the optimization
-strategies employed by\href{https://github.com/devitocodes/devito}{Devito}is beyond the scope of this paper (see
+strategies employed by \href{https://github.com/devitocodes/devito}{Devito} is beyond the scope of this paper (see
 \cite{devito-compiler} for details), what is emphasized here is that users
 can easily take full advantage of these optimization without needed to
 concern themselves with the details.
@@ -635,7 +649,7 @@ necessary geophysical domain knowledge, resulting in code that may lack a key
 feature required by the geoscientist. Neither situation is conducive to
 addressing the complexities that come with implementing codes based on the
 latest geophysical insights in tandem with those from high-performance
-computing. With\href{https://github.com/devitocodes/devito}{Devito}on the other hand, both the forward and adjoint
+computing. With \href{https://github.com/devitocodes/devito}{Devito} on the other hand, both the forward and adjoint
 equations can be implemented in a few lines of Python code as illustrated
 with the rotated operator in \#rotxpy. The low level optimization element
 of the development is then taken care of under the hood by the Devito
@@ -653,7 +667,7 @@ requirement of gradient based iterative optimization algorithms.
 
 \subsection{3D Imaging example on Azure}\label{d-imaging-example-on-azure}
 
-We now demonstrate the scalability of\href{https://github.com/devitocodes/devito}{Devito}to real-world applications by
+We now demonstrate the scalability of \href{https://github.com/devitocodes/devito}{Devito} to real-world applications by
 imaging an industry-scale three-dimensional TTI subsurface model. This
 imaging was carried out in the Cloud on Azure and takes advantage of
 recent work to port conventional cluster code to the Cloud using a
@@ -661,7 +675,7 @@ serverless approach. The serverless implementation is detailed in
 \cite{witte2019TPDedas, witte2019SEGedw} where the steps to run
 computationally and financially efficient HPC workloads in the Cloud are
 described. This imaging project, in collaboration with Azure, demonstrates
-the scalability and robustness of\href{https://github.com/devitocodes/devito}{Devito}to large scale wave-equation
+the scalability and robustness of \href{https://github.com/devitocodes/devito}{Devito} to large scale wave-equation
 based inverse problems in combination with a cost-effective serverless
 implementation of seismic imaging in the Cloud. In this example, we imaged
 a synthetic three-dimensional anisotropic subsurface model that mimics a
@@ -715,19 +729,19 @@ theoretically leads to a performance of 0.4PFLOP/s.
 The execution time is computed through Python-level timers prefixed by an
 MPI barrier. The floating-point operations are counted once all of the
 symbolic FLOP-reducing transformations have been performed during
-compilation. \href{https://github.com/devitocodes/devito}{Devito}uses an in-house estimate of cost, rather than
+compilation.  \href{https://github.com/devitocodes/devito}{Devito} uses an in-house estimate of cost, rather than
 \texttt{SymPy}'s estimate, to take care of some low-level intricacies. For
 example, Devito's estimate ignores the cost of integer arithmetic used for
 offset indexing into multi-dimensional arrays. To calculate the total
-number of FLOPs performed,\href{https://github.com/devitocodes/devito}{Devito}multiplies the floating-point operations
+number of FLOPs performed, \href{https://github.com/devitocodes/devito}{Devito} multiplies the floating-point operations
 calculated at compile time by the size of the iteration space, and it does
 that at the granularity of individual expressions.  Thanks to aggressive
 code motion, the amount of innermost-loop-invariant sub-expressions in an
-\texttt{Operator} is typically negligible and therefore the\href{https://github.com/devitocodes/devito}{Devito}estimate
+\texttt{Operator} is typically negligible and therefore the \href{https://github.com/devitocodes/devito}{Devito} estimate
 does not suffer from this issue, or at least not, to the best of our
 knowledge, in a tangible way. The Devito-reported GFLOP/s were also
 checked against those produced by Intel Advisor on several single-node
-experiments: the differences -- typically\href{https://github.com/devitocodes/devito}{Devito}underestimating the
+experiments: the differences -- typically \href{https://github.com/devitocodes/devito}{Devito} underestimating the
 achieved performance -- were always at most in the order of units, and
 therefore negligible.
 
@@ -770,7 +784,9 @@ Cloud. Our experiments are reproducible using the instructions in a public
 repository \href{https://github.com/slimgroup/Azure2019}{AzureTTI}, which
 contains, among the other things, the Dockerfiles and Azure
 \href{https://batch-shipyard.readthedocs.io}{batch-shipyard} setup. This example
-can also be easily run on a traditional HPC cluster environment using.
+can also be easily run on a traditional HPC cluster environment using, for example, 
+\href{https://github.com/slimgroup/JUDI.jl}{JUDI}~\cite{witte2018alf} or Dask~\cite{dask}
+for parallelization over sources.
 
 \section{Elastic modelling}\label{elastic-modelling}
 
@@ -780,7 +796,7 @@ to model both the wave kinematics and amplitudes correctly, elastic
 propagators are required. These propagators are, for example, extremely
 important in global seismology since shear surface waves (which are
 ignored in acoustic models) are the most hazardous. In this section, we
-exploit the tensor algebra language introduced in\href{https://github.com/devitocodes/devito}{Devito}v4.0 to express
+exploit the tensor algebra language introduced in \href{https://github.com/devitocodes/devito}{Devito} v4.0 to express
 an elastic model with compact and elegant notation.
 
 The isotropic elastic wave-equation, parametrized by the so-called Lamé parameters
@@ -823,21 +839,20 @@ any number of dimensions.
 
 \subsection{Tensor algebra language}\label{tensor-algebra-language}
 
-We have augmented the\href{https://github.com/devitocodes/devito}{Devito}language with tensorial objects to enable
+We have augmented the \href{https://github.com/devitocodes/devito}{Devito} language with tensorial objects to enable
 straightforward and mathematically rigorous definitions of
 high-dimensional PDEs, such as the elastic wave-equation defined in
 \eqref{elas1}. This implementation was inspired by \cite{ufl}, a
 functional language for finite element methods.
 
-The extended\href{https://github.com/devitocodes/devito}{Devito}language introduces two new types,
-\texttt{VectorFunction}/\texttt{VectorTimeFunction} for vectorial objects
-such as the particle velocity, and
+The extended \href{https://github.com/devitocodes/devito}{Devito} language introduces two new types, 
+\texttt{VectorFunction}/\texttt{VectorTimeFunction} for vectorial objects such as the particle velocity, and
 \texttt{TensorFunction}/\texttt{TensorTimeFunction} for second-order
 tensor objects (matrices) such as the stress. These new objects are
 constructed in the same manner as scalar \texttt{Function} objects. They
 also automatically implement staggered grid and staggered
 finite-differences with the possibility of half-node averaging. Each
-component of a tensorial object -- a (scalar)\href{https://github.com/devitocodes/devito}{Devito}\texttt{Function} --
+component of a tensorial object -- a (scalar) \href{https://github.com/devitocodes/devito}{Devito} \texttt{Function} --
 is accessible via conventional vector notation (e.g.
 \texttt{v{[}0{]},\phantom{\ }t{[}0,1{]}}).
 
@@ -846,7 +861,7 @@ With this extended language, the elastic wave-equation defined in
 of code:
 
 \begin{python}
-from\href{https://github.com/devitocodes/devito}{Devito}import VectorTimeFunction,
+from devito import VectorTimeFunction,
                    TensorTimeFunction
 v = VectorTimeFunction(name="v", grid=grid,
                        space_order=so,
@@ -863,11 +878,11 @@ u_t = Eq(tau.forward,
 The \texttt{SymPy} expressions created by these commands can be displayed
 with \texttt{sympy.pprint} as shown in Figure~\ref{PrettyElas}. This
 representation reflects perfectly the mathematics while maintaining
-computational portability and efficiency through the\href{https://github.com/devitocodes/devito}{Devito}compiler. The
+computational portability and efficiency through the \href{https://github.com/devitocodes/devito}{Devito} compiler. The
 complete generated code for the elastic wave-equation with and without MPI
 is made available at
 \href{https://github.com/mloubout/SC20Paper/tree/master/gencode}{CodeSample}
-in \texttt{elastic-so12.c} and \texttt{elastic-so8-mpi.c}.
+in \texttt{elastic-so12.c} and \texttt{elastic-so12-mpi.c}.
 
 \begin{figure*}
 \centering
@@ -890,9 +905,9 @@ wavefield is, as expected, purely acoustic in the water layer
 (\texttt{t\_\{xy\}=0}) and transitions correctly at the ocean bottom to
 an elastic wavefield. We can also clearly see the shear wave-front
 in the subsurface (at a depth of approximately 1km). Figures \ref{ElasWf}
-and \ref{ElasShot} demonstrate that this high-level\href{https://github.com/devitocodes/devito}{Devito}implementation
+and \ref{ElasShot} demonstrate that this high-level \href{https://github.com/devitocodes/devito}{Devito} implementation
 of the elastic wave-equation is effective and accurate.  Importantly, in
-constructing this model within the\href{https://github.com/devitocodes/devito}{Devito}DSL framework, computational
+constructing this model within the \href{https://github.com/devitocodes/devito}{Devito} DSL framework, computational
 technicalities such as the staggered grid analysis are abstracted away. We
 note that the shot records displayed in Figure~\ref{ElasShot} match the
 original data generated by the creator of this elastic model
@@ -921,7 +936,7 @@ particle velocity at the ocean bottom (450m depth).}\label{ElasShot}
 \subsection{3D proof of concept}\label{d-proof-of-concept}
 
 Finally, three dimensional elastic data was modelled in the Cloud to
-demonstrate the scalability of\href{https://github.com/devitocodes/devito}{Devito}to cluster-size problems. The model
+demonstrate the scalability of \href{https://github.com/devitocodes/devito}{Devito} to cluster-size problems. The model
 used in this experiment mimics a reference model in geophysics known as
 the SEAM model \cite{fehler2011seam}, a three dimensional extreme-scale
 synthetic representation of a subsurface. The physical dimensions of the
@@ -969,7 +984,7 @@ parallel this becomes 5.5PFLOP/s.
 codes}\label{performance-comparison-with-other-codes}
 
 Because earlier performance benchmarks focus mainly on roofline model
-analysis, we also compared the runtime of\href{https://github.com/devitocodes/devito}{Devito}with a reference
+analysis, we also compared the runtime of \href{https://github.com/devitocodes/devito}{Devito} with a reference
 open source hand-coded propagator in collaboration with its author for
 completeness. This propagator, described in \cite{thorbecke} is a
 state of the art elastic kernel (Equation~\ref{elas1}). For a fair
@@ -1006,7 +1021,7 @@ obtained both with the Intel compiler and the GNU compiler and we ran the
 experiment with a fourth order and a sixth order discretization.  The
 kernels were executed five time each to ensure consistency between the
 results and we consistently obtained similar runtimes. This comparison
-illustrates the performance achieved with\href{https://github.com/devitocodes/devito}{Devito}is at least on par with
+illustrates the performance achieved with \href{https://github.com/devitocodes/devito}{Devito} is at least on par with
 hand-coded propagators. Considering we do not take adantage of the Devito
 compiler full capabilities in the two dimensional case, we are confident
 that the generated code will be at least on par with hand-coded version
@@ -1019,7 +1034,7 @@ The transition from academic size problems, such as the two-dimensional
 acoustic wave-equation, to real-world application can be challenging in
 particular when attempted as an afterthought. In this work, we showed that
 thanks to design principles that aimed at this type of application from
-the beginning,\href{https://github.com/devitocodes/devito}{Devito}provides the scalability necessary. First, we showed
+the beginning, \href{https://github.com/devitocodes/devito}{Devito} provides the scalability necessary. First, we showed
 that we provide a high-level interface not only for simple scalar
 equations but for coupled PDEs and allow the expression of non-trivial
 differential operators in a simple and concise way. Second and most
@@ -1031,6 +1046,18 @@ integrated in the compiler and interface in a conservative way. Finally,
 we demonstrated that our abstraction provides to performance portability
 that enables both on-premise HPC and Cloud HPC.
 
+
+\section{Code availability}
+
+The code to reproduce the different examples presented in this work is available online in the fllwing repositories:
+
+\begin{itemize}
+  \item The complete code for TTI imaging is available at \url{https://github.com/slimgroup/Azure2019} and includes 
+  the TTI propagators, the Azure setup for shot parallelism and a documentation.
+  \item The elastic modeling can be run with the elastic example available in Devito at
+  \url{https://github.com/devitocodes/devito/blob/v4.2/examples/seismic/elastic/elastic_example.py} 
+  and can be run with any size and spatial order.
+\end{itemize}
 
 \bibliography{sc20_paper}
 
