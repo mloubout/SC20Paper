@@ -522,8 +522,8 @@ physics via sophisticated wave-equations such as the tilted-transverse isotropic
 be provided. Secondly, wave-equations must be solved for a large number of
 independent experiments, where each individual PDE solve is itself expensive in
 terms of FLOPs and memory usage. For certain workloads, limited domain
-decomposition, that balances the domain size and the number of independent
-experiments, and checkpointing techniques must to be adopted. In the following
+decomposition, which balances the domain size and the number of independent
+experiments, as well as checkpointing techniques must be adopted. In the following
 sections, we describe an industry-scale seismic imaging problem that poses all
 the aforementioned challenges, its implementation with Devito, and the results
 of an experiment carried out on the Azure Cloud using a synthetic data set.
@@ -595,28 +595,28 @@ leads to a denser stencil support and higher computational complexity
 (c.f. \cite{louboutin2016ppf}). For illustrative purposes, the complete
 generated code for tti modeling with and without MPI is made available
 at \href{https://github.com/mloubout/SC20Paper/tree/master/gencode}{CodeSample}
-in \texttt{tti-so8.c} and \texttt{tti-so8-mpi.c}.
+in \texttt{tti-so8-unoptimized.c}, \texttt{tti-so8.c} and \texttt{tti-so8-mpi.c}.
 
 Owing to the very high number of floating-point operations (FLOPs) needed per
-grid point for the weighted rotated Laplacian, this anisotropic wave-equation is
-extremely challenging to implement. As we show in Table Table~\ref{ttiFLOPs},
-and previously analysed in \cite{louboutin2016ppf}, the computational cost with
+grid point for the weighted rotated Laplacian, this anisotropic wave-equation
+is extremely challenging to implement. As we show in Table~\ref{ttiFLOPs}, and
+previously analysed in \cite{louboutin2016ppf}, the computational cost with
 high-order finite-difference is in the order of thousands of FLOPs per grid
 point without optimizations. The version without FLOP-reducing optimizations is
-a direct translation of the discretized operators into stencil expressions. The
-version with optimizations employs transformations such as common
-sub-expressions elimination, factorization, and cross-iteration redundancy
-elimination -- the latter being key in removing redundancies introduced by mixed
-derivatives. Implementing all of these techniques manually is inherently
-difficult and laborious. Further, to obtain the desired performance improvements
-it is necessary to orchestrate them with aggressive loop fusion (for data
-locality), tiling (for data locality and tensor temporaries), and potentially
-ad-hoc vectorization strategies (if rotating registers are used). While an
-explanation of the optimization strategies employed by
-\href{https://github.com/devitocodes/devito}{Devito} is beyond the scope of this
-paper (see \cite{devito-compiler} for details), what is emphasized here is that
-users can easily take full advantage of these optimization without needed to
-concern themselves with the details.
+a direct translation of the discretized operators into stencil expressions (see
+\texttt{tti-so8-unoptimized.c}). The version with optimizations employs
+transformations such as common sub-expressions elimination, factorization, and
+cross-iteration redundancy elimination -- the latter being key in removing
+redundancies introduced by mixed derivatives. Implementing all of these
+techniques manually is inherently difficult and laborious. Further, to obtain
+the desired performance improvements it is necessary to orchestrate them with
+aggressive loop fusion (for data locality), tiling (for data locality and
+tensor temporaries), and potentially ad-hoc vectorization strategies (if
+rotating registers are used). While an explanation of the optimization
+strategies employed by \href{https://github.com/devitocodes/devito}{Devito} is
+beyond the scope of this paper (see \cite{devito-compiler} for details), what
+is emphasized here is that users can easily take full advantage of these
+optimization without needed to concern themselves with the details.
 
 \begin{table}
 \centering
