@@ -255,7 +255,7 @@ Devito \cite{devito-api} provides a functional language built on top of
 \texttt{SymPy} \cite{sympy} to symbolically express PDEs at a
 mathematical level and implements automatic discretization with the
 finite-difference method. The language is by design flexible enough to
-express other types of non finite-diffrence operators, such as
+express other types of non finite-difference operators, such as
 interpolation and tensor contractions, that are inherent to
 measurement-based inverse problems. Several additional features are
 supported, among which staggered grids, sub-domains, and stencils with
@@ -305,7 +305,7 @@ symbolic API consists of three classes:
   \texttt{(Time)Function}, a representation of spatially (and time-)
   varying variables defined on a \texttt{Grid} object.
 \item
-  \texttt{Sparse(Time)Function} a represention of (time-varying) point
+  \texttt{Sparse(Time)Function} a representation of (time-varying) point
   objects on a \texttt{Grid} object, generally unaligned with respect to
   the grid points, hence called ``sparse''.
 \end{itemize}
@@ -358,7 +358,7 @@ d = SparseTimeFunction(name="d", grid=grid,
 \end{python}
 
 The source term is handled separately from the PDE as a pointwise
-operation called \texttt{injection}, while the measurement is handled
+operation called injection, while the measurement is handled
 with an interpolation. By default,
 \href{https://github.com/devitocodes/devito}{Devito} initializes all
 \texttt{Function} data to 0, and thus automatically satisfies the zero
