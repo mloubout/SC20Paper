@@ -406,7 +406,7 @@ transfers between host and device).
 
 The output of the \href{https://github.com/devitocodes/devito}{Devito} compiler for the running example used in this
 section is available at
-\href{https://github.com/mloubout/SC20Paper/tree/master/gencode}{CodeSample}
+\href{https://github.com/mloubout/SC20Paper/tree/master/codesamples}{CodeSample}
 in \texttt{acou-so8.c}.
 
 \subsection{Distributed-memory
@@ -594,7 +594,7 @@ cross-derivatives (\texttt{dx.dy}, \texttt{.dx.dz} and \texttt{.dy.dz}) which
 leads to a denser stencil support and higher computational complexity
 (c.f. \cite{louboutin2016ppf}). For illustrative purposes, the complete
 generated code for tti modeling with and without MPI is made available
-at \href{https://github.com/mloubout/SC20Paper/tree/master/gencode}{CodeSample}
+at \href{https://github.com/mloubout/SC20Paper/tree/master/codesamples}{CodeSample}
 in \texttt{tti-so8-unoptimized.c}, \texttt{tti-so8.c} and \texttt{tti-so8-mpi.c}.
 
 Owing to the very high number of floating-point operations (FLOPs) needed per
@@ -881,7 +881,7 @@ representation reflects perfectly the mathematics while maintaining
 computational portability and efficiency through the \href{https://github.com/devitocodes/devito}{Devito} compiler. The
 complete generated code for the elastic wave-equation with and without MPI
 is made available at
-\href{https://github.com/mloubout/SC20Paper/tree/master/gencode}{CodeSample}
+\href{https://github.com/mloubout/SC20Paper/tree/master/codesamples}{CodeSample}
 in \texttt{elastic-so12.c} and \texttt{elastic-so12-mpi.c}.
 
 \begin{figure*}
@@ -1056,7 +1056,8 @@ The code to reproduce the different examples presented in this work is available
   the TTI propagators, the Azure setup for shot parallelism and a documentation.
   \item The elastic modeling can be run with the elastic example available in Devito at
   \url{https://github.com/devitocodes/devito/blob/v4.2/examples/seismic/elastic/elastic_example.py} 
-  and can be run with any size and spatial order.
+  and can be run with any size and spatial order. A standalone script to run the lare 3D elastic modeling
+  is also available at {https://github.com/mloubout/SC20Paper/tree/master/codesamples}
 \end{itemize}
 
 \bibliography{sc20_paper}
