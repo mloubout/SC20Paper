@@ -400,7 +400,7 @@ parallelism}\label{distributed-memory-parallelism}
 
 We here provide a succinct description of distributed-memory parallelism
 in Devito; the interested reader should refer to the MPI tutorial at
-\href{https://github.com/devitocodes/devito/blob/master/examples/mpi/overview.ipynb}{mpi-notebook}
+\href{https://github.com/devitocodes/devito/blob/v4.2/examples/mpi/overview.ipynb}{mpi-notebook}
 for thorough explanations and practical examples.
 
 Devito implements distributed-memory parallelism on top of MPI. The design
@@ -676,21 +676,22 @@ using two nodes per source experiment.
 
 \textbf{\emph{Computational performance}}
 
-We briefly describe the computational setup and the performance achieved for
-this anisotropic imaging problem. Due to time constraints, and because the
-resources we were given access to for this proof of concept with Azure were
-somewhat limited, we did not have access to HPC virtual machines (VM) nor
-Infiniband enabled ones. This experiment was carried out on
-\texttt{Standard\_E64\_v3} and \texttt{Standard\_E64s\_v3} nodes which, while
-not HPC VM nodes, are memory optimized thus allowing to the wavefield to be
-stored in memory for imaging (TTI adjoint state gradient \cite{virieux,
-louboutin2018segeow}). These VMs are Intel® Broadwell E5-2673 v4 2.3GH that are
-dual socket, 32 physical cores (with hyperthreading enabled) and 432Gb of DRAM.
-The overall inversion involved computing the image for 1500 source positions,
-i.e.~solving 1500 forward and 1500 adjoint TTI wave-equations. A single image
-required, in single precision, 600Gb of memory. Two VMs were used per source and
-MPI set with one rank per socket (4 MPI ranks per source) and 100 sources were
-imaged in parallel. The performance achieved was as follows:
+We briefly describe the computational setup and the performance achieved
+for this anisotropic imaging problem. Due to time constraints, and because
+the resources we were given access to for this proof of concept with Azure
+were somewhat limited, we did not have access to Infiniband-enabled
+virtual machines (VM). This experiment was carried out on
+\texttt{Standard\_E64\_v3} and \texttt{Standard\_E64s\_v3} nodes which,
+while not HPC VM nodes, are memory optimized thus allowing to the
+wavefield to be stored in memory for imaging (TTI adjoint state gradient
+\cite{virieux, louboutin2018segeow}). These VMs are Intel® Broadwell
+E5-2673 v4 2.3GH that are dual socket, 32 physical cores (with
+hyperthreading enabled) and 432Gb of DRAM.  The overall inversion involved
+computing the image for 1500 source positions, i.e.~solving 1500 forward
+and 1500 adjoint TTI wave-equations. A single image required, in single
+precision, 600Gb of memory. Two VMs were used per source and MPI set with
+one rank per socket (4 MPI ranks per source) and 100 sources were imaged
+in parallel. The performance achieved was as follows:
 
 \begin{itemize}
 \itemsep1pt\parskip0pt\parsep0pt
@@ -754,7 +755,7 @@ generation is feasible and provides good results.
 \caption{3D TTI imaging on a custom made model.}\label{OverTTI}
 \end{figure*}
 
-\cite{witte2019TPDedas} describe the serverless implementation of seismic
+\cite{witte2019TPDedas} describes the serverless implementation of seismic
 inverse problems in detail, including iterative algorithms for least-square
 minimization problems (LSRTM). The 3D anisotropic imaging results were presented
 as part of a keynote presentation at the EAGE HPC workshop in October 2019
@@ -769,9 +770,7 @@ Cloud. Our experiments are reproducible using the instructions in a public
 repository \href{https://github.com/slimgroup/Azure2019}{AzureTTI}, which
 contains, among the other things, the Dockerfiles and Azure
 \href{https://batch-shipyard.readthedocs.io}{batch-shipyard} setup. This example
-can also be easily run on a traditional HPC cluster environment using, for
-example, \href{https://github.com/slimgroup/JUDI.jl}{JUDI} or Dask~\cite{dask}
-for parallelization over sources.
+can also be easily run on a traditional HPC cluster environment using.
 
 \section{Elastic modelling}\label{elastic-modelling}
 
@@ -831,7 +830,7 @@ high-dimensional PDEs, such as the elastic wave-equation defined in
 functional language for finite element methods.
 
 The extended Devito language introduces two new types,
-\texttt{VectorFunction}/ \texttt{VectorTimeFunction} for vectorial objects
+\texttt{VectorFunction}/\texttt{VectorTimeFunction} for vectorial objects
 such as the particle velocity, and
 \texttt{TensorFunction}/\texttt{TensorTimeFunction} for second-order
 tensor objects (matrices) such as the stress. These new objects are
@@ -839,8 +838,8 @@ constructed in the same manner as scalar \texttt{Function} objects. They
 also automatically implement staggered grid and staggered
 finite-differences with the possibility of half-node averaging. Each
 component of a tensorial object -- a (scalar) Devito \texttt{Function} --
-is accessible via conventional vector notation (i.e.
-\texttt{v{[}0{]},\phantom{\ }t{[}0,1{]},....}).
+is accessible via conventional vector notation (e.g.
+\texttt{v{[}0{]},\phantom{\ }t{[}0,1{]}}).
 
 With this extended language, the elastic wave-equation defined in
 \eqref{elas1} and \eqref{stress} can be expressed in only four lines
@@ -875,8 +874,9 @@ in \texttt{elastic-so8.c} and \texttt{elastic-so8-mpi.c}.
 \includegraphics[width=1.000\hsize]{./Figures/vel_symb.png}
 \caption{Particle velocity update stencil. The stress update
 is omitted for readability (the equation does not fit into a single page).
-However, it can be found in the Devito tutorial on elastic modelling
-on GitHub.}\label{PrettyElas}
+    However, it can be found in a Devito
+    \href{https://github.com/devitocodes/devito/blob/v4.2/examples/seismic/tutorials/06_elastic.ipynb}{tutorial}
+    on elastic modelling.}\label{PrettyElas}
 \end{figure*}
 
 \subsection{2D example}\label{d-example}
@@ -940,12 +940,12 @@ propagator) that need to be stored:
 \item
   Six stress with two time steps (\texttt{tau.forward} and \texttt{tau})
 \item
-  Three model parameters \texttt{lamda}, \texttt{mu} and \texttt{rho}
+  Three model parameters \texttt{lambda}, \texttt{mu} and \texttt{rho}
 \end{itemize}
 
 These 21 fields, for the 5.9 billion point grid defined above, lead to a
 minimum memory requirement of 461Gb for modelling alone. For this experiment,
-access was obtained for small HPC VMs (on azure) called \texttt{Standard\_H16r}.
+access was obtained for small HPC VMs (on Azure) called \texttt{Standard\_H16r}.
 These VMs contain 16 core Intel Xeon E5 2667 v3 chips, with no hyperthreading,
 and 32 nodes were used for a single source experiment
 (i.e. a single wave-equation was solved). We
@@ -957,7 +957,7 @@ the elastic kernel is extremely memory bound, while the TTI kernel is nearly
 compute bound (see rooflines in \cite{louboutin2016ppf, devito-api, devito-compiler})
 making it more computationally efficient, particularly in combination
 with MPI. Future work will involve working on InfiniBand enabled and
-true HPC VMs on azure to achieve Cloud performance on par with that of state of
+true HPC VMs on Azure to achieve Cloud performance on par with that of state of
 the art HPC clusters. Extrapolating from the performance obtained in this
 experiment, and assuming a fairly standard setup of 5000 independent
 source experiments, computing an elastic synthetic dataset would require 322
