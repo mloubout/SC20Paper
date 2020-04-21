@@ -36,23 +36,19 @@ struct profiler
 void sendrecv_txyz(struct dataobj *restrict a_vec, const int buf_x_size, const int buf_y_size, const int buf_z_size, int ogtime, int ogx, int ogy, int ogz, int ostime, int osx, int osy, int osz, int fromrank, int torank, MPI_Comm comm, const int nthreads);
 void gather_txyz(float *restrict buf_vec, const int buf_x_size, const int buf_y_size, const int buf_z_size, struct dataobj *restrict a_vec, int otime, int ox, int oy, int oz, const int nthreads);
 void scatter_txyz(float *restrict buf_vec, const int buf_x_size, const int buf_y_size, const int buf_z_size, struct dataobj *restrict a_vec, int otime, int ox, int oy, int oz, const int nthreads);
-void haloupdate7(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
-void haloupdate0(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
-void haloupdate1(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
-void haloupdate2(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
-void haloupdate3(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
-void haloupdate4(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
-void haloupdate5(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
-void haloupdate6(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
+void haloupdate_7(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
+void haloupdate_0(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
+void haloupdate_1(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
+void haloupdate_2(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
+void haloupdate_3(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
+void haloupdate_4(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
+void haloupdate_5(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
+void haloupdate_6(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads);
 void bf0(struct dataobj *restrict damp_vec, struct dataobj *restrict irho_vec, struct dataobj *restrict tau_xx_vec, struct dataobj *restrict tau_xy_vec, struct dataobj *restrict tau_xz_vec, struct dataobj *restrict tau_yy_vec, struct dataobj *restrict tau_yz_vec, struct dataobj *restrict tau_zz_vec, struct dataobj *restrict v_x_vec, struct dataobj *restrict v_y_vec, struct dataobj *restrict v_z_vec, const int t0, const int t1, const int x0_blk0_size, const int x_M, const int x_m, const int y0_blk0_size, const int y_M, const int y_m, const int z_M, const int z_m, const int nthreads);
 void bf1(struct dataobj *restrict damp_vec, struct dataobj *restrict lam_vec, struct dataobj *restrict mu_vec, struct dataobj *restrict tau_xx_vec, struct dataobj *restrict tau_xy_vec, struct dataobj *restrict tau_xz_vec, struct dataobj *restrict tau_yy_vec, struct dataobj *restrict tau_yz_vec, struct dataobj *restrict tau_zz_vec, struct dataobj *restrict v_x_vec, struct dataobj *restrict v_y_vec, struct dataobj *restrict v_z_vec, const int t0, const int t1, const int x1_blk0_size, const int x_M, const int x_m, const int y1_blk0_size, const int y_M, const int y_m, const int z_M, const int z_m, const int nthreads);
 
 int ForwardElastic(struct dataobj *restrict damp_vec, const float dt, struct dataobj *restrict irho_vec, struct dataobj *restrict lam_vec, struct dataobj *restrict mu_vec, const float o_x, const float o_y, const float o_z, struct dataobj *restrict rec1_vec, struct dataobj *restrict rec1_coords_vec, struct dataobj *restrict rec2_vec, struct dataobj *restrict rec2_coords_vec, struct dataobj *restrict src_vec, struct dataobj *restrict src_coords_vec, struct dataobj *restrict tau_xx_vec, struct dataobj *restrict tau_xy_vec, struct dataobj *restrict tau_xz_vec, struct dataobj *restrict tau_yy_vec, struct dataobj *restrict tau_yz_vec, struct dataobj *restrict tau_zz_vec, struct dataobj *restrict v_x_vec, struct dataobj *restrict v_y_vec, struct dataobj *restrict v_z_vec, const int x_M, const int x_m, const int y_M, const int y_m, const int z_M, const int z_m, const int p_rec1_M, const int p_rec1_m, const int p_rec2_M, const int p_rec2_m, const int p_src_M, const int p_src_m, const int time_M, const int time_m, struct profiler * timers, const int x0_blk0_size, const int x1_blk0_size, const int y0_blk0_size, const int y1_blk0_size, MPI_Comm comm, struct neighborhood * nb, const int nthreads, const int nthreads_nonaffine)
 {
-  float (*restrict damp)[damp_vec->size[1]][damp_vec->size[2]] __attribute__ ((aligned (64))) = (float (*)[damp_vec->size[1]][damp_vec->size[2]]) damp_vec->data;
-  float (*restrict irho)[irho_vec->size[1]][irho_vec->size[2]] __attribute__ ((aligned (64))) = (float (*)[irho_vec->size[1]][irho_vec->size[2]]) irho_vec->data;
-  float (*restrict lam)[lam_vec->size[1]][lam_vec->size[2]] __attribute__ ((aligned (64))) = (float (*)[lam_vec->size[1]][lam_vec->size[2]]) lam_vec->data;
-  float (*restrict mu)[mu_vec->size[1]][mu_vec->size[2]] __attribute__ ((aligned (64))) = (float (*)[mu_vec->size[1]][mu_vec->size[2]]) mu_vec->data;
   float (*restrict rec1)[rec1_vec->size[1]] __attribute__ ((aligned (64))) = (float (*)[rec1_vec->size[1]]) rec1_vec->data;
   float (*restrict rec1_coords)[rec1_coords_vec->size[1]] __attribute__ ((aligned (64))) = (float (*)[rec1_coords_vec->size[1]]) rec1_coords_vec->data;
   float (*restrict rec2)[rec2_vec->size[1]] __attribute__ ((aligned (64))) = (float (*)[rec2_vec->size[1]]) rec2_vec->data;
@@ -60,10 +56,7 @@ int ForwardElastic(struct dataobj *restrict damp_vec, const float dt, struct dat
   float (*restrict src)[src_vec->size[1]] __attribute__ ((aligned (64))) = (float (*)[src_vec->size[1]]) src_vec->data;
   float (*restrict src_coords)[src_coords_vec->size[1]] __attribute__ ((aligned (64))) = (float (*)[src_coords_vec->size[1]]) src_coords_vec->data;
   float (*restrict tau_xx)[tau_xx_vec->size[1]][tau_xx_vec->size[2]][tau_xx_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[tau_xx_vec->size[1]][tau_xx_vec->size[2]][tau_xx_vec->size[3]]) tau_xx_vec->data;
-  float (*restrict tau_xy)[tau_xy_vec->size[1]][tau_xy_vec->size[2]][tau_xy_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[tau_xy_vec->size[1]][tau_xy_vec->size[2]][tau_xy_vec->size[3]]) tau_xy_vec->data;
-  float (*restrict tau_xz)[tau_xz_vec->size[1]][tau_xz_vec->size[2]][tau_xz_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[tau_xz_vec->size[1]][tau_xz_vec->size[2]][tau_xz_vec->size[3]]) tau_xz_vec->data;
   float (*restrict tau_yy)[tau_yy_vec->size[1]][tau_yy_vec->size[2]][tau_yy_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[tau_yy_vec->size[1]][tau_yy_vec->size[2]][tau_yy_vec->size[3]]) tau_yy_vec->data;
-  float (*restrict tau_yz)[tau_yz_vec->size[1]][tau_yz_vec->size[2]][tau_yz_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[tau_yz_vec->size[1]][tau_yz_vec->size[2]][tau_yz_vec->size[3]]) tau_yz_vec->data;
   float (*restrict tau_zz)[tau_zz_vec->size[1]][tau_zz_vec->size[2]][tau_zz_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[tau_zz_vec->size[1]][tau_zz_vec->size[2]][tau_zz_vec->size[3]]) tau_zz_vec->data;
   float (*restrict v_x)[v_x_vec->size[1]][v_x_vec->size[2]][v_x_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[v_x_vec->size[1]][v_x_vec->size[2]][v_x_vec->size[3]]) v_x_vec->data;
   float (*restrict v_y)[v_y_vec->size[1]][v_y_vec->size[2]][v_y_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[v_y_vec->size[1]][v_y_vec->size[2]][v_y_vec->size[3]]) v_y_vec->data;
@@ -76,19 +69,19 @@ int ForwardElastic(struct dataobj *restrict damp_vec, const float dt, struct dat
     struct timeval start_section0, end_section0;
     gettimeofday(&start_section0, NULL);
     /* Begin section0 */
-    haloupdate0(tau_xx_vec,comm,nb,t0,nthreads);
-    haloupdate1(tau_xy_vec,comm,nb,t0,nthreads);
-    haloupdate2(tau_xz_vec,comm,nb,t0,nthreads);
-    haloupdate3(tau_yy_vec,comm,nb,t0,nthreads);
-    haloupdate4(tau_yz_vec,comm,nb,t0,nthreads);
-    haloupdate5(tau_zz_vec,comm,nb,t0,nthreads);
+    haloupdate_0(tau_xx_vec,comm,nb,t0,nthreads);
+    haloupdate_1(tau_xy_vec,comm,nb,t0,nthreads);
+    haloupdate_2(tau_xz_vec,comm,nb,t0,nthreads);
+    haloupdate_3(tau_yy_vec,comm,nb,t0,nthreads);
+    haloupdate_4(tau_yz_vec,comm,nb,t0,nthreads);
+    haloupdate_5(tau_zz_vec,comm,nb,t0,nthreads);
     bf0(damp_vec,irho_vec,tau_xx_vec,tau_xy_vec,tau_xz_vec,tau_yy_vec,tau_yz_vec,tau_zz_vec,v_x_vec,v_y_vec,v_z_vec,t0,t1,x0_blk0_size,x_M - (x_M - x_m + 1)%(x0_blk0_size),x_m,y0_blk0_size,y_M - (y_M - y_m + 1)%(y0_blk0_size),y_m,z_M,z_m,nthreads);
     bf0(damp_vec,irho_vec,tau_xx_vec,tau_xy_vec,tau_xz_vec,tau_yy_vec,tau_yz_vec,tau_zz_vec,v_x_vec,v_y_vec,v_z_vec,t0,t1,x0_blk0_size,x_M - (x_M - x_m + 1)%(x0_blk0_size),x_m,(y_M - y_m + 1)%(y0_blk0_size),y_M,y_M - (y_M - y_m + 1)%(y0_blk0_size) + 1,z_M,z_m,nthreads);
     bf0(damp_vec,irho_vec,tau_xx_vec,tau_xy_vec,tau_xz_vec,tau_yy_vec,tau_yz_vec,tau_zz_vec,v_x_vec,v_y_vec,v_z_vec,t0,t1,(x_M - x_m + 1)%(x0_blk0_size),x_M,x_M - (x_M - x_m + 1)%(x0_blk0_size) + 1,y0_blk0_size,y_M - (y_M - y_m + 1)%(y0_blk0_size),y_m,z_M,z_m,nthreads);
     bf0(damp_vec,irho_vec,tau_xx_vec,tau_xy_vec,tau_xz_vec,tau_yy_vec,tau_yz_vec,tau_zz_vec,v_x_vec,v_y_vec,v_z_vec,t0,t1,(x_M - x_m + 1)%(x0_blk0_size),x_M,x_M - (x_M - x_m + 1)%(x0_blk0_size) + 1,(y_M - y_m + 1)%(y0_blk0_size),y_M,y_M - (y_M - y_m + 1)%(y0_blk0_size) + 1,z_M,z_m,nthreads);
-    haloupdate6(v_x_vec,comm,nb,t1,nthreads);
-    haloupdate6(v_y_vec,comm,nb,t1,nthreads);
-    haloupdate6(v_z_vec,comm,nb,t1,nthreads);
+    haloupdate_6(v_x_vec,comm,nb,t1,nthreads);
+    haloupdate_6(v_y_vec,comm,nb,t1,nthreads);
+    haloupdate_6(v_z_vec,comm,nb,t1,nthreads);
     bf1(damp_vec,lam_vec,mu_vec,tau_xx_vec,tau_xy_vec,tau_xz_vec,tau_yy_vec,tau_yz_vec,tau_zz_vec,v_x_vec,v_y_vec,v_z_vec,t0,t1,x1_blk0_size,x_M - (x_M - x_m + 1)%(x1_blk0_size),x_m,y1_blk0_size,y_M - (y_M - y_m + 1)%(y1_blk0_size),y_m,z_M,z_m,nthreads);
     bf1(damp_vec,lam_vec,mu_vec,tau_xx_vec,tau_xy_vec,tau_xz_vec,tau_yy_vec,tau_yz_vec,tau_zz_vec,v_x_vec,v_y_vec,v_z_vec,t0,t1,x1_blk0_size,x_M - (x_M - x_m + 1)%(x1_blk0_size),x_m,(y_M - y_m + 1)%(y1_blk0_size),y_M,y_M - (y_M - y_m + 1)%(y1_blk0_size) + 1,z_M,z_m,nthreads);
     bf1(damp_vec,lam_vec,mu_vec,tau_xx_vec,tau_xy_vec,tau_xz_vec,tau_yy_vec,tau_yz_vec,tau_zz_vec,v_x_vec,v_y_vec,v_z_vec,t0,t1,(x_M - x_m + 1)%(x1_blk0_size),x_M,x_M - (x_M - x_m + 1)%(x1_blk0_size) + 1,y1_blk0_size,y_M - (y_M - y_m + 1)%(y1_blk0_size),y_m,z_M,z_m,nthreads);
@@ -118,49 +111,49 @@ int ForwardElastic(struct dataobj *restrict damp_vec, const float dt, struct dat
         {
           float r0 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*px*py + 1.0e-2F*px*pz - 1.0e-1F*px + 1.0e-2F*py*pz - 1.0e-1F*py - 1.0e-1F*pz + 1)*src[time][p_src];
           #pragma omp atomic update
-          tau_xx[t1][ii_src_0 + 8][ii_src_1 + 8][ii_src_2 + 8] += r0;
+          tau_xx[t1][ii_src_0 + 12][ii_src_1 + 12][ii_src_2 + 12] += r0;
         }
         if (ii_src_0 >= x_m - 1 && ii_src_1 >= y_m - 1 && ii_src_3 >= z_m - 1 && ii_src_0 <= x_M + 1 && ii_src_1 <= y_M + 1 && ii_src_3 <= z_M + 1)
         {
           float r1 = dt*(1.0e-3F*px*py*pz - 1.0e-2F*px*pz - 1.0e-2F*py*pz + 1.0e-1F*pz)*src[time][p_src];
           #pragma omp atomic update
-          tau_xx[t1][ii_src_0 + 8][ii_src_1 + 8][ii_src_3 + 8] += r1;
+          tau_xx[t1][ii_src_0 + 12][ii_src_1 + 12][ii_src_3 + 12] += r1;
         }
         if (ii_src_0 >= x_m - 1 && ii_src_2 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_0 <= x_M + 1 && ii_src_2 <= z_M + 1 && ii_src_4 <= y_M + 1)
         {
           float r2 = dt*(1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*py*pz + 1.0e-1F*py)*src[time][p_src];
           #pragma omp atomic update
-          tau_xx[t1][ii_src_0 + 8][ii_src_4 + 8][ii_src_2 + 8] += r2;
+          tau_xx[t1][ii_src_0 + 12][ii_src_4 + 12][ii_src_2 + 12] += r2;
         }
         if (ii_src_0 >= x_m - 1 && ii_src_3 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_0 <= x_M + 1 && ii_src_3 <= z_M + 1 && ii_src_4 <= y_M + 1)
         {
           float r3 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*py*pz)*src[time][p_src];
           #pragma omp atomic update
-          tau_xx[t1][ii_src_0 + 8][ii_src_4 + 8][ii_src_3 + 8] += r3;
+          tau_xx[t1][ii_src_0 + 12][ii_src_4 + 12][ii_src_3 + 12] += r3;
         }
         if (ii_src_1 >= y_m - 1 && ii_src_2 >= z_m - 1 && ii_src_5 >= x_m - 1 && ii_src_1 <= y_M + 1 && ii_src_2 <= z_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r4 = dt*(1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*px*pz + 1.0e-1F*px)*src[time][p_src];
           #pragma omp atomic update
-          tau_xx[t1][ii_src_5 + 8][ii_src_1 + 8][ii_src_2 + 8] += r4;
+          tau_xx[t1][ii_src_5 + 12][ii_src_1 + 12][ii_src_2 + 12] += r4;
         }
         if (ii_src_1 >= y_m - 1 && ii_src_3 >= z_m - 1 && ii_src_5 >= x_m - 1 && ii_src_1 <= y_M + 1 && ii_src_3 <= z_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r5 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*px*pz)*src[time][p_src];
           #pragma omp atomic update
-          tau_xx[t1][ii_src_5 + 8][ii_src_1 + 8][ii_src_3 + 8] += r5;
+          tau_xx[t1][ii_src_5 + 12][ii_src_1 + 12][ii_src_3 + 12] += r5;
         }
         if (ii_src_2 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_5 >= x_m - 1 && ii_src_2 <= z_M + 1 && ii_src_4 <= y_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r6 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*px*py)*src[time][p_src];
           #pragma omp atomic update
-          tau_xx[t1][ii_src_5 + 8][ii_src_4 + 8][ii_src_2 + 8] += r6;
+          tau_xx[t1][ii_src_5 + 12][ii_src_4 + 12][ii_src_2 + 12] += r6;
         }
         if (ii_src_3 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_5 >= x_m - 1 && ii_src_3 <= z_M + 1 && ii_src_4 <= y_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r7 = 1.0e-3F*px*py*pz*dt*src[time][p_src];
           #pragma omp atomic update
-          tau_xx[t1][ii_src_5 + 8][ii_src_4 + 8][ii_src_3 + 8] += r7;
+          tau_xx[t1][ii_src_5 + 12][ii_src_4 + 12][ii_src_3 + 12] += r7;
         }
         ii_src_0 = (int)(floor(-1.0e-1*o_x + 1.0e-1*src_coords[p_src][0]));
         ii_src_1 = (int)(floor(-1.0e-1*o_y + 1.0e-1*src_coords[p_src][1]));
@@ -175,49 +168,49 @@ int ForwardElastic(struct dataobj *restrict damp_vec, const float dt, struct dat
         {
           float r8 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*px*py + 1.0e-2F*px*pz - 1.0e-1F*px + 1.0e-2F*py*pz - 1.0e-1F*py - 1.0e-1F*pz + 1)*src[time][p_src];
           #pragma omp atomic update
-          tau_zz[t1][ii_src_0 + 8][ii_src_1 + 8][ii_src_2 + 8] += r8;
+          tau_zz[t1][ii_src_0 + 12][ii_src_1 + 12][ii_src_2 + 12] += r8;
         }
         if (ii_src_0 >= x_m - 1 && ii_src_1 >= y_m - 1 && ii_src_3 >= z_m - 1 && ii_src_0 <= x_M + 1 && ii_src_1 <= y_M + 1 && ii_src_3 <= z_M + 1)
         {
           float r9 = dt*(1.0e-3F*px*py*pz - 1.0e-2F*px*pz - 1.0e-2F*py*pz + 1.0e-1F*pz)*src[time][p_src];
           #pragma omp atomic update
-          tau_zz[t1][ii_src_0 + 8][ii_src_1 + 8][ii_src_3 + 8] += r9;
+          tau_zz[t1][ii_src_0 + 12][ii_src_1 + 12][ii_src_3 + 12] += r9;
         }
         if (ii_src_0 >= x_m - 1 && ii_src_2 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_0 <= x_M + 1 && ii_src_2 <= z_M + 1 && ii_src_4 <= y_M + 1)
         {
           float r10 = dt*(1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*py*pz + 1.0e-1F*py)*src[time][p_src];
           #pragma omp atomic update
-          tau_zz[t1][ii_src_0 + 8][ii_src_4 + 8][ii_src_2 + 8] += r10;
+          tau_zz[t1][ii_src_0 + 12][ii_src_4 + 12][ii_src_2 + 12] += r10;
         }
         if (ii_src_0 >= x_m - 1 && ii_src_3 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_0 <= x_M + 1 && ii_src_3 <= z_M + 1 && ii_src_4 <= y_M + 1)
         {
           float r11 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*py*pz)*src[time][p_src];
           #pragma omp atomic update
-          tau_zz[t1][ii_src_0 + 8][ii_src_4 + 8][ii_src_3 + 8] += r11;
+          tau_zz[t1][ii_src_0 + 12][ii_src_4 + 12][ii_src_3 + 12] += r11;
         }
         if (ii_src_1 >= y_m - 1 && ii_src_2 >= z_m - 1 && ii_src_5 >= x_m - 1 && ii_src_1 <= y_M + 1 && ii_src_2 <= z_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r12 = dt*(1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*px*pz + 1.0e-1F*px)*src[time][p_src];
           #pragma omp atomic update
-          tau_zz[t1][ii_src_5 + 8][ii_src_1 + 8][ii_src_2 + 8] += r12;
+          tau_zz[t1][ii_src_5 + 12][ii_src_1 + 12][ii_src_2 + 12] += r12;
         }
         if (ii_src_1 >= y_m - 1 && ii_src_3 >= z_m - 1 && ii_src_5 >= x_m - 1 && ii_src_1 <= y_M + 1 && ii_src_3 <= z_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r13 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*px*pz)*src[time][p_src];
           #pragma omp atomic update
-          tau_zz[t1][ii_src_5 + 8][ii_src_1 + 8][ii_src_3 + 8] += r13;
+          tau_zz[t1][ii_src_5 + 12][ii_src_1 + 12][ii_src_3 + 12] += r13;
         }
         if (ii_src_2 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_5 >= x_m - 1 && ii_src_2 <= z_M + 1 && ii_src_4 <= y_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r14 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*px*py)*src[time][p_src];
           #pragma omp atomic update
-          tau_zz[t1][ii_src_5 + 8][ii_src_4 + 8][ii_src_2 + 8] += r14;
+          tau_zz[t1][ii_src_5 + 12][ii_src_4 + 12][ii_src_2 + 12] += r14;
         }
         if (ii_src_3 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_5 >= x_m - 1 && ii_src_3 <= z_M + 1 && ii_src_4 <= y_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r15 = 1.0e-3F*px*py*pz*dt*src[time][p_src];
           #pragma omp atomic update
-          tau_zz[t1][ii_src_5 + 8][ii_src_4 + 8][ii_src_3 + 8] += r15;
+          tau_zz[t1][ii_src_5 + 12][ii_src_4 + 12][ii_src_3 + 12] += r15;
         }
         ii_src_0 = (int)(floor(-1.0e-1*o_x + 1.0e-1*src_coords[p_src][0]));
         ii_src_1 = (int)(floor(-1.0e-1*o_y + 1.0e-1*src_coords[p_src][1]));
@@ -232,49 +225,49 @@ int ForwardElastic(struct dataobj *restrict damp_vec, const float dt, struct dat
         {
           float r16 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*px*py + 1.0e-2F*px*pz - 1.0e-1F*px + 1.0e-2F*py*pz - 1.0e-1F*py - 1.0e-1F*pz + 1)*src[time][p_src];
           #pragma omp atomic update
-          tau_yy[t1][ii_src_0 + 8][ii_src_1 + 8][ii_src_2 + 8] += r16;
+          tau_yy[t1][ii_src_0 + 12][ii_src_1 + 12][ii_src_2 + 12] += r16;
         }
         if (ii_src_0 >= x_m - 1 && ii_src_1 >= y_m - 1 && ii_src_3 >= z_m - 1 && ii_src_0 <= x_M + 1 && ii_src_1 <= y_M + 1 && ii_src_3 <= z_M + 1)
         {
           float r17 = dt*(1.0e-3F*px*py*pz - 1.0e-2F*px*pz - 1.0e-2F*py*pz + 1.0e-1F*pz)*src[time][p_src];
           #pragma omp atomic update
-          tau_yy[t1][ii_src_0 + 8][ii_src_1 + 8][ii_src_3 + 8] += r17;
+          tau_yy[t1][ii_src_0 + 12][ii_src_1 + 12][ii_src_3 + 12] += r17;
         }
         if (ii_src_0 >= x_m - 1 && ii_src_2 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_0 <= x_M + 1 && ii_src_2 <= z_M + 1 && ii_src_4 <= y_M + 1)
         {
           float r18 = dt*(1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*py*pz + 1.0e-1F*py)*src[time][p_src];
           #pragma omp atomic update
-          tau_yy[t1][ii_src_0 + 8][ii_src_4 + 8][ii_src_2 + 8] += r18;
+          tau_yy[t1][ii_src_0 + 12][ii_src_4 + 12][ii_src_2 + 12] += r18;
         }
         if (ii_src_0 >= x_m - 1 && ii_src_3 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_0 <= x_M + 1 && ii_src_3 <= z_M + 1 && ii_src_4 <= y_M + 1)
         {
           float r19 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*py*pz)*src[time][p_src];
           #pragma omp atomic update
-          tau_yy[t1][ii_src_0 + 8][ii_src_4 + 8][ii_src_3 + 8] += r19;
+          tau_yy[t1][ii_src_0 + 12][ii_src_4 + 12][ii_src_3 + 12] += r19;
         }
         if (ii_src_1 >= y_m - 1 && ii_src_2 >= z_m - 1 && ii_src_5 >= x_m - 1 && ii_src_1 <= y_M + 1 && ii_src_2 <= z_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r20 = dt*(1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*px*pz + 1.0e-1F*px)*src[time][p_src];
           #pragma omp atomic update
-          tau_yy[t1][ii_src_5 + 8][ii_src_1 + 8][ii_src_2 + 8] += r20;
+          tau_yy[t1][ii_src_5 + 12][ii_src_1 + 12][ii_src_2 + 12] += r20;
         }
         if (ii_src_1 >= y_m - 1 && ii_src_3 >= z_m - 1 && ii_src_5 >= x_m - 1 && ii_src_1 <= y_M + 1 && ii_src_3 <= z_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r21 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*px*pz)*src[time][p_src];
           #pragma omp atomic update
-          tau_yy[t1][ii_src_5 + 8][ii_src_1 + 8][ii_src_3 + 8] += r21;
+          tau_yy[t1][ii_src_5 + 12][ii_src_1 + 12][ii_src_3 + 12] += r21;
         }
         if (ii_src_2 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_5 >= x_m - 1 && ii_src_2 <= z_M + 1 && ii_src_4 <= y_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r22 = dt*(-1.0e-3F*px*py*pz + 1.0e-2F*px*py)*src[time][p_src];
           #pragma omp atomic update
-          tau_yy[t1][ii_src_5 + 8][ii_src_4 + 8][ii_src_2 + 8] += r22;
+          tau_yy[t1][ii_src_5 + 12][ii_src_4 + 12][ii_src_2 + 12] += r22;
         }
         if (ii_src_3 >= z_m - 1 && ii_src_4 >= y_m - 1 && ii_src_5 >= x_m - 1 && ii_src_3 <= z_M + 1 && ii_src_4 <= y_M + 1 && ii_src_5 <= x_M + 1)
         {
           float r23 = 1.0e-3F*px*py*pz*dt*src[time][p_src];
           #pragma omp atomic update
-          tau_yy[t1][ii_src_5 + 8][ii_src_4 + 8][ii_src_3 + 8] += r23;
+          tau_yy[t1][ii_src_5 + 12][ii_src_4 + 12][ii_src_3 + 12] += r23;
         }
       }
     }
@@ -302,35 +295,35 @@ int ForwardElastic(struct dataobj *restrict damp_vec, const float dt, struct dat
         float sum = 0.0F;
         if (ii_rec1_0 >= x_m - 1 && ii_rec1_1 >= y_m - 1 && ii_rec1_2 >= z_m - 1 && ii_rec1_0 <= x_M + 1 && ii_rec1_1 <= y_M + 1 && ii_rec1_2 <= z_M + 1)
         {
-          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*py + 1.0e-2F*px*pz - 1.0e-1F*px + 1.0e-2F*py*pz - 1.0e-1F*py - 1.0e-1F*pz + 1)*tau_zz[t0][ii_rec1_0 + 8][ii_rec1_1 + 8][ii_rec1_2 + 8];
+          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*py + 1.0e-2F*px*pz - 1.0e-1F*px + 1.0e-2F*py*pz - 1.0e-1F*py - 1.0e-1F*pz + 1)*tau_zz[t0][ii_rec1_0 + 12][ii_rec1_1 + 12][ii_rec1_2 + 12];
         }
         if (ii_rec1_0 >= x_m - 1 && ii_rec1_1 >= y_m - 1 && ii_rec1_3 >= z_m - 1 && ii_rec1_0 <= x_M + 1 && ii_rec1_1 <= y_M + 1 && ii_rec1_3 <= z_M + 1)
         {
-          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*pz - 1.0e-2F*py*pz + 1.0e-1F*pz)*tau_zz[t0][ii_rec1_0 + 8][ii_rec1_1 + 8][ii_rec1_3 + 8];
+          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*pz - 1.0e-2F*py*pz + 1.0e-1F*pz)*tau_zz[t0][ii_rec1_0 + 12][ii_rec1_1 + 12][ii_rec1_3 + 12];
         }
         if (ii_rec1_0 >= x_m - 1 && ii_rec1_2 >= z_m - 1 && ii_rec1_4 >= y_m - 1 && ii_rec1_0 <= x_M + 1 && ii_rec1_2 <= z_M + 1 && ii_rec1_4 <= y_M + 1)
         {
-          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*py*pz + 1.0e-1F*py)*tau_zz[t0][ii_rec1_0 + 8][ii_rec1_4 + 8][ii_rec1_2 + 8];
+          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*py*pz + 1.0e-1F*py)*tau_zz[t0][ii_rec1_0 + 12][ii_rec1_4 + 12][ii_rec1_2 + 12];
         }
         if (ii_rec1_0 >= x_m - 1 && ii_rec1_3 >= z_m - 1 && ii_rec1_4 >= y_m - 1 && ii_rec1_0 <= x_M + 1 && ii_rec1_3 <= z_M + 1 && ii_rec1_4 <= y_M + 1)
         {
-          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*py*pz)*tau_zz[t0][ii_rec1_0 + 8][ii_rec1_4 + 8][ii_rec1_3 + 8];
+          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*py*pz)*tau_zz[t0][ii_rec1_0 + 12][ii_rec1_4 + 12][ii_rec1_3 + 12];
         }
         if (ii_rec1_1 >= y_m - 1 && ii_rec1_2 >= z_m - 1 && ii_rec1_5 >= x_m - 1 && ii_rec1_1 <= y_M + 1 && ii_rec1_2 <= z_M + 1 && ii_rec1_5 <= x_M + 1)
         {
-          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*px*pz + 1.0e-1F*px)*tau_zz[t0][ii_rec1_5 + 8][ii_rec1_1 + 8][ii_rec1_2 + 8];
+          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*px*pz + 1.0e-1F*px)*tau_zz[t0][ii_rec1_5 + 12][ii_rec1_1 + 12][ii_rec1_2 + 12];
         }
         if (ii_rec1_1 >= y_m - 1 && ii_rec1_3 >= z_m - 1 && ii_rec1_5 >= x_m - 1 && ii_rec1_1 <= y_M + 1 && ii_rec1_3 <= z_M + 1 && ii_rec1_5 <= x_M + 1)
         {
-          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*pz)*tau_zz[t0][ii_rec1_5 + 8][ii_rec1_1 + 8][ii_rec1_3 + 8];
+          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*pz)*tau_zz[t0][ii_rec1_5 + 12][ii_rec1_1 + 12][ii_rec1_3 + 12];
         }
         if (ii_rec1_2 >= z_m - 1 && ii_rec1_4 >= y_m - 1 && ii_rec1_5 >= x_m - 1 && ii_rec1_2 <= z_M + 1 && ii_rec1_4 <= y_M + 1 && ii_rec1_5 <= x_M + 1)
         {
-          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*py)*tau_zz[t0][ii_rec1_5 + 8][ii_rec1_4 + 8][ii_rec1_2 + 8];
+          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*py)*tau_zz[t0][ii_rec1_5 + 12][ii_rec1_4 + 12][ii_rec1_2 + 12];
         }
         if (ii_rec1_3 >= z_m - 1 && ii_rec1_4 >= y_m - 1 && ii_rec1_5 >= x_m - 1 && ii_rec1_3 <= z_M + 1 && ii_rec1_4 <= y_M + 1 && ii_rec1_5 <= x_M + 1)
         {
-          sum += 1.0e-3F*px*py*pz*tau_zz[t0][ii_rec1_5 + 8][ii_rec1_4 + 8][ii_rec1_3 + 8];
+          sum += 1.0e-3F*px*py*pz*tau_zz[t0][ii_rec1_5 + 12][ii_rec1_4 + 12][ii_rec1_3 + 12];
         }
         rec1[time][p_rec1] = sum;
       }
@@ -341,9 +334,9 @@ int ForwardElastic(struct dataobj *restrict damp_vec, const float dt, struct dat
     struct timeval start_section3, end_section3;
     gettimeofday(&start_section3, NULL);
     /* Begin section3 */
-    haloupdate7(v_x_vec,comm,nb,t0,nthreads);
-    haloupdate7(v_y_vec,comm,nb,t0,nthreads);
-    haloupdate7(v_z_vec,comm,nb,t0,nthreads);
+    haloupdate_7(v_x_vec,comm,nb,t0,nthreads);
+    haloupdate_7(v_y_vec,comm,nb,t0,nthreads);
+    haloupdate_7(v_z_vec,comm,nb,t0,nthreads);
     #pragma omp parallel num_threads(nthreads_nonaffine)
     {
       int chunk_size = (int)(fmax(1, (1.0F/3.0F)*(p_rec2_M - p_rec2_m + 1)/nthreads_nonaffine));
@@ -362,35 +355,35 @@ int ForwardElastic(struct dataobj *restrict damp_vec, const float dt, struct dat
         float sum = 0.0F;
         if (ii_rec2_0 >= x_m - 1 && ii_rec2_1 >= y_m - 1 && ii_rec2_2 >= z_m - 1 && ii_rec2_0 <= x_M + 1 && ii_rec2_1 <= y_M + 1 && ii_rec2_2 <= z_M + 1)
         {
-          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*py + 1.0e-2F*px*pz - 1.0e-1F*px + 1.0e-2F*py*pz - 1.0e-1F*py - 1.0e-1F*pz + 1)*(3.57142862e-4F*v_x[t0][ii_rec2_0 + 4][ii_rec2_1 + 8][ii_rec2_2 + 8] - 3.80952387e-3F*v_x[t0][ii_rec2_0 + 5][ii_rec2_1 + 8][ii_rec2_2 + 8] + 2.00000003e-2F*v_x[t0][ii_rec2_0 + 6][ii_rec2_1 + 8][ii_rec2_2 + 8] - 8.00000012e-2F*v_x[t0][ii_rec2_0 + 7][ii_rec2_1 + 8][ii_rec2_2 + 8] + 8.00000012e-2F*v_x[t0][ii_rec2_0 + 9][ii_rec2_1 + 8][ii_rec2_2 + 8] - 2.00000003e-2F*v_x[t0][ii_rec2_0 + 10][ii_rec2_1 + 8][ii_rec2_2 + 8] + 3.80952387e-3F*v_x[t0][ii_rec2_0 + 11][ii_rec2_1 + 8][ii_rec2_2 + 8] - 3.57142862e-4F*v_x[t0][ii_rec2_0 + 12][ii_rec2_1 + 8][ii_rec2_2 + 8] + 3.57142862e-4F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 4][ii_rec2_2 + 8] - 3.80952387e-3F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 5][ii_rec2_2 + 8] + 2.00000003e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 6][ii_rec2_2 + 8] - 8.00000012e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 7][ii_rec2_2 + 8] + 8.00000012e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 9][ii_rec2_2 + 8] - 2.00000003e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 10][ii_rec2_2 + 8] + 3.80952387e-3F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 11][ii_rec2_2 + 8] - 3.57142862e-4F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 12][ii_rec2_2 + 8] + 3.57142862e-4F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_2 + 4] - 3.80952387e-3F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_2 + 5] + 2.00000003e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_2 + 6] - 8.00000012e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_2 + 7] + 8.00000012e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_2 + 9] - 2.00000003e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_2 + 10] + 3.80952387e-3F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_2 + 11] - 3.57142862e-4F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_2 + 12]);
+          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*py + 1.0e-2F*px*pz - 1.0e-1F*px + 1.0e-2F*py*pz - 1.0e-1F*py - 1.0e-1F*pz + 1)*(1.80375183e-5F*v_x[t0][ii_rec2_0 + 6][ii_rec2_1 + 12][ii_rec2_2 + 12] - 2.59740264e-4F*v_x[t0][ii_rec2_0 + 7][ii_rec2_1 + 12][ii_rec2_2 + 12] + 1.78571431e-3F*v_x[t0][ii_rec2_0 + 8][ii_rec2_1 + 12][ii_rec2_2 + 12] - 7.93650805e-3F*v_x[t0][ii_rec2_0 + 9][ii_rec2_1 + 12][ii_rec2_2 + 12] + 2.67857147e-2F*v_x[t0][ii_rec2_0 + 10][ii_rec2_1 + 12][ii_rec2_2 + 12] - 8.5714287e-2F*v_x[t0][ii_rec2_0 + 11][ii_rec2_1 + 12][ii_rec2_2 + 12] + 8.5714287e-2F*v_x[t0][ii_rec2_0 + 13][ii_rec2_1 + 12][ii_rec2_2 + 12] - 2.67857147e-2F*v_x[t0][ii_rec2_0 + 14][ii_rec2_1 + 12][ii_rec2_2 + 12] + 7.93650805e-3F*v_x[t0][ii_rec2_0 + 15][ii_rec2_1 + 12][ii_rec2_2 + 12] - 1.78571431e-3F*v_x[t0][ii_rec2_0 + 16][ii_rec2_1 + 12][ii_rec2_2 + 12] + 2.59740264e-4F*v_x[t0][ii_rec2_0 + 17][ii_rec2_1 + 12][ii_rec2_2 + 12] - 1.80375183e-5F*v_x[t0][ii_rec2_0 + 18][ii_rec2_1 + 12][ii_rec2_2 + 12] + 1.80375183e-5F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 6][ii_rec2_2 + 12] - 2.59740264e-4F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 7][ii_rec2_2 + 12] + 1.78571431e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 8][ii_rec2_2 + 12] - 7.93650805e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 9][ii_rec2_2 + 12] + 2.67857147e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 10][ii_rec2_2 + 12] - 8.5714287e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 11][ii_rec2_2 + 12] + 8.5714287e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 13][ii_rec2_2 + 12] - 2.67857147e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 14][ii_rec2_2 + 12] + 7.93650805e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 15][ii_rec2_2 + 12] - 1.78571431e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 16][ii_rec2_2 + 12] + 2.59740264e-4F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 17][ii_rec2_2 + 12] - 1.80375183e-5F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 18][ii_rec2_2 + 12] + 1.80375183e-5F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 6] - 2.59740264e-4F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 7] + 1.78571431e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 8] - 7.93650805e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 9] + 2.67857147e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 10] - 8.5714287e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 11] + 8.5714287e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 13] - 2.67857147e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 14] + 7.93650805e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 15] - 1.78571431e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 16] + 2.59740264e-4F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 17] - 1.80375183e-5F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_2 + 18]);
         }
         if (ii_rec2_0 >= x_m - 1 && ii_rec2_1 >= y_m - 1 && ii_rec2_3 >= z_m - 1 && ii_rec2_0 <= x_M + 1 && ii_rec2_1 <= y_M + 1 && ii_rec2_3 <= z_M + 1)
         {
-          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*pz - 1.0e-2F*py*pz + 1.0e-1F*pz)*(3.57142862e-4F*v_x[t0][ii_rec2_0 + 4][ii_rec2_1 + 8][ii_rec2_3 + 8] - 3.80952387e-3F*v_x[t0][ii_rec2_0 + 5][ii_rec2_1 + 8][ii_rec2_3 + 8] + 2.00000003e-2F*v_x[t0][ii_rec2_0 + 6][ii_rec2_1 + 8][ii_rec2_3 + 8] - 8.00000012e-2F*v_x[t0][ii_rec2_0 + 7][ii_rec2_1 + 8][ii_rec2_3 + 8] + 8.00000012e-2F*v_x[t0][ii_rec2_0 + 9][ii_rec2_1 + 8][ii_rec2_3 + 8] - 2.00000003e-2F*v_x[t0][ii_rec2_0 + 10][ii_rec2_1 + 8][ii_rec2_3 + 8] + 3.80952387e-3F*v_x[t0][ii_rec2_0 + 11][ii_rec2_1 + 8][ii_rec2_3 + 8] - 3.57142862e-4F*v_x[t0][ii_rec2_0 + 12][ii_rec2_1 + 8][ii_rec2_3 + 8] + 3.57142862e-4F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 4][ii_rec2_3 + 8] - 3.80952387e-3F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 5][ii_rec2_3 + 8] + 2.00000003e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 6][ii_rec2_3 + 8] - 8.00000012e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 7][ii_rec2_3 + 8] + 8.00000012e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 9][ii_rec2_3 + 8] - 2.00000003e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 10][ii_rec2_3 + 8] + 3.80952387e-3F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 11][ii_rec2_3 + 8] - 3.57142862e-4F*v_y[t0][ii_rec2_0 + 8][ii_rec2_1 + 12][ii_rec2_3 + 8] + 3.57142862e-4F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_3 + 4] - 3.80952387e-3F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_3 + 5] + 2.00000003e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_3 + 6] - 8.00000012e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_3 + 7] + 8.00000012e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_3 + 9] - 2.00000003e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_3 + 10] + 3.80952387e-3F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_3 + 11] - 3.57142862e-4F*v_z[t0][ii_rec2_0 + 8][ii_rec2_1 + 8][ii_rec2_3 + 12]);
+          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*pz - 1.0e-2F*py*pz + 1.0e-1F*pz)*(1.80375183e-5F*v_x[t0][ii_rec2_0 + 6][ii_rec2_1 + 12][ii_rec2_3 + 12] - 2.59740264e-4F*v_x[t0][ii_rec2_0 + 7][ii_rec2_1 + 12][ii_rec2_3 + 12] + 1.78571431e-3F*v_x[t0][ii_rec2_0 + 8][ii_rec2_1 + 12][ii_rec2_3 + 12] - 7.93650805e-3F*v_x[t0][ii_rec2_0 + 9][ii_rec2_1 + 12][ii_rec2_3 + 12] + 2.67857147e-2F*v_x[t0][ii_rec2_0 + 10][ii_rec2_1 + 12][ii_rec2_3 + 12] - 8.5714287e-2F*v_x[t0][ii_rec2_0 + 11][ii_rec2_1 + 12][ii_rec2_3 + 12] + 8.5714287e-2F*v_x[t0][ii_rec2_0 + 13][ii_rec2_1 + 12][ii_rec2_3 + 12] - 2.67857147e-2F*v_x[t0][ii_rec2_0 + 14][ii_rec2_1 + 12][ii_rec2_3 + 12] + 7.93650805e-3F*v_x[t0][ii_rec2_0 + 15][ii_rec2_1 + 12][ii_rec2_3 + 12] - 1.78571431e-3F*v_x[t0][ii_rec2_0 + 16][ii_rec2_1 + 12][ii_rec2_3 + 12] + 2.59740264e-4F*v_x[t0][ii_rec2_0 + 17][ii_rec2_1 + 12][ii_rec2_3 + 12] - 1.80375183e-5F*v_x[t0][ii_rec2_0 + 18][ii_rec2_1 + 12][ii_rec2_3 + 12] + 1.80375183e-5F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 6][ii_rec2_3 + 12] - 2.59740264e-4F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 7][ii_rec2_3 + 12] + 1.78571431e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 8][ii_rec2_3 + 12] - 7.93650805e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 9][ii_rec2_3 + 12] + 2.67857147e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 10][ii_rec2_3 + 12] - 8.5714287e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 11][ii_rec2_3 + 12] + 8.5714287e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 13][ii_rec2_3 + 12] - 2.67857147e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 14][ii_rec2_3 + 12] + 7.93650805e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 15][ii_rec2_3 + 12] - 1.78571431e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 16][ii_rec2_3 + 12] + 2.59740264e-4F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 17][ii_rec2_3 + 12] - 1.80375183e-5F*v_y[t0][ii_rec2_0 + 12][ii_rec2_1 + 18][ii_rec2_3 + 12] + 1.80375183e-5F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 6] - 2.59740264e-4F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 7] + 1.78571431e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 8] - 7.93650805e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 9] + 2.67857147e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 10] - 8.5714287e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 11] + 8.5714287e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 13] - 2.67857147e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 14] + 7.93650805e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 15] - 1.78571431e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 16] + 2.59740264e-4F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 17] - 1.80375183e-5F*v_z[t0][ii_rec2_0 + 12][ii_rec2_1 + 12][ii_rec2_3 + 18]);
         }
         if (ii_rec2_0 >= x_m - 1 && ii_rec2_2 >= z_m - 1 && ii_rec2_4 >= y_m - 1 && ii_rec2_0 <= x_M + 1 && ii_rec2_2 <= z_M + 1 && ii_rec2_4 <= y_M + 1)
         {
-          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*py*pz + 1.0e-1F*py)*(3.57142862e-4F*v_x[t0][ii_rec2_0 + 4][ii_rec2_4 + 8][ii_rec2_2 + 8] - 3.80952387e-3F*v_x[t0][ii_rec2_0 + 5][ii_rec2_4 + 8][ii_rec2_2 + 8] + 2.00000003e-2F*v_x[t0][ii_rec2_0 + 6][ii_rec2_4 + 8][ii_rec2_2 + 8] - 8.00000012e-2F*v_x[t0][ii_rec2_0 + 7][ii_rec2_4 + 8][ii_rec2_2 + 8] + 8.00000012e-2F*v_x[t0][ii_rec2_0 + 9][ii_rec2_4 + 8][ii_rec2_2 + 8] - 2.00000003e-2F*v_x[t0][ii_rec2_0 + 10][ii_rec2_4 + 8][ii_rec2_2 + 8] + 3.80952387e-3F*v_x[t0][ii_rec2_0 + 11][ii_rec2_4 + 8][ii_rec2_2 + 8] - 3.57142862e-4F*v_x[t0][ii_rec2_0 + 12][ii_rec2_4 + 8][ii_rec2_2 + 8] + 3.57142862e-4F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 4][ii_rec2_2 + 8] - 3.80952387e-3F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 5][ii_rec2_2 + 8] + 2.00000003e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 6][ii_rec2_2 + 8] - 8.00000012e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 7][ii_rec2_2 + 8] + 8.00000012e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 9][ii_rec2_2 + 8] - 2.00000003e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 10][ii_rec2_2 + 8] + 3.80952387e-3F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 11][ii_rec2_2 + 8] - 3.57142862e-4F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 12][ii_rec2_2 + 8] + 3.57142862e-4F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_2 + 4] - 3.80952387e-3F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_2 + 5] + 2.00000003e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_2 + 6] - 8.00000012e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_2 + 7] + 8.00000012e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_2 + 9] - 2.00000003e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_2 + 10] + 3.80952387e-3F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_2 + 11] - 3.57142862e-4F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_2 + 12]);
+          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*py*pz + 1.0e-1F*py)*(1.80375183e-5F*v_x[t0][ii_rec2_0 + 6][ii_rec2_4 + 12][ii_rec2_2 + 12] - 2.59740264e-4F*v_x[t0][ii_rec2_0 + 7][ii_rec2_4 + 12][ii_rec2_2 + 12] + 1.78571431e-3F*v_x[t0][ii_rec2_0 + 8][ii_rec2_4 + 12][ii_rec2_2 + 12] - 7.93650805e-3F*v_x[t0][ii_rec2_0 + 9][ii_rec2_4 + 12][ii_rec2_2 + 12] + 2.67857147e-2F*v_x[t0][ii_rec2_0 + 10][ii_rec2_4 + 12][ii_rec2_2 + 12] - 8.5714287e-2F*v_x[t0][ii_rec2_0 + 11][ii_rec2_4 + 12][ii_rec2_2 + 12] + 8.5714287e-2F*v_x[t0][ii_rec2_0 + 13][ii_rec2_4 + 12][ii_rec2_2 + 12] - 2.67857147e-2F*v_x[t0][ii_rec2_0 + 14][ii_rec2_4 + 12][ii_rec2_2 + 12] + 7.93650805e-3F*v_x[t0][ii_rec2_0 + 15][ii_rec2_4 + 12][ii_rec2_2 + 12] - 1.78571431e-3F*v_x[t0][ii_rec2_0 + 16][ii_rec2_4 + 12][ii_rec2_2 + 12] + 2.59740264e-4F*v_x[t0][ii_rec2_0 + 17][ii_rec2_4 + 12][ii_rec2_2 + 12] - 1.80375183e-5F*v_x[t0][ii_rec2_0 + 18][ii_rec2_4 + 12][ii_rec2_2 + 12] + 1.80375183e-5F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 6][ii_rec2_2 + 12] - 2.59740264e-4F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 7][ii_rec2_2 + 12] + 1.78571431e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 8][ii_rec2_2 + 12] - 7.93650805e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 9][ii_rec2_2 + 12] + 2.67857147e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 10][ii_rec2_2 + 12] - 8.5714287e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 11][ii_rec2_2 + 12] + 8.5714287e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 13][ii_rec2_2 + 12] - 2.67857147e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 14][ii_rec2_2 + 12] + 7.93650805e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 15][ii_rec2_2 + 12] - 1.78571431e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 16][ii_rec2_2 + 12] + 2.59740264e-4F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 17][ii_rec2_2 + 12] - 1.80375183e-5F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 18][ii_rec2_2 + 12] + 1.80375183e-5F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 6] - 2.59740264e-4F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 7] + 1.78571431e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 8] - 7.93650805e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 9] + 2.67857147e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 10] - 8.5714287e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 11] + 8.5714287e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 13] - 2.67857147e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 14] + 7.93650805e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 15] - 1.78571431e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 16] + 2.59740264e-4F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 17] - 1.80375183e-5F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_2 + 18]);
         }
         if (ii_rec2_0 >= x_m - 1 && ii_rec2_3 >= z_m - 1 && ii_rec2_4 >= y_m - 1 && ii_rec2_0 <= x_M + 1 && ii_rec2_3 <= z_M + 1 && ii_rec2_4 <= y_M + 1)
         {
-          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*py*pz)*(3.57142862e-4F*v_x[t0][ii_rec2_0 + 4][ii_rec2_4 + 8][ii_rec2_3 + 8] - 3.80952387e-3F*v_x[t0][ii_rec2_0 + 5][ii_rec2_4 + 8][ii_rec2_3 + 8] + 2.00000003e-2F*v_x[t0][ii_rec2_0 + 6][ii_rec2_4 + 8][ii_rec2_3 + 8] - 8.00000012e-2F*v_x[t0][ii_rec2_0 + 7][ii_rec2_4 + 8][ii_rec2_3 + 8] + 8.00000012e-2F*v_x[t0][ii_rec2_0 + 9][ii_rec2_4 + 8][ii_rec2_3 + 8] - 2.00000003e-2F*v_x[t0][ii_rec2_0 + 10][ii_rec2_4 + 8][ii_rec2_3 + 8] + 3.80952387e-3F*v_x[t0][ii_rec2_0 + 11][ii_rec2_4 + 8][ii_rec2_3 + 8] - 3.57142862e-4F*v_x[t0][ii_rec2_0 + 12][ii_rec2_4 + 8][ii_rec2_3 + 8] + 3.57142862e-4F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 4][ii_rec2_3 + 8] - 3.80952387e-3F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 5][ii_rec2_3 + 8] + 2.00000003e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 6][ii_rec2_3 + 8] - 8.00000012e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 7][ii_rec2_3 + 8] + 8.00000012e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 9][ii_rec2_3 + 8] - 2.00000003e-2F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 10][ii_rec2_3 + 8] + 3.80952387e-3F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 11][ii_rec2_3 + 8] - 3.57142862e-4F*v_y[t0][ii_rec2_0 + 8][ii_rec2_4 + 12][ii_rec2_3 + 8] + 3.57142862e-4F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_3 + 4] - 3.80952387e-3F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_3 + 5] + 2.00000003e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_3 + 6] - 8.00000012e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_3 + 7] + 8.00000012e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_3 + 9] - 2.00000003e-2F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_3 + 10] + 3.80952387e-3F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_3 + 11] - 3.57142862e-4F*v_z[t0][ii_rec2_0 + 8][ii_rec2_4 + 8][ii_rec2_3 + 12]);
+          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*py*pz)*(1.80375183e-5F*v_x[t0][ii_rec2_0 + 6][ii_rec2_4 + 12][ii_rec2_3 + 12] - 2.59740264e-4F*v_x[t0][ii_rec2_0 + 7][ii_rec2_4 + 12][ii_rec2_3 + 12] + 1.78571431e-3F*v_x[t0][ii_rec2_0 + 8][ii_rec2_4 + 12][ii_rec2_3 + 12] - 7.93650805e-3F*v_x[t0][ii_rec2_0 + 9][ii_rec2_4 + 12][ii_rec2_3 + 12] + 2.67857147e-2F*v_x[t0][ii_rec2_0 + 10][ii_rec2_4 + 12][ii_rec2_3 + 12] - 8.5714287e-2F*v_x[t0][ii_rec2_0 + 11][ii_rec2_4 + 12][ii_rec2_3 + 12] + 8.5714287e-2F*v_x[t0][ii_rec2_0 + 13][ii_rec2_4 + 12][ii_rec2_3 + 12] - 2.67857147e-2F*v_x[t0][ii_rec2_0 + 14][ii_rec2_4 + 12][ii_rec2_3 + 12] + 7.93650805e-3F*v_x[t0][ii_rec2_0 + 15][ii_rec2_4 + 12][ii_rec2_3 + 12] - 1.78571431e-3F*v_x[t0][ii_rec2_0 + 16][ii_rec2_4 + 12][ii_rec2_3 + 12] + 2.59740264e-4F*v_x[t0][ii_rec2_0 + 17][ii_rec2_4 + 12][ii_rec2_3 + 12] - 1.80375183e-5F*v_x[t0][ii_rec2_0 + 18][ii_rec2_4 + 12][ii_rec2_3 + 12] + 1.80375183e-5F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 6][ii_rec2_3 + 12] - 2.59740264e-4F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 7][ii_rec2_3 + 12] + 1.78571431e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 8][ii_rec2_3 + 12] - 7.93650805e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 9][ii_rec2_3 + 12] + 2.67857147e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 10][ii_rec2_3 + 12] - 8.5714287e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 11][ii_rec2_3 + 12] + 8.5714287e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 13][ii_rec2_3 + 12] - 2.67857147e-2F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 14][ii_rec2_3 + 12] + 7.93650805e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 15][ii_rec2_3 + 12] - 1.78571431e-3F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 16][ii_rec2_3 + 12] + 2.59740264e-4F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 17][ii_rec2_3 + 12] - 1.80375183e-5F*v_y[t0][ii_rec2_0 + 12][ii_rec2_4 + 18][ii_rec2_3 + 12] + 1.80375183e-5F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 6] - 2.59740264e-4F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 7] + 1.78571431e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 8] - 7.93650805e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 9] + 2.67857147e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 10] - 8.5714287e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 11] + 8.5714287e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 13] - 2.67857147e-2F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 14] + 7.93650805e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 15] - 1.78571431e-3F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 16] + 2.59740264e-4F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 17] - 1.80375183e-5F*v_z[t0][ii_rec2_0 + 12][ii_rec2_4 + 12][ii_rec2_3 + 18]);
         }
         if (ii_rec2_1 >= y_m - 1 && ii_rec2_2 >= z_m - 1 && ii_rec2_5 >= x_m - 1 && ii_rec2_1 <= y_M + 1 && ii_rec2_2 <= z_M + 1 && ii_rec2_5 <= x_M + 1)
         {
-          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*px*pz + 1.0e-1F*px)*(3.57142862e-4F*v_x[t0][ii_rec2_5 + 4][ii_rec2_1 + 8][ii_rec2_2 + 8] - 3.80952387e-3F*v_x[t0][ii_rec2_5 + 5][ii_rec2_1 + 8][ii_rec2_2 + 8] + 2.00000003e-2F*v_x[t0][ii_rec2_5 + 6][ii_rec2_1 + 8][ii_rec2_2 + 8] - 8.00000012e-2F*v_x[t0][ii_rec2_5 + 7][ii_rec2_1 + 8][ii_rec2_2 + 8] + 8.00000012e-2F*v_x[t0][ii_rec2_5 + 9][ii_rec2_1 + 8][ii_rec2_2 + 8] - 2.00000003e-2F*v_x[t0][ii_rec2_5 + 10][ii_rec2_1 + 8][ii_rec2_2 + 8] + 3.80952387e-3F*v_x[t0][ii_rec2_5 + 11][ii_rec2_1 + 8][ii_rec2_2 + 8] - 3.57142862e-4F*v_x[t0][ii_rec2_5 + 12][ii_rec2_1 + 8][ii_rec2_2 + 8] + 3.57142862e-4F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 4][ii_rec2_2 + 8] - 3.80952387e-3F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 5][ii_rec2_2 + 8] + 2.00000003e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 6][ii_rec2_2 + 8] - 8.00000012e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 7][ii_rec2_2 + 8] + 8.00000012e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 9][ii_rec2_2 + 8] - 2.00000003e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 10][ii_rec2_2 + 8] + 3.80952387e-3F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 11][ii_rec2_2 + 8] - 3.57142862e-4F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 12][ii_rec2_2 + 8] + 3.57142862e-4F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_2 + 4] - 3.80952387e-3F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_2 + 5] + 2.00000003e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_2 + 6] - 8.00000012e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_2 + 7] + 8.00000012e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_2 + 9] - 2.00000003e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_2 + 10] + 3.80952387e-3F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_2 + 11] - 3.57142862e-4F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_2 + 12]);
+          sum += (1.0e-3F*px*py*pz - 1.0e-2F*px*py - 1.0e-2F*px*pz + 1.0e-1F*px)*(1.80375183e-5F*v_x[t0][ii_rec2_5 + 6][ii_rec2_1 + 12][ii_rec2_2 + 12] - 2.59740264e-4F*v_x[t0][ii_rec2_5 + 7][ii_rec2_1 + 12][ii_rec2_2 + 12] + 1.78571431e-3F*v_x[t0][ii_rec2_5 + 8][ii_rec2_1 + 12][ii_rec2_2 + 12] - 7.93650805e-3F*v_x[t0][ii_rec2_5 + 9][ii_rec2_1 + 12][ii_rec2_2 + 12] + 2.67857147e-2F*v_x[t0][ii_rec2_5 + 10][ii_rec2_1 + 12][ii_rec2_2 + 12] - 8.5714287e-2F*v_x[t0][ii_rec2_5 + 11][ii_rec2_1 + 12][ii_rec2_2 + 12] + 8.5714287e-2F*v_x[t0][ii_rec2_5 + 13][ii_rec2_1 + 12][ii_rec2_2 + 12] - 2.67857147e-2F*v_x[t0][ii_rec2_5 + 14][ii_rec2_1 + 12][ii_rec2_2 + 12] + 7.93650805e-3F*v_x[t0][ii_rec2_5 + 15][ii_rec2_1 + 12][ii_rec2_2 + 12] - 1.78571431e-3F*v_x[t0][ii_rec2_5 + 16][ii_rec2_1 + 12][ii_rec2_2 + 12] + 2.59740264e-4F*v_x[t0][ii_rec2_5 + 17][ii_rec2_1 + 12][ii_rec2_2 + 12] - 1.80375183e-5F*v_x[t0][ii_rec2_5 + 18][ii_rec2_1 + 12][ii_rec2_2 + 12] + 1.80375183e-5F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 6][ii_rec2_2 + 12] - 2.59740264e-4F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 7][ii_rec2_2 + 12] + 1.78571431e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 8][ii_rec2_2 + 12] - 7.93650805e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 9][ii_rec2_2 + 12] + 2.67857147e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 10][ii_rec2_2 + 12] - 8.5714287e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 11][ii_rec2_2 + 12] + 8.5714287e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 13][ii_rec2_2 + 12] - 2.67857147e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 14][ii_rec2_2 + 12] + 7.93650805e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 15][ii_rec2_2 + 12] - 1.78571431e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 16][ii_rec2_2 + 12] + 2.59740264e-4F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 17][ii_rec2_2 + 12] - 1.80375183e-5F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 18][ii_rec2_2 + 12] + 1.80375183e-5F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 6] - 2.59740264e-4F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 7] + 1.78571431e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 8] - 7.93650805e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 9] + 2.67857147e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 10] - 8.5714287e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 11] + 8.5714287e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 13] - 2.67857147e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 14] + 7.93650805e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 15] - 1.78571431e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 16] + 2.59740264e-4F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 17] - 1.80375183e-5F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_2 + 18]);
         }
         if (ii_rec2_1 >= y_m - 1 && ii_rec2_3 >= z_m - 1 && ii_rec2_5 >= x_m - 1 && ii_rec2_1 <= y_M + 1 && ii_rec2_3 <= z_M + 1 && ii_rec2_5 <= x_M + 1)
         {
-          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*pz)*(3.57142862e-4F*v_x[t0][ii_rec2_5 + 4][ii_rec2_1 + 8][ii_rec2_3 + 8] - 3.80952387e-3F*v_x[t0][ii_rec2_5 + 5][ii_rec2_1 + 8][ii_rec2_3 + 8] + 2.00000003e-2F*v_x[t0][ii_rec2_5 + 6][ii_rec2_1 + 8][ii_rec2_3 + 8] - 8.00000012e-2F*v_x[t0][ii_rec2_5 + 7][ii_rec2_1 + 8][ii_rec2_3 + 8] + 8.00000012e-2F*v_x[t0][ii_rec2_5 + 9][ii_rec2_1 + 8][ii_rec2_3 + 8] - 2.00000003e-2F*v_x[t0][ii_rec2_5 + 10][ii_rec2_1 + 8][ii_rec2_3 + 8] + 3.80952387e-3F*v_x[t0][ii_rec2_5 + 11][ii_rec2_1 + 8][ii_rec2_3 + 8] - 3.57142862e-4F*v_x[t0][ii_rec2_5 + 12][ii_rec2_1 + 8][ii_rec2_3 + 8] + 3.57142862e-4F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 4][ii_rec2_3 + 8] - 3.80952387e-3F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 5][ii_rec2_3 + 8] + 2.00000003e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 6][ii_rec2_3 + 8] - 8.00000012e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 7][ii_rec2_3 + 8] + 8.00000012e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 9][ii_rec2_3 + 8] - 2.00000003e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 10][ii_rec2_3 + 8] + 3.80952387e-3F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 11][ii_rec2_3 + 8] - 3.57142862e-4F*v_y[t0][ii_rec2_5 + 8][ii_rec2_1 + 12][ii_rec2_3 + 8] + 3.57142862e-4F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_3 + 4] - 3.80952387e-3F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_3 + 5] + 2.00000003e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_3 + 6] - 8.00000012e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_3 + 7] + 8.00000012e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_3 + 9] - 2.00000003e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_3 + 10] + 3.80952387e-3F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_3 + 11] - 3.57142862e-4F*v_z[t0][ii_rec2_5 + 8][ii_rec2_1 + 8][ii_rec2_3 + 12]);
+          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*pz)*(1.80375183e-5F*v_x[t0][ii_rec2_5 + 6][ii_rec2_1 + 12][ii_rec2_3 + 12] - 2.59740264e-4F*v_x[t0][ii_rec2_5 + 7][ii_rec2_1 + 12][ii_rec2_3 + 12] + 1.78571431e-3F*v_x[t0][ii_rec2_5 + 8][ii_rec2_1 + 12][ii_rec2_3 + 12] - 7.93650805e-3F*v_x[t0][ii_rec2_5 + 9][ii_rec2_1 + 12][ii_rec2_3 + 12] + 2.67857147e-2F*v_x[t0][ii_rec2_5 + 10][ii_rec2_1 + 12][ii_rec2_3 + 12] - 8.5714287e-2F*v_x[t0][ii_rec2_5 + 11][ii_rec2_1 + 12][ii_rec2_3 + 12] + 8.5714287e-2F*v_x[t0][ii_rec2_5 + 13][ii_rec2_1 + 12][ii_rec2_3 + 12] - 2.67857147e-2F*v_x[t0][ii_rec2_5 + 14][ii_rec2_1 + 12][ii_rec2_3 + 12] + 7.93650805e-3F*v_x[t0][ii_rec2_5 + 15][ii_rec2_1 + 12][ii_rec2_3 + 12] - 1.78571431e-3F*v_x[t0][ii_rec2_5 + 16][ii_rec2_1 + 12][ii_rec2_3 + 12] + 2.59740264e-4F*v_x[t0][ii_rec2_5 + 17][ii_rec2_1 + 12][ii_rec2_3 + 12] - 1.80375183e-5F*v_x[t0][ii_rec2_5 + 18][ii_rec2_1 + 12][ii_rec2_3 + 12] + 1.80375183e-5F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 6][ii_rec2_3 + 12] - 2.59740264e-4F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 7][ii_rec2_3 + 12] + 1.78571431e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 8][ii_rec2_3 + 12] - 7.93650805e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 9][ii_rec2_3 + 12] + 2.67857147e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 10][ii_rec2_3 + 12] - 8.5714287e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 11][ii_rec2_3 + 12] + 8.5714287e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 13][ii_rec2_3 + 12] - 2.67857147e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 14][ii_rec2_3 + 12] + 7.93650805e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 15][ii_rec2_3 + 12] - 1.78571431e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 16][ii_rec2_3 + 12] + 2.59740264e-4F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 17][ii_rec2_3 + 12] - 1.80375183e-5F*v_y[t0][ii_rec2_5 + 12][ii_rec2_1 + 18][ii_rec2_3 + 12] + 1.80375183e-5F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 6] - 2.59740264e-4F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 7] + 1.78571431e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 8] - 7.93650805e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 9] + 2.67857147e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 10] - 8.5714287e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 11] + 8.5714287e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 13] - 2.67857147e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 14] + 7.93650805e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 15] - 1.78571431e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 16] + 2.59740264e-4F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 17] - 1.80375183e-5F*v_z[t0][ii_rec2_5 + 12][ii_rec2_1 + 12][ii_rec2_3 + 18]);
         }
         if (ii_rec2_2 >= z_m - 1 && ii_rec2_4 >= y_m - 1 && ii_rec2_5 >= x_m - 1 && ii_rec2_2 <= z_M + 1 && ii_rec2_4 <= y_M + 1 && ii_rec2_5 <= x_M + 1)
         {
-          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*py)*(3.57142862e-4F*v_x[t0][ii_rec2_5 + 4][ii_rec2_4 + 8][ii_rec2_2 + 8] - 3.80952387e-3F*v_x[t0][ii_rec2_5 + 5][ii_rec2_4 + 8][ii_rec2_2 + 8] + 2.00000003e-2F*v_x[t0][ii_rec2_5 + 6][ii_rec2_4 + 8][ii_rec2_2 + 8] - 8.00000012e-2F*v_x[t0][ii_rec2_5 + 7][ii_rec2_4 + 8][ii_rec2_2 + 8] + 8.00000012e-2F*v_x[t0][ii_rec2_5 + 9][ii_rec2_4 + 8][ii_rec2_2 + 8] - 2.00000003e-2F*v_x[t0][ii_rec2_5 + 10][ii_rec2_4 + 8][ii_rec2_2 + 8] + 3.80952387e-3F*v_x[t0][ii_rec2_5 + 11][ii_rec2_4 + 8][ii_rec2_2 + 8] - 3.57142862e-4F*v_x[t0][ii_rec2_5 + 12][ii_rec2_4 + 8][ii_rec2_2 + 8] + 3.57142862e-4F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 4][ii_rec2_2 + 8] - 3.80952387e-3F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 5][ii_rec2_2 + 8] + 2.00000003e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 6][ii_rec2_2 + 8] - 8.00000012e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 7][ii_rec2_2 + 8] + 8.00000012e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 9][ii_rec2_2 + 8] - 2.00000003e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 10][ii_rec2_2 + 8] + 3.80952387e-3F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 11][ii_rec2_2 + 8] - 3.57142862e-4F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 12][ii_rec2_2 + 8] + 3.57142862e-4F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_2 + 4] - 3.80952387e-3F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_2 + 5] + 2.00000003e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_2 + 6] - 8.00000012e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_2 + 7] + 8.00000012e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_2 + 9] - 2.00000003e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_2 + 10] + 3.80952387e-3F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_2 + 11] - 3.57142862e-4F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_2 + 12]);
+          sum += (-1.0e-3F*px*py*pz + 1.0e-2F*px*py)*(1.80375183e-5F*v_x[t0][ii_rec2_5 + 6][ii_rec2_4 + 12][ii_rec2_2 + 12] - 2.59740264e-4F*v_x[t0][ii_rec2_5 + 7][ii_rec2_4 + 12][ii_rec2_2 + 12] + 1.78571431e-3F*v_x[t0][ii_rec2_5 + 8][ii_rec2_4 + 12][ii_rec2_2 + 12] - 7.93650805e-3F*v_x[t0][ii_rec2_5 + 9][ii_rec2_4 + 12][ii_rec2_2 + 12] + 2.67857147e-2F*v_x[t0][ii_rec2_5 + 10][ii_rec2_4 + 12][ii_rec2_2 + 12] - 8.5714287e-2F*v_x[t0][ii_rec2_5 + 11][ii_rec2_4 + 12][ii_rec2_2 + 12] + 8.5714287e-2F*v_x[t0][ii_rec2_5 + 13][ii_rec2_4 + 12][ii_rec2_2 + 12] - 2.67857147e-2F*v_x[t0][ii_rec2_5 + 14][ii_rec2_4 + 12][ii_rec2_2 + 12] + 7.93650805e-3F*v_x[t0][ii_rec2_5 + 15][ii_rec2_4 + 12][ii_rec2_2 + 12] - 1.78571431e-3F*v_x[t0][ii_rec2_5 + 16][ii_rec2_4 + 12][ii_rec2_2 + 12] + 2.59740264e-4F*v_x[t0][ii_rec2_5 + 17][ii_rec2_4 + 12][ii_rec2_2 + 12] - 1.80375183e-5F*v_x[t0][ii_rec2_5 + 18][ii_rec2_4 + 12][ii_rec2_2 + 12] + 1.80375183e-5F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 6][ii_rec2_2 + 12] - 2.59740264e-4F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 7][ii_rec2_2 + 12] + 1.78571431e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 8][ii_rec2_2 + 12] - 7.93650805e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 9][ii_rec2_2 + 12] + 2.67857147e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 10][ii_rec2_2 + 12] - 8.5714287e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 11][ii_rec2_2 + 12] + 8.5714287e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 13][ii_rec2_2 + 12] - 2.67857147e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 14][ii_rec2_2 + 12] + 7.93650805e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 15][ii_rec2_2 + 12] - 1.78571431e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 16][ii_rec2_2 + 12] + 2.59740264e-4F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 17][ii_rec2_2 + 12] - 1.80375183e-5F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 18][ii_rec2_2 + 12] + 1.80375183e-5F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 6] - 2.59740264e-4F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 7] + 1.78571431e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 8] - 7.93650805e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 9] + 2.67857147e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 10] - 8.5714287e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 11] + 8.5714287e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 13] - 2.67857147e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 14] + 7.93650805e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 15] - 1.78571431e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 16] + 2.59740264e-4F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 17] - 1.80375183e-5F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_2 + 18]);
         }
         if (ii_rec2_3 >= z_m - 1 && ii_rec2_4 >= y_m - 1 && ii_rec2_5 >= x_m - 1 && ii_rec2_3 <= z_M + 1 && ii_rec2_4 <= y_M + 1 && ii_rec2_5 <= x_M + 1)
         {
-          sum += 1.0e-3F*px*py*pz*(3.57142862e-4F*v_x[t0][ii_rec2_5 + 4][ii_rec2_4 + 8][ii_rec2_3 + 8] - 3.80952387e-3F*v_x[t0][ii_rec2_5 + 5][ii_rec2_4 + 8][ii_rec2_3 + 8] + 2.00000003e-2F*v_x[t0][ii_rec2_5 + 6][ii_rec2_4 + 8][ii_rec2_3 + 8] - 8.00000012e-2F*v_x[t0][ii_rec2_5 + 7][ii_rec2_4 + 8][ii_rec2_3 + 8] + 8.00000012e-2F*v_x[t0][ii_rec2_5 + 9][ii_rec2_4 + 8][ii_rec2_3 + 8] - 2.00000003e-2F*v_x[t0][ii_rec2_5 + 10][ii_rec2_4 + 8][ii_rec2_3 + 8] + 3.80952387e-3F*v_x[t0][ii_rec2_5 + 11][ii_rec2_4 + 8][ii_rec2_3 + 8] - 3.57142862e-4F*v_x[t0][ii_rec2_5 + 12][ii_rec2_4 + 8][ii_rec2_3 + 8] + 3.57142862e-4F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 4][ii_rec2_3 + 8] - 3.80952387e-3F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 5][ii_rec2_3 + 8] + 2.00000003e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 6][ii_rec2_3 + 8] - 8.00000012e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 7][ii_rec2_3 + 8] + 8.00000012e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 9][ii_rec2_3 + 8] - 2.00000003e-2F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 10][ii_rec2_3 + 8] + 3.80952387e-3F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 11][ii_rec2_3 + 8] - 3.57142862e-4F*v_y[t0][ii_rec2_5 + 8][ii_rec2_4 + 12][ii_rec2_3 + 8] + 3.57142862e-4F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_3 + 4] - 3.80952387e-3F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_3 + 5] + 2.00000003e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_3 + 6] - 8.00000012e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_3 + 7] + 8.00000012e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_3 + 9] - 2.00000003e-2F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_3 + 10] + 3.80952387e-3F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_3 + 11] - 3.57142862e-4F*v_z[t0][ii_rec2_5 + 8][ii_rec2_4 + 8][ii_rec2_3 + 12]);
+          sum += 1.0e-3F*px*py*pz*(1.80375183e-5F*v_x[t0][ii_rec2_5 + 6][ii_rec2_4 + 12][ii_rec2_3 + 12] - 2.59740264e-4F*v_x[t0][ii_rec2_5 + 7][ii_rec2_4 + 12][ii_rec2_3 + 12] + 1.78571431e-3F*v_x[t0][ii_rec2_5 + 8][ii_rec2_4 + 12][ii_rec2_3 + 12] - 7.93650805e-3F*v_x[t0][ii_rec2_5 + 9][ii_rec2_4 + 12][ii_rec2_3 + 12] + 2.67857147e-2F*v_x[t0][ii_rec2_5 + 10][ii_rec2_4 + 12][ii_rec2_3 + 12] - 8.5714287e-2F*v_x[t0][ii_rec2_5 + 11][ii_rec2_4 + 12][ii_rec2_3 + 12] + 8.5714287e-2F*v_x[t0][ii_rec2_5 + 13][ii_rec2_4 + 12][ii_rec2_3 + 12] - 2.67857147e-2F*v_x[t0][ii_rec2_5 + 14][ii_rec2_4 + 12][ii_rec2_3 + 12] + 7.93650805e-3F*v_x[t0][ii_rec2_5 + 15][ii_rec2_4 + 12][ii_rec2_3 + 12] - 1.78571431e-3F*v_x[t0][ii_rec2_5 + 16][ii_rec2_4 + 12][ii_rec2_3 + 12] + 2.59740264e-4F*v_x[t0][ii_rec2_5 + 17][ii_rec2_4 + 12][ii_rec2_3 + 12] - 1.80375183e-5F*v_x[t0][ii_rec2_5 + 18][ii_rec2_4 + 12][ii_rec2_3 + 12] + 1.80375183e-5F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 6][ii_rec2_3 + 12] - 2.59740264e-4F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 7][ii_rec2_3 + 12] + 1.78571431e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 8][ii_rec2_3 + 12] - 7.93650805e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 9][ii_rec2_3 + 12] + 2.67857147e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 10][ii_rec2_3 + 12] - 8.5714287e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 11][ii_rec2_3 + 12] + 8.5714287e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 13][ii_rec2_3 + 12] - 2.67857147e-2F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 14][ii_rec2_3 + 12] + 7.93650805e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 15][ii_rec2_3 + 12] - 1.78571431e-3F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 16][ii_rec2_3 + 12] + 2.59740264e-4F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 17][ii_rec2_3 + 12] - 1.80375183e-5F*v_y[t0][ii_rec2_5 + 12][ii_rec2_4 + 18][ii_rec2_3 + 12] + 1.80375183e-5F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 6] - 2.59740264e-4F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 7] + 1.78571431e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 8] - 7.93650805e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 9] + 2.67857147e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 10] - 8.5714287e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 11] + 8.5714287e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 13] - 2.67857147e-2F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 14] + 7.93650805e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 15] - 1.78571431e-3F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 16] + 2.59740264e-4F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 17] - 1.80375183e-5F*v_z[t0][ii_rec2_5 + 12][ii_rec2_4 + 12][ii_rec2_3 + 18]);
         }
         rec2[time][p_rec2] = sum;
       }
@@ -404,7 +397,6 @@ int ForwardElastic(struct dataobj *restrict damp_vec, const float dt, struct dat
 
 void sendrecv_txyz(struct dataobj *restrict a_vec, const int buf_x_size, const int buf_y_size, const int buf_z_size, int ogtime, int ogx, int ogy, int ogz, int ostime, int osx, int osy, int osz, int fromrank, int torank, MPI_Comm comm, const int nthreads)
 {
-  float (*restrict a)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]]) a_vec->data;
   float (*bufs)[buf_y_size][buf_z_size];
   posix_memalign((void**)&bufs, 64, sizeof(float[buf_x_size][buf_y_size][buf_z_size]));
   float (*bufg)[buf_y_size][buf_z_size];
@@ -469,9 +461,8 @@ void scatter_txyz(float *restrict buf_vec, const int buf_x_size, const int buf_y
   }
 }
 
-void haloupdate7(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
+void haloupdate_7(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
 {
-  float (*restrict a)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]]) a_vec->data;
   sendrecv_txyz(a_vec,a_vec->hsize[3],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[2],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[3],a_vec->hofs[4],a_vec->hofs[6],nb->rcc,nb->lcc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->hsize[2],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[3],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->lcc,nb->rcc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->hsize[5],a_vec->npsize[3],otime,a_vec->hofs[2],a_vec->oofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[5],a_vec->hofs[6],nb->crc,nb->clc,comm,nthreads);
@@ -480,50 +471,44 @@ void haloupdate7(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborh
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->npsize[2],a_vec->hsize[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->oofs[7],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->ccl,nb->ccr,comm,nthreads);
 }
 
-void haloupdate0(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
+void haloupdate_0(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
 {
-  float (*restrict a)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]]) a_vec->data;
   sendrecv_txyz(a_vec,a_vec->hsize[3],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[2],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[3],a_vec->hofs[4],a_vec->hofs[6],nb->rcc,nb->lcc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->hsize[2],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[3],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->lcc,nb->rcc,comm,nthreads);
 }
 
-void haloupdate1(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
+void haloupdate_1(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
 {
-  float (*restrict a)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]]) a_vec->data;
   sendrecv_txyz(a_vec,a_vec->hsize[3],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[2],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[3],a_vec->hofs[4],a_vec->hofs[6],nb->rcc,nb->lcc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->hsize[2],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[3],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->lcc,nb->rcc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->hsize[5],a_vec->npsize[3],otime,a_vec->hofs[2],a_vec->oofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[5],a_vec->hofs[6],nb->crc,nb->clc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->hsize[4],a_vec->npsize[3],otime,a_vec->hofs[2],a_vec->oofs[5],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->clc,nb->crc,comm,nthreads);
 }
 
-void haloupdate2(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
+void haloupdate_2(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
 {
-  float (*restrict a)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]]) a_vec->data;
   sendrecv_txyz(a_vec,a_vec->hsize[3],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[2],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[3],a_vec->hofs[4],a_vec->hofs[6],nb->rcc,nb->lcc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->hsize[2],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[3],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->lcc,nb->rcc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->npsize[2],a_vec->hsize[7],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->oofs[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[7],nb->ccr,nb->ccl,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->npsize[2],a_vec->hsize[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->oofs[7],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->ccl,nb->ccr,comm,nthreads);
 }
 
-void haloupdate3(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
+void haloupdate_3(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
 {
-  float (*restrict a)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]]) a_vec->data;
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->hsize[5],a_vec->npsize[3],otime,a_vec->hofs[2],a_vec->oofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[5],a_vec->hofs[6],nb->crc,nb->clc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->hsize[4],a_vec->npsize[3],otime,a_vec->hofs[2],a_vec->oofs[5],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->clc,nb->crc,comm,nthreads);
 }
 
-void haloupdate4(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
+void haloupdate_4(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
 {
-  float (*restrict a)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]]) a_vec->data;
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->hsize[5],a_vec->npsize[3],otime,a_vec->hofs[2],a_vec->oofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[5],a_vec->hofs[6],nb->crc,nb->clc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->hsize[4],a_vec->npsize[3],otime,a_vec->hofs[2],a_vec->oofs[5],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->clc,nb->crc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->npsize[2],a_vec->hsize[7],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->oofs[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[7],nb->ccr,nb->ccl,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->npsize[2],a_vec->hsize[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->oofs[7],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->ccl,nb->ccr,comm,nthreads);
 }
 
-void haloupdate5(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
+void haloupdate_5(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
 {
-  float (*restrict a)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]]) a_vec->data;
   sendrecv_txyz(a_vec,a_vec->hsize[3],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[2],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[3],a_vec->hofs[4],a_vec->hofs[6],nb->rcc,nb->lcc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->hsize[2],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[3],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->lcc,nb->rcc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->hsize[5],a_vec->npsize[3],otime,a_vec->hofs[2],a_vec->oofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[5],a_vec->hofs[6],nb->crc,nb->clc,comm,nthreads);
@@ -532,9 +517,8 @@ void haloupdate5(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborh
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->npsize[2],a_vec->hsize[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->oofs[7],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->ccl,nb->ccr,comm,nthreads);
 }
 
-void haloupdate6(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
+void haloupdate_6(struct dataobj *restrict a_vec, MPI_Comm comm, struct neighborhood * nb, int otime, const int nthreads)
 {
-  float (*restrict a)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]] __attribute__ ((aligned (64))) = (float (*)[a_vec->size[1]][a_vec->size[2]][a_vec->size[3]]) a_vec->data;
   sendrecv_txyz(a_vec,a_vec->hsize[3],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[2],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[3],a_vec->hofs[4],a_vec->hofs[6],nb->rcc,nb->lcc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->hsize[2],a_vec->npsize[2],a_vec->npsize[3],otime,a_vec->oofs[3],a_vec->hofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[4],a_vec->hofs[6],nb->lcc,nb->rcc,comm,nthreads);
   sendrecv_txyz(a_vec,a_vec->npsize[1],a_vec->hsize[5],a_vec->npsize[3],otime,a_vec->hofs[2],a_vec->oofs[4],a_vec->hofs[6],otime,a_vec->hofs[2],a_vec->hofs[5],a_vec->hofs[6],nb->crc,nb->clc,comm,nthreads);
@@ -574,9 +558,9 @@ void bf0(struct dataobj *restrict damp_vec, struct dataobj *restrict irho_vec, s
             #pragma omp simd aligned(damp,irho,tau_xx,tau_xy,tau_xz,tau_yy,tau_yz,tau_zz,v_x,v_y,v_z:32)
             for (int z = z_m; z <= z_M; z += 1)
             {
-              v_x[t1][x + 8][y + 8][z + 8] = 7.00999975204468e-1F*(irho[x + 8][y + 8][z + 8] + irho[x + 9][y + 8][z + 8])*(6.97544653e-5F*(tau_xx[t0][x + 5][y + 8][z + 8] - tau_xx[t0][x + 12][y + 8][z + 8] + tau_xy[t0][x + 8][y + 4][z + 8] - tau_xy[t0][x + 8][y + 11][z + 8] + tau_xz[t0][x + 8][y + 8][z + 4] - tau_xz[t0][x + 8][y + 8][z + 11]) + 9.57031264e-4F*(-tau_xx[t0][x + 6][y + 8][z + 8] + tau_xx[t0][x + 11][y + 8][z + 8] - tau_xy[t0][x + 8][y + 5][z + 8] + tau_xy[t0][x + 8][y + 10][z + 8] - tau_xz[t0][x + 8][y + 8][z + 5] + tau_xz[t0][x + 8][y + 8][z + 10]) + 7.97526054e-3F*(tau_xx[t0][x + 7][y + 8][z + 8] - tau_xx[t0][x + 10][y + 8][z + 8] + tau_xy[t0][x + 8][y + 6][z + 8] - tau_xy[t0][x + 8][y + 9][z + 8] + tau_xz[t0][x + 8][y + 8][z + 6] - tau_xz[t0][x + 8][y + 8][z + 9]) + 1.19628908e-1F*(-tau_xx[t0][x + 8][y + 8][z + 8] + tau_xx[t0][x + 9][y + 8][z + 8] - tau_xy[t0][x + 8][y + 7][z + 8] + tau_xy[t0][x + 8][y + 8][z + 8] - tau_xz[t0][x + 8][y + 8][z + 7] + tau_xz[t0][x + 8][y + 8][z + 8]))*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*v_x[t0][x + 8][y + 8][z + 8];
-              v_y[t1][x + 8][y + 8][z + 8] = 7.00999975204468e-1F*(irho[x + 8][y + 8][z + 8] + irho[x + 8][y + 9][z + 8])*(6.97544653e-5F*(tau_xy[t0][x + 4][y + 8][z + 8] - tau_xy[t0][x + 11][y + 8][z + 8] + tau_yy[t0][x + 8][y + 5][z + 8] - tau_yy[t0][x + 8][y + 12][z + 8] + tau_yz[t0][x + 8][y + 8][z + 4] - tau_yz[t0][x + 8][y + 8][z + 11]) + 9.57031264e-4F*(-tau_xy[t0][x + 5][y + 8][z + 8] + tau_xy[t0][x + 10][y + 8][z + 8] - tau_yy[t0][x + 8][y + 6][z + 8] + tau_yy[t0][x + 8][y + 11][z + 8] - tau_yz[t0][x + 8][y + 8][z + 5] + tau_yz[t0][x + 8][y + 8][z + 10]) + 7.97526054e-3F*(tau_xy[t0][x + 6][y + 8][z + 8] - tau_xy[t0][x + 9][y + 8][z + 8] + tau_yy[t0][x + 8][y + 7][z + 8] - tau_yy[t0][x + 8][y + 10][z + 8] + tau_yz[t0][x + 8][y + 8][z + 6] - tau_yz[t0][x + 8][y + 8][z + 9]) + 1.19628908e-1F*(-tau_xy[t0][x + 7][y + 8][z + 8] + tau_xy[t0][x + 8][y + 8][z + 8] - tau_yy[t0][x + 8][y + 8][z + 8] + tau_yy[t0][x + 8][y + 9][z + 8] - tau_yz[t0][x + 8][y + 8][z + 7] + tau_yz[t0][x + 8][y + 8][z + 8]))*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*v_y[t0][x + 8][y + 8][z + 8];
-              v_z[t1][x + 8][y + 8][z + 8] = 7.00999975204468e-1F*(irho[x + 8][y + 8][z + 8] + irho[x + 8][y + 8][z + 9])*(6.97544653e-5F*(tau_xz[t0][x + 4][y + 8][z + 8] - tau_xz[t0][x + 11][y + 8][z + 8] + tau_yz[t0][x + 8][y + 4][z + 8] - tau_yz[t0][x + 8][y + 11][z + 8] + tau_zz[t0][x + 8][y + 8][z + 5] - tau_zz[t0][x + 8][y + 8][z + 12]) + 9.57031264e-4F*(-tau_xz[t0][x + 5][y + 8][z + 8] + tau_xz[t0][x + 10][y + 8][z + 8] - tau_yz[t0][x + 8][y + 5][z + 8] + tau_yz[t0][x + 8][y + 10][z + 8] - tau_zz[t0][x + 8][y + 8][z + 6] + tau_zz[t0][x + 8][y + 8][z + 11]) + 7.97526054e-3F*(tau_xz[t0][x + 6][y + 8][z + 8] - tau_xz[t0][x + 9][y + 8][z + 8] + tau_yz[t0][x + 8][y + 6][z + 8] - tau_yz[t0][x + 8][y + 9][z + 8] + tau_zz[t0][x + 8][y + 8][z + 7] - tau_zz[t0][x + 8][y + 8][z + 10]) + 1.19628908e-1F*(-tau_xz[t0][x + 7][y + 8][z + 8] + tau_xz[t0][x + 8][y + 8][z + 8] - tau_yz[t0][x + 8][y + 7][z + 8] + tau_yz[t0][x + 8][y + 8][z + 8] - tau_zz[t0][x + 8][y + 8][z + 8] + tau_zz[t0][x + 8][y + 8][z + 9]))*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*v_z[t0][x + 8][y + 8][z + 8];
+              v_x[t1][x + 12][y + 12][z + 12] = 7.00999975204468e-1F*(irho[x + 12][y + 12][z + 12] + irho[x + 13][y + 12][z + 12])*(2.18478119e-6F*(tau_xx[t0][x + 7][y + 12][z + 12] - tau_xx[t0][x + 18][y + 12][z + 12] + tau_xy[t0][x + 12][y + 6][z + 12] - tau_xy[t0][x + 12][y + 17][z + 12] + tau_xz[t0][x + 12][y + 12][z + 6] - tau_xz[t0][x + 12][y + 12][z + 17]) + 3.59005404e-5F*(-tau_xx[t0][x + 8][y + 12][z + 12] + tau_xx[t0][x + 17][y + 12][z + 12] - tau_xy[t0][x + 12][y + 7][z + 12] + tau_xy[t0][x + 12][y + 16][z + 12] - tau_xz[t0][x + 12][y + 12][z + 7] + tau_xz[t0][x + 12][y + 12][z + 16]) + 2.96728956e-4F*(tau_xx[t0][x + 9][y + 12][z + 12] - tau_xx[t0][x + 16][y + 12][z + 12] + tau_xy[t0][x + 12][y + 8][z + 12] - tau_xy[t0][x + 12][y + 15][z + 12] + tau_xz[t0][x + 12][y + 12][z + 8] - tau_xz[t0][x + 12][y + 12][z + 15]) + 1.74476626e-3F*(-tau_xx[t0][x + 10][y + 12][z + 12] + tau_xx[t0][x + 15][y + 12][z + 12] - tau_xy[t0][x + 12][y + 9][z + 12] + tau_xy[t0][x + 12][y + 14][z + 12] - tau_xz[t0][x + 12][y + 12][z + 9] + tau_xz[t0][x + 12][y + 12][z + 14]) + 9.6931459e-3F*(tau_xx[t0][x + 11][y + 12][z + 12] - tau_xx[t0][x + 14][y + 12][z + 12] + tau_xy[t0][x + 12][y + 10][z + 12] - tau_xy[t0][x + 12][y + 13][z + 12] + tau_xz[t0][x + 12][y + 12][z + 10] - tau_xz[t0][x + 12][y + 12][z + 13]) + 1.22133638e-1F*(-tau_xx[t0][x + 12][y + 12][z + 12] + tau_xx[t0][x + 13][y + 12][z + 12] - tau_xy[t0][x + 12][y + 11][z + 12] + tau_xy[t0][x + 12][y + 12][z + 12] - tau_xz[t0][x + 12][y + 12][z + 11] + tau_xz[t0][x + 12][y + 12][z + 12]))*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*v_x[t0][x + 12][y + 12][z + 12];
+              v_y[t1][x + 12][y + 12][z + 12] = 7.00999975204468e-1F*(irho[x + 12][y + 12][z + 12] + irho[x + 12][y + 13][z + 12])*(2.18478119e-6F*(tau_xy[t0][x + 6][y + 12][z + 12] - tau_xy[t0][x + 17][y + 12][z + 12] + tau_yy[t0][x + 12][y + 7][z + 12] - tau_yy[t0][x + 12][y + 18][z + 12] + tau_yz[t0][x + 12][y + 12][z + 6] - tau_yz[t0][x + 12][y + 12][z + 17]) + 3.59005404e-5F*(-tau_xy[t0][x + 7][y + 12][z + 12] + tau_xy[t0][x + 16][y + 12][z + 12] - tau_yy[t0][x + 12][y + 8][z + 12] + tau_yy[t0][x + 12][y + 17][z + 12] - tau_yz[t0][x + 12][y + 12][z + 7] + tau_yz[t0][x + 12][y + 12][z + 16]) + 2.96728956e-4F*(tau_xy[t0][x + 8][y + 12][z + 12] - tau_xy[t0][x + 15][y + 12][z + 12] + tau_yy[t0][x + 12][y + 9][z + 12] - tau_yy[t0][x + 12][y + 16][z + 12] + tau_yz[t0][x + 12][y + 12][z + 8] - tau_yz[t0][x + 12][y + 12][z + 15]) + 1.74476626e-3F*(-tau_xy[t0][x + 9][y + 12][z + 12] + tau_xy[t0][x + 14][y + 12][z + 12] - tau_yy[t0][x + 12][y + 10][z + 12] + tau_yy[t0][x + 12][y + 15][z + 12] - tau_yz[t0][x + 12][y + 12][z + 9] + tau_yz[t0][x + 12][y + 12][z + 14]) + 9.6931459e-3F*(tau_xy[t0][x + 10][y + 12][z + 12] - tau_xy[t0][x + 13][y + 12][z + 12] + tau_yy[t0][x + 12][y + 11][z + 12] - tau_yy[t0][x + 12][y + 14][z + 12] + tau_yz[t0][x + 12][y + 12][z + 10] - tau_yz[t0][x + 12][y + 12][z + 13]) + 1.22133638e-1F*(-tau_xy[t0][x + 11][y + 12][z + 12] + tau_xy[t0][x + 12][y + 12][z + 12] - tau_yy[t0][x + 12][y + 12][z + 12] + tau_yy[t0][x + 12][y + 13][z + 12] - tau_yz[t0][x + 12][y + 12][z + 11] + tau_yz[t0][x + 12][y + 12][z + 12]))*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*v_y[t0][x + 12][y + 12][z + 12];
+              v_z[t1][x + 12][y + 12][z + 12] = 7.00999975204468e-1F*(irho[x + 12][y + 12][z + 12] + irho[x + 12][y + 12][z + 13])*(2.18478119e-6F*(tau_xz[t0][x + 6][y + 12][z + 12] - tau_xz[t0][x + 17][y + 12][z + 12] + tau_yz[t0][x + 12][y + 6][z + 12] - tau_yz[t0][x + 12][y + 17][z + 12] + tau_zz[t0][x + 12][y + 12][z + 7] - tau_zz[t0][x + 12][y + 12][z + 18]) + 3.59005404e-5F*(-tau_xz[t0][x + 7][y + 12][z + 12] + tau_xz[t0][x + 16][y + 12][z + 12] - tau_yz[t0][x + 12][y + 7][z + 12] + tau_yz[t0][x + 12][y + 16][z + 12] - tau_zz[t0][x + 12][y + 12][z + 8] + tau_zz[t0][x + 12][y + 12][z + 17]) + 2.96728956e-4F*(tau_xz[t0][x + 8][y + 12][z + 12] - tau_xz[t0][x + 15][y + 12][z + 12] + tau_yz[t0][x + 12][y + 8][z + 12] - tau_yz[t0][x + 12][y + 15][z + 12] + tau_zz[t0][x + 12][y + 12][z + 9] - tau_zz[t0][x + 12][y + 12][z + 16]) + 1.74476626e-3F*(-tau_xz[t0][x + 9][y + 12][z + 12] + tau_xz[t0][x + 14][y + 12][z + 12] - tau_yz[t0][x + 12][y + 9][z + 12] + tau_yz[t0][x + 12][y + 14][z + 12] - tau_zz[t0][x + 12][y + 12][z + 10] + tau_zz[t0][x + 12][y + 12][z + 15]) + 9.6931459e-3F*(tau_xz[t0][x + 10][y + 12][z + 12] - tau_xz[t0][x + 13][y + 12][z + 12] + tau_yz[t0][x + 12][y + 10][z + 12] - tau_yz[t0][x + 12][y + 13][z + 12] + tau_zz[t0][x + 12][y + 12][z + 11] - tau_zz[t0][x + 12][y + 12][z + 14]) + 1.22133638e-1F*(-tau_xz[t0][x + 11][y + 12][z + 12] + tau_xz[t0][x + 12][y + 12][z + 12] - tau_yz[t0][x + 12][y + 11][z + 12] + tau_yz[t0][x + 12][y + 12][z + 12] - tau_zz[t0][x + 12][y + 12][z + 12] + tau_zz[t0][x + 12][y + 12][z + 13]))*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*v_z[t0][x + 12][y + 12][z + 12];
             }
           }
         }
@@ -617,28 +601,34 @@ void bf1(struct dataobj *restrict damp_vec, struct dataobj *restrict lam_vec, st
             #pragma omp simd aligned(damp,lam,mu,tau_xx,tau_xy,tau_xz,tau_yy,tau_yz,tau_zz,v_x,v_y,v_z:32)
             for (int z = z_m; z <= z_M; z += 1)
             {
-              float r55 = -v_z[t1][x + 8][y + 8][z + 8];
-              float r54 = -v_y[t1][x + 8][y + 8][z + 8];
-              float r53 = -v_x[t1][x + 8][y + 8][z + 8];
-              float r52 = -v_z[t1][x + 8][y + 8][z + 9];
-              float r51 = -v_y[t1][x + 8][y + 9][z + 8];
-              float r50 = -v_x[t1][x + 9][y + 8][z + 8];
-              float r49 = -v_z[t1][x + 8][y + 8][z + 5];
-              float r48 = -v_y[t1][x + 8][y + 5][z + 8];
-              float r47 = -v_x[t1][x + 5][y + 8][z + 8];
-              float r46 = -v_z[t1][x + 8][y + 8][z + 7];
-              float r45 = -v_y[t1][x + 8][y + 7][z + 8];
-              float r44 = -v_x[t1][x + 7][y + 8][z + 8];
-              float r43 = -v_z[t1][x + 8][y + 8][z + 11];
-              float r42 = -v_y[t1][x + 8][y + 11][z + 8];
-              float r41 = -v_x[t1][x + 11][y + 8][z + 8];
-              float r40 = 1.402F*(6.97544653e-5F*(r41 + r42 + r43 + v_x[t1][x + 4][y + 8][z + 8] + v_y[t1][x + 8][y + 4][z + 8] + v_z[t1][x + 8][y + 8][z + 4]) + 1.19628908e-1F*(r44 + r45 + r46 + v_x[t1][x + 8][y + 8][z + 8] + v_y[t1][x + 8][y + 8][z + 8] + v_z[t1][x + 8][y + 8][z + 8]) + 9.57031264e-4F*(r47 + r48 + r49 + v_x[t1][x + 10][y + 8][z + 8] + v_y[t1][x + 8][y + 10][z + 8] + v_z[t1][x + 8][y + 8][z + 10]) + 7.97526054e-3F*(r50 + r51 + r52 + v_x[t1][x + 6][y + 8][z + 8] + v_y[t1][x + 8][y + 6][z + 8] + v_z[t1][x + 8][y + 8][z + 6]))*damp[x + 1][y + 1][z + 1]*lam[x + 8][y + 8][z + 8];
-              tau_xx[t1][x + 8][y + 8][z + 8] = r40 + 2.804F*(6.97544653e-5F*(r41 + v_x[t1][x + 4][y + 8][z + 8]) + 1.19628908e-1F*(r44 + v_x[t1][x + 8][y + 8][z + 8]) + 9.57031264e-4F*(r47 + v_x[t1][x + 10][y + 8][z + 8]) + 7.97526054e-3F*(r50 + v_x[t1][x + 6][y + 8][z + 8]))*damp[x + 1][y + 1][z + 1]*mu[x + 8][y + 8][z + 8] + damp[x + 1][y + 1][z + 1]*tau_xx[t0][x + 8][y + 8][z + 8];
-              tau_xy[t1][x + 8][y + 8][z + 8] = 3.50499987602234e-1F*(1.19628908e-1F*(r53 + r54 + v_x[t1][x + 8][y + 9][z + 8] + v_y[t1][x + 9][y + 8][z + 8]) + 6.97544653e-5F*(v_x[t1][x + 8][y + 5][z + 8] - v_x[t1][x + 8][y + 12][z + 8] + v_y[t1][x + 5][y + 8][z + 8] - v_y[t1][x + 12][y + 8][z + 8]) + 9.57031264e-4F*(-v_x[t1][x + 8][y + 6][z + 8] + v_x[t1][x + 8][y + 11][z + 8] - v_y[t1][x + 6][y + 8][z + 8] + v_y[t1][x + 11][y + 8][z + 8]) + 7.97526054e-3F*(v_x[t1][x + 8][y + 7][z + 8] - v_x[t1][x + 8][y + 10][z + 8] + v_y[t1][x + 7][y + 8][z + 8] - v_y[t1][x + 10][y + 8][z + 8]))*(mu[x + 8][y + 8][z + 8] + mu[x + 8][y + 9][z + 8] + mu[x + 9][y + 8][z + 8] + mu[x + 9][y + 9][z + 8])*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*tau_xy[t0][x + 8][y + 8][z + 8];
-              tau_xz[t1][x + 8][y + 8][z + 8] = 3.50499987602234e-1F*(1.19628908e-1F*(r53 + r55 + v_x[t1][x + 8][y + 8][z + 9] + v_z[t1][x + 9][y + 8][z + 8]) + 6.97544653e-5F*(v_x[t1][x + 8][y + 8][z + 5] - v_x[t1][x + 8][y + 8][z + 12] + v_z[t1][x + 5][y + 8][z + 8] - v_z[t1][x + 12][y + 8][z + 8]) + 9.57031264e-4F*(-v_x[t1][x + 8][y + 8][z + 6] + v_x[t1][x + 8][y + 8][z + 11] - v_z[t1][x + 6][y + 8][z + 8] + v_z[t1][x + 11][y + 8][z + 8]) + 7.97526054e-3F*(v_x[t1][x + 8][y + 8][z + 7] - v_x[t1][x + 8][y + 8][z + 10] + v_z[t1][x + 7][y + 8][z + 8] - v_z[t1][x + 10][y + 8][z + 8]))*(mu[x + 8][y + 8][z + 8] + mu[x + 8][y + 8][z + 9] + mu[x + 9][y + 8][z + 8] + mu[x + 9][y + 8][z + 9])*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*tau_xz[t0][x + 8][y + 8][z + 8];
-              tau_yy[t1][x + 8][y + 8][z + 8] = r40 + 2.804F*(6.97544653e-5F*(r42 + v_y[t1][x + 8][y + 4][z + 8]) + 1.19628908e-1F*(r45 + v_y[t1][x + 8][y + 8][z + 8]) + 9.57031264e-4F*(r48 + v_y[t1][x + 8][y + 10][z + 8]) + 7.97526054e-3F*(r51 + v_y[t1][x + 8][y + 6][z + 8]))*damp[x + 1][y + 1][z + 1]*mu[x + 8][y + 8][z + 8] + damp[x + 1][y + 1][z + 1]*tau_yy[t0][x + 8][y + 8][z + 8];
-              tau_yz[t1][x + 8][y + 8][z + 8] = 3.50499987602234e-1F*(1.19628908e-1F*(r54 + r55 + v_y[t1][x + 8][y + 8][z + 9] + v_z[t1][x + 8][y + 9][z + 8]) + 6.97544653e-5F*(v_y[t1][x + 8][y + 8][z + 5] - v_y[t1][x + 8][y + 8][z + 12] + v_z[t1][x + 8][y + 5][z + 8] - v_z[t1][x + 8][y + 12][z + 8]) + 9.57031264e-4F*(-v_y[t1][x + 8][y + 8][z + 6] + v_y[t1][x + 8][y + 8][z + 11] - v_z[t1][x + 8][y + 6][z + 8] + v_z[t1][x + 8][y + 11][z + 8]) + 7.97526054e-3F*(v_y[t1][x + 8][y + 8][z + 7] - v_y[t1][x + 8][y + 8][z + 10] + v_z[t1][x + 8][y + 7][z + 8] - v_z[t1][x + 8][y + 10][z + 8]))*(mu[x + 8][y + 8][z + 8] + mu[x + 8][y + 8][z + 9] + mu[x + 8][y + 9][z + 8] + mu[x + 8][y + 9][z + 9])*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*tau_yz[t0][x + 8][y + 8][z + 8];
-              tau_zz[t1][x + 8][y + 8][z + 8] = r40 + 2.804F*(6.97544653e-5F*(r43 + v_z[t1][x + 8][y + 8][z + 4]) + 1.19628908e-1F*(r46 + v_z[t1][x + 8][y + 8][z + 8]) + 9.57031264e-4F*(r49 + v_z[t1][x + 8][y + 8][z + 10]) + 7.97526054e-3F*(r52 + v_z[t1][x + 8][y + 8][z + 6]))*damp[x + 1][y + 1][z + 1]*mu[x + 8][y + 8][z + 8] + damp[x + 1][y + 1][z + 1]*tau_zz[t0][x + 8][y + 8][z + 8];
+              float r70 = -v_z[t1][x + 12][y + 12][z + 12];
+              float r69 = -v_y[t1][x + 12][y + 12][z + 12];
+              float r68 = -v_x[t1][x + 12][y + 12][z + 12];
+              float r67 = -v_z[t1][x + 12][y + 12][z + 11];
+              float r66 = -v_y[t1][x + 12][y + 11][z + 12];
+              float r65 = -v_x[t1][x + 11][y + 12][z + 12];
+              float r64 = -v_z[t1][x + 12][y + 12][z + 9];
+              float r63 = -v_y[t1][x + 12][y + 9][z + 12];
+              float r62 = -v_x[t1][x + 9][y + 12][z + 12];
+              float r61 = -v_z[t1][x + 12][y + 12][z + 13];
+              float r60 = -v_y[t1][x + 12][y + 13][z + 12];
+              float r59 = -v_x[t1][x + 13][y + 12][z + 12];
+              float r58 = -v_z[t1][x + 12][y + 12][z + 15];
+              float r57 = -v_y[t1][x + 12][y + 15][z + 12];
+              float r56 = -v_x[t1][x + 15][y + 12][z + 12];
+              float r55 = -v_z[t1][x + 12][y + 12][z + 17];
+              float r54 = -v_y[t1][x + 12][y + 17][z + 12];
+              float r53 = -v_x[t1][x + 17][y + 12][z + 12];
+              float r52 = -v_z[t1][x + 12][y + 12][z + 7];
+              float r51 = -v_y[t1][x + 12][y + 7][z + 12];
+              float r50 = -v_x[t1][x + 7][y + 12][z + 12];
+              float r49 = 1.402F*(3.59005404e-5F*(r50 + r51 + r52 + v_x[t1][x + 16][y + 12][z + 12] + v_y[t1][x + 12][y + 16][z + 12] + v_z[t1][x + 12][y + 12][z + 16]) + 2.18478119e-6F*(r53 + r54 + r55 + v_x[t1][x + 6][y + 12][z + 12] + v_y[t1][x + 12][y + 6][z + 12] + v_z[t1][x + 12][y + 12][z + 6]) + 2.96728956e-4F*(r56 + r57 + r58 + v_x[t1][x + 8][y + 12][z + 12] + v_y[t1][x + 12][y + 8][z + 12] + v_z[t1][x + 12][y + 12][z + 8]) + 9.6931459e-3F*(r59 + r60 + r61 + v_x[t1][x + 10][y + 12][z + 12] + v_y[t1][x + 12][y + 10][z + 12] + v_z[t1][x + 12][y + 12][z + 10]) + 1.74476626e-3F*(r62 + r63 + r64 + v_x[t1][x + 14][y + 12][z + 12] + v_y[t1][x + 12][y + 14][z + 12] + v_z[t1][x + 12][y + 12][z + 14]) + 1.22133638e-1F*(r65 + r66 + r67 + v_x[t1][x + 12][y + 12][z + 12] + v_y[t1][x + 12][y + 12][z + 12] + v_z[t1][x + 12][y + 12][z + 12]))*damp[x + 1][y + 1][z + 1]*lam[x + 12][y + 12][z + 12];
+              tau_xx[t1][x + 12][y + 12][z + 12] = r49 + 2.804F*(3.59005404e-5F*(r50 + v_x[t1][x + 16][y + 12][z + 12]) + 2.18478119e-6F*(r53 + v_x[t1][x + 6][y + 12][z + 12]) + 2.96728956e-4F*(r56 + v_x[t1][x + 8][y + 12][z + 12]) + 9.6931459e-3F*(r59 + v_x[t1][x + 10][y + 12][z + 12]) + 1.74476626e-3F*(r62 + v_x[t1][x + 14][y + 12][z + 12]) + 1.22133638e-1F*(r65 + v_x[t1][x + 12][y + 12][z + 12]))*damp[x + 1][y + 1][z + 1]*mu[x + 12][y + 12][z + 12] + damp[x + 1][y + 1][z + 1]*tau_xx[t0][x + 12][y + 12][z + 12];
+              tau_xy[t1][x + 12][y + 12][z + 12] = 3.50499987602234e-1F*(mu[x + 12][y + 12][z + 12] + mu[x + 12][y + 13][z + 12] + mu[x + 13][y + 12][z + 12] + mu[x + 13][y + 13][z + 12])*(1.22133638e-1F*(r68 + r69 + v_x[t1][x + 12][y + 13][z + 12] + v_y[t1][x + 13][y + 12][z + 12]) + 2.18478119e-6F*(v_x[t1][x + 12][y + 7][z + 12] - v_x[t1][x + 12][y + 18][z + 12] + v_y[t1][x + 7][y + 12][z + 12] - v_y[t1][x + 18][y + 12][z + 12]) + 3.59005404e-5F*(-v_x[t1][x + 12][y + 8][z + 12] + v_x[t1][x + 12][y + 17][z + 12] - v_y[t1][x + 8][y + 12][z + 12] + v_y[t1][x + 17][y + 12][z + 12]) + 2.96728956e-4F*(v_x[t1][x + 12][y + 9][z + 12] - v_x[t1][x + 12][y + 16][z + 12] + v_y[t1][x + 9][y + 12][z + 12] - v_y[t1][x + 16][y + 12][z + 12]) + 1.74476626e-3F*(-v_x[t1][x + 12][y + 10][z + 12] + v_x[t1][x + 12][y + 15][z + 12] - v_y[t1][x + 10][y + 12][z + 12] + v_y[t1][x + 15][y + 12][z + 12]) + 9.6931459e-3F*(v_x[t1][x + 12][y + 11][z + 12] - v_x[t1][x + 12][y + 14][z + 12] + v_y[t1][x + 11][y + 12][z + 12] - v_y[t1][x + 14][y + 12][z + 12]))*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*tau_xy[t0][x + 12][y + 12][z + 12];
+              tau_xz[t1][x + 12][y + 12][z + 12] = 3.50499987602234e-1F*(mu[x + 12][y + 12][z + 12] + mu[x + 12][y + 12][z + 13] + mu[x + 13][y + 12][z + 12] + mu[x + 13][y + 12][z + 13])*(1.22133638e-1F*(r68 + r70 + v_x[t1][x + 12][y + 12][z + 13] + v_z[t1][x + 13][y + 12][z + 12]) + 2.18478119e-6F*(v_x[t1][x + 12][y + 12][z + 7] - v_x[t1][x + 12][y + 12][z + 18] + v_z[t1][x + 7][y + 12][z + 12] - v_z[t1][x + 18][y + 12][z + 12]) + 3.59005404e-5F*(-v_x[t1][x + 12][y + 12][z + 8] + v_x[t1][x + 12][y + 12][z + 17] - v_z[t1][x + 8][y + 12][z + 12] + v_z[t1][x + 17][y + 12][z + 12]) + 2.96728956e-4F*(v_x[t1][x + 12][y + 12][z + 9] - v_x[t1][x + 12][y + 12][z + 16] + v_z[t1][x + 9][y + 12][z + 12] - v_z[t1][x + 16][y + 12][z + 12]) + 1.74476626e-3F*(-v_x[t1][x + 12][y + 12][z + 10] + v_x[t1][x + 12][y + 12][z + 15] - v_z[t1][x + 10][y + 12][z + 12] + v_z[t1][x + 15][y + 12][z + 12]) + 9.6931459e-3F*(v_x[t1][x + 12][y + 12][z + 11] - v_x[t1][x + 12][y + 12][z + 14] + v_z[t1][x + 11][y + 12][z + 12] - v_z[t1][x + 14][y + 12][z + 12]))*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*tau_xz[t0][x + 12][y + 12][z + 12];
+              tau_yy[t1][x + 12][y + 12][z + 12] = r49 + 2.804F*(3.59005404e-5F*(r51 + v_y[t1][x + 12][y + 16][z + 12]) + 2.18478119e-6F*(r54 + v_y[t1][x + 12][y + 6][z + 12]) + 2.96728956e-4F*(r57 + v_y[t1][x + 12][y + 8][z + 12]) + 9.6931459e-3F*(r60 + v_y[t1][x + 12][y + 10][z + 12]) + 1.74476626e-3F*(r63 + v_y[t1][x + 12][y + 14][z + 12]) + 1.22133638e-1F*(r66 + v_y[t1][x + 12][y + 12][z + 12]))*damp[x + 1][y + 1][z + 1]*mu[x + 12][y + 12][z + 12] + damp[x + 1][y + 1][z + 1]*tau_yy[t0][x + 12][y + 12][z + 12];
+              tau_yz[t1][x + 12][y + 12][z + 12] = 3.50499987602234e-1F*(mu[x + 12][y + 12][z + 12] + mu[x + 12][y + 12][z + 13] + mu[x + 12][y + 13][z + 12] + mu[x + 12][y + 13][z + 13])*(1.22133638e-1F*(r69 + r70 + v_y[t1][x + 12][y + 12][z + 13] + v_z[t1][x + 12][y + 13][z + 12]) + 2.18478119e-6F*(v_y[t1][x + 12][y + 12][z + 7] - v_y[t1][x + 12][y + 12][z + 18] + v_z[t1][x + 12][y + 7][z + 12] - v_z[t1][x + 12][y + 18][z + 12]) + 3.59005404e-5F*(-v_y[t1][x + 12][y + 12][z + 8] + v_y[t1][x + 12][y + 12][z + 17] - v_z[t1][x + 12][y + 8][z + 12] + v_z[t1][x + 12][y + 17][z + 12]) + 2.96728956e-4F*(v_y[t1][x + 12][y + 12][z + 9] - v_y[t1][x + 12][y + 12][z + 16] + v_z[t1][x + 12][y + 9][z + 12] - v_z[t1][x + 12][y + 16][z + 12]) + 1.74476626e-3F*(-v_y[t1][x + 12][y + 12][z + 10] + v_y[t1][x + 12][y + 12][z + 15] - v_z[t1][x + 12][y + 10][z + 12] + v_z[t1][x + 12][y + 15][z + 12]) + 9.6931459e-3F*(v_y[t1][x + 12][y + 12][z + 11] - v_y[t1][x + 12][y + 12][z + 14] + v_z[t1][x + 12][y + 11][z + 12] - v_z[t1][x + 12][y + 14][z + 12]))*damp[x + 1][y + 1][z + 1] + damp[x + 1][y + 1][z + 1]*tau_yz[t0][x + 12][y + 12][z + 12];
+              tau_zz[t1][x + 12][y + 12][z + 12] = r49 + 2.804F*(3.59005404e-5F*(r52 + v_z[t1][x + 12][y + 12][z + 16]) + 2.18478119e-6F*(r55 + v_z[t1][x + 12][y + 12][z + 6]) + 2.96728956e-4F*(r58 + v_z[t1][x + 12][y + 12][z + 8]) + 9.6931459e-3F*(r61 + v_z[t1][x + 12][y + 12][z + 10]) + 1.74476626e-3F*(r64 + v_z[t1][x + 12][y + 12][z + 14]) + 1.22133638e-1F*(r67 + v_z[t1][x + 12][y + 12][z + 12]))*damp[x + 1][y + 1][z + 1]*mu[x + 12][y + 12][z + 12] + damp[x + 1][y + 1][z + 1]*tau_zz[t0][x + 12][y + 12][z + 12];
             }
           }
         }
