@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="generator" content="scholpandoc">
+  <meta name="viewport" content="width=device-width">
+  
+  <title>Devito for large scale elastic modelling and anisotropic inversion.</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.7.1/modernizr.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.js"></script>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="https://slimgroup.slim.gatech.edu/ScholMD/standalone/slimweb-scholmd-standalone-v0.1-latest.min.css">
+</head>
+<body>
+<div class="scholmd-container">
+<div class="scholmd-main">
+<div class="scholmd-content">
+<header>
+<h1 class="scholmd-title"><p class="pull-right"><a href="paper.pdf"><img src="https://slimgroup.slim.gatech.edu/ScholMD/icons/PDF_file_96.png" alt="PDF Version" width=48px height=48px /></a><a href="paper.md"><img src="https://slimgroup.slim.gatech.edu/ScholMD/icons/SchMD_file_96.png" alt="Markdown Version" width=48px height=48px /></a></p>Devito for large scale elastic modelling and anisotropic inversion.</h1>
+<div class="scholmd-author">
+<p>Mathias Louboutin<sup>1</sup>, Fabio Luporini<sup>2</sup>, Philipp Witte<sup>1</sup> , Rhodri Nelson<sup>2</sup>, George Bisbas<sup>2</sup>, Jan Thorbecke<sup>3</sup>, Felix J. Herrmann<sup>1</sup> and Gerard Gorman<sup>1</sup><br /><sup>1</sup>School of Computational Science and Engineering, Georgia Institute of Technology<br /><sup>2</sup> Imperial College London<br /><sup>3</sup> TU-Delft</p>
+</div>
+</header>
+<h2 id="abstract">Abstract</h2>
+<p><a href="https://github.com/devitocodes/devito">Devito</a> is an open-source Python project based on domain-specific language and compiler technology. Driven by the requirements of rapid HPC applications development in exploration seismology, the language and compiler have evolved significantly since inception. Sophisticated boundary conditions, tensor contractions, sparse operations and features such as staggered grids and sub-domains are all supported; operators of essentially arbitrary complexity can be generated. To accommodate this flexibility whilst ensuring performance, data dependency analysis is utilized to schedule loops and detect computational-properties such as parallelism. In this article, the generation and simulation of MPI-parallel propagators (along with their adjoints) for the pseudo-acoustic wave-equation in tilted transverse isotropic media and the elastic wave-equation are presented. Simulations are carried out on industry scale synthetic models in a HPC Cloud system and reach a performance of 28TFLOP/s, hence demonstrating Devito’s suitability for production-grade seismic inversion problems.</p>
+<h2 id="introduction">Introduction</h2>
+<p>Seismic imaging methods such Reverse Time Migration (RTM) and Full-waveform inversion (FWI) rely on the numerical solution of an underlying system of partial differential equations (PDEs), most commonly some manifestation of the wave-equation. In the context of FWI, the finite-difference (FDM) and the spectral-element (SEM) methods are most frequently used to solve the wave-equation, with FDM methods dominating within the seismic exploration community <span class="scholmd-citation" data-cites="lyu2020">(Lyu et al., 2020)</span>. Various forms of the wave-equation and modelling strategies for FWI are detailed in <span class="scholmd-citation" data-cites="fichtner2011">(Fichtner, 2010)</span>.</p>
+<p>Despite the theory of FWI dating back to the 1980s <span class="scholmd-citation" data-cites="tarantola">(Tarantola, 1984)</span>, among the first successful expositions on real 3D data was presented in <span class="scholmd-citation" data-cites="sirgue">(Sirgue et al., 2009)</span>. Other studies utilizing FDM within the FWI workflow include <span class="scholmd-citation" data-cites="ratcliffe2011 petersson2013">(Ratcliffe et al., 2011; Petersson and Sj<span>ö</span>green, 2014)</span>. The aforementioned studies approximate the underlying physics via the acoustic wave-equation; higher fidelity models solving the non-isotropic elastic wave-equation have been developed in, e.g., <span class="scholmd-citation" data-cites="osti_1468379 osti_1561580 osti_1561581 sava1 sava2">(Preston, 2018, 2019a, 2019b; Köhn et al., 2015; Zehner et al., 2016)</span>. Owing to the flexibility of the mathematical discretizations that can be utilized, along with the ability to describe problems on complex meshes, there has also been a great deal of interest in utilizing SEM to solve inversion problems <span class="scholmd-citation" data-cites="peter2011 krebsdg">(Peter et al., 2011; Krebs et al., 2014)</span>. The recent study <span class="scholmd-citation" data-cites="trinh2019">(Trinh et al., 2019)</span> presents an efficient SEM based inversion scheme using a viscoelastic formulation of the wave-equation.</p>
+<p>It is generally accepted that the PDE solver utilized within an inversion workflow must satisfy the following criteria <span class="scholmd-citation" data-cites="virieuxmodelling">(Virieux et al., 2009)</span>: - Efficient for multiple-source modelling - The memory requirement of the modelling - The ability of a parallel algorithm to use an increasing number of processors - Ability of the method to process models of arbitrary levels of heterogeneity - Reduce the nonlinearity of FWI - Feasibility of the extension of the modelling approach to more realistic physical descriptions of the media.</p>
+<p>It is with these specifications in mind that Devito, a symbolic domain specific language (DSL) and compiler for the automatic generation of finite-difference stencils, has been developed. Originally deigned to accelerate research and development in exploration geophysics, the high-level interface, previously described in detail in <span class="scholmd-citation" data-cites="devito-api">(M. Louboutin et al., 2019)</span>, is built on top of <code>SymPy</code> <span class="scholmd-citation" data-cites="sympy">(Meurer et al., 2017)</span> and is inspired by the underlying mathematical formulations and other DSLs such as FEniCS <span class="scholmd-citation" data-cites="fenics">(Logg et al., 2012)</span> and Firedrake <span class="scholmd-citation" data-cites="firedrake">(Rathgeber et al., 2015)</span>. This interface allows the user to formulate wave-equations, and more generally time-dependent PDEs in a simple and mathematically coherent way. The <a href="https://github.com/devitocodes/devito">Devito</a> compiler then automatically generates finite-difference stencils from these mathematical expressions. One of the main advantages of <a href="https://github.com/devitocodes/devito">Devito</a> over other finite-difference DSLs is that generic expressions such as sparse operations (i.e. point source injection or localized measurements) are fully supported and expressible in a high-level fashion. The second component of <a href="https://github.com/devitocodes/devito">Devito</a> is its compiler (c.f <span class="scholmd-citation" data-cites="devito-compiler">(<span>Luporini</span> et al., 2018)</span>) that generates highly optimized C code. The generated code is then compiled at runtime for the hardware at hand.</p>
+<p>Previous work focused on the DSL and compiler to highlight the potential application and use cases of Devito. Here, we present a series of extensions and applications to large-scale three-dimensional problem sizes as encountered in exploration geophysics. These experiments are carried out in Cloud-based HPC systems and include elastic forward modelling using distributed-memory parallelism and imaging based on the tilted transverse isotropic (TTI) wave-equation (<span class="scholmd-citation" data-cites="virieux thomsen1986 zhang-tti duveneck louboutin2018segeow">(J. Virieux and Operto, 2009; <span>Thomsen</span>, 1986; Y. Zhang et al., 2011; Duveneck and Bakker, 2011; Mathias Louboutin et al., 2018)</span>). These proof of concepts highlight two critical features: first, the ability of the symbolic interface and the compiler to translate to large-scale adjoint-based inversion problems that require massive compute (since thousands of PDEs are solved) as well as large amounts of memory (since the adjoint state method requires the forward model to be saved in memory). Secondly, through the elastic modelling example, we demonstrate that <a href="https://github.com/devitocodes/devito">Devito</a> now fully supports and automates vectorial and second order tensorial staggered-grid finite-differences with the same high-level API previously presented for scalar fields defined on cartesian grids.</p>
+<p>This paper is organized as follows: first, we provide a brief overview of Devito and its symbolic API and present the distributed memory implementation that allows large-scale modelling and inversion by means of domain decomposition. We then provide a brief comparison with a state of the art hand-coded wave propagator to validate the performance previously benchmarked with the roofline model (<span class="scholmd-citation" data-cites="patterson devito-compiler devito-api louboutin2016ppf">(Patterson and Hennessy, 2007; <span>Luporini</span> et al., 2018; M. Louboutin et al., 2019; Mathias Louboutin et al., 2017)</span>). Before concluding, results from the Cloud-based experiments discussed above are presented, highlighting the vectorial and tensorial capabilities of Devito.</p>
+<h2 id="overview-of-devito">Overview of Devito</h2>
+<p>Devito <span class="scholmd-citation" data-cites="devito-api">(M. Louboutin et al., 2019)</span> provides a functional language built on top of <code>SymPy</code> <span class="scholmd-citation" data-cites="sympy">(Meurer et al., 2017)</span> to symbolically express PDEs at a mathematical level and implements automatic discretization with the finite-difference method. The language is by design flexible enough to express other types of non finite-difference operators, such as interpolation and tensor contractions, that are inherent to measurement-based inverse problems. Several additional features are supported, among which are staggered grids, sub-domains, and stencils with custom coefficients. The last major building block of a solid PDE solver are the boundary conditions which for finite-difference methods are notoriously diverse and often complicated. The system is, however, sufficiently general to express them through a composition of core mechanisms. For example, free surface and perfectly-matched layers (PMLs) boundary conditions can be expressed as equations – just like any other PDE equations – over a suitable sub-domain.</p>
+<p>It is the job of the <a href="https://github.com/devitocodes/devito">Devito</a> compiler to translate the symbolic specification into C code. The lowering of the input language to C consists of several compilation passes, some of which introduce performance optimizations that are the key to rapid code. Next to classic stencil optimizations (e.g., cache blocking, alignment, SIMD and OpenMP parallelism), <a href="https://github.com/devitocodes/devito">Devito</a> applies a series of FLOP-reducing transformations as well as aggressive loop fusion. For a complete treatment, the interested reader should refer to <span class="scholmd-citation" data-cites="devito-compiler">(<span>Luporini</span> et al., 2018)</span>.</p>
+<h3 id="symbolic-language-and-compilation">Symbolic language and compilation</h3>
+<p>In this section we illustrate the <a href="https://github.com/devitocodes/devito">Devito</a> language by demonstrating an implementation of the acoustic wave-equation in isotropic media 
+<span class="math scholmd-math-display" style="display: block;">\[
+\begin{equation}
+\begin{cases}
+ m \frac{d^2 u(t, x)}{dt^2} - \Delta u(t, x) = \delta(xs) q(t) \\
+ u(0, .) = \frac{d u(t, x)}{dt}(0, .) = 0 \\
+ d(t, .) = u(t, xr).
+ \end{cases}
+\label{acou}
+\end{equation}
+\]</span>
+ The core of the Devito symbolic API consists of three classes:</p>
+<ul>
+<li><code>Grid</code>, a representation of the discretized model.</li>
+<li><code>(Time)Function</code>, a representation of spatially (and time-) varying variables defined on a <code>Grid</code> object.</li>
+<li><code>Sparse(Time)Function</code> a representation of (time-varying) point objects on a <code>Grid</code> object, generally unaligned with respect to the grid points, hence called “sparse”.</li>
+</ul>
+<pre class="sourceCode python"><code class="sourceCode python"><span class="ch">from</span> devito <span class="ch">import</span> Grid
+grid = Grid(shape=(nx, ny, nz), extent=(ext_x, ext_y, ext_z), origin=(o_x, o_y, o_z))</code></pre>
+<p>where <code>(nx, ny, nz)</code> are the number of grid points in each direction, <code>(ext_x, ext_y, ext_z)</code> is the physical extent of the domain in physical units (i.e <code>m</code>) and <code>(o_x, o_y, o_z)</code> is the origin of the domain in the same physical units. The object <code>grid</code> contains all the information related to the discretization such as the grid spacing. We use <code>grid</code> to create the symbolic objects that will be used to express the wave-equation. First, we define a spatially varying model parameter <code>m</code> and a time-space varying field <code>u</code></p>
+<pre class="sourceCode python"><code class="sourceCode python"><span class="ch">from</span> devito <span class="ch">import</span> Function, TimeFunction
+m = Function(name=<span class="st">&quot;m&quot;</span>, grid=grid, space_order=so)
+u = TimeFunction(name=<span class="st">&quot;u&quot;</span>, grid=grid, space_order=so, time_order=to)</code></pre>
+<p>where <code>so</code> is the order of the spatial discretization and <code>to</code> the time discretization order used when generating the finite-difference stencil. Next, we define point source objects (<code>src</code>) located at the physical coordinates <span class="math scholmd-math-inline">\(x_r\)</span>, and the receiver (measurement) objects (<code>d</code>) located at the physical locations <span class="math scholmd-math-inline">\(x_r\)</span></p>
+<pre class="sourceCode python"><code class="sourceCode python"><span class="ch">from</span> devito <span class="ch">import</span> Function, TimeFunction
+src = SparseFunction(name=<span class="st">&quot;src&quot;</span>, grid=grid, npoint=<span class="dv">1</span>, coordinates=x_s)
+d = SparseTimeFunction(name=<span class="st">&quot;d&quot;</span>, grid=grid, npoint=<span class="dv">1</span>, nt=nt, coordinates=x_r)</code></pre>
+<p>The source term is handled separately from the PDE as a point-wise operation called injection, while measurement is handled via interpolation. By default, <a href="https://github.com/devitocodes/devito">Devito</a> initializes all <code>Function</code> data to 0, and thus automatically satisfies the zero Dirichlet condition at <code>t=0</code>. The isotropic acoustic wave-equation can then be implemented in <a href="https://github.com/devitocodes/devito">Devito</a> as follows</p>
+<pre class="sourceCode python"><code class="sourceCode python"><span class="ch">from</span> devito <span class="ch">import</span> solve, Eq, Operator
+Equation= m * u.dt2 - u.laplace
+stencil = [Eq(u.forward, solve(eq, u.forward))]
+src_eqns = s1.inject(u.forward, expr=s1 * dt**<span class="dv">2</span> / m)
+d_eqns = d.interpolate(u)</code></pre>
+<p>To trigger compilation one needs to pass the constructed equations to an <code>Operator</code>.</p>
+<pre class="sourceCode python"><code class="sourceCode python"><span class="ch">from</span> devito <span class="ch">import</span> Operator
+op = Operator(stencil + src_eqns + d_eqns)</code></pre>
+<p>he first compilation pass processes equations individually. The equations are lowered to an enriched representation, while the finite-difference constructs (e.g., derivatives) are translated into actual arithmetic operations. Subsequently, data dependency analysis is used to compute a performance-optimized topological ordering of the input equations (e.g., to maximize the likelihood of loop fusion) and to group them into so called “clusters”. Basically, a cluster will eventually be a loop nest in the generated code, and consecutive clusters may share some outer loops. The ordered sequence of clusters undergoes several optimization passes, including cache blocking and FLOP-reducing transformations. It is then further lowered into an abstract syntax tree, and it is on such representation that parallelism is introduced (SIMD, shared-memory, MPI). Finally, all remaining low-level aspects of code generation are handled, among which the most relevant is data management (e.g., definition of variables, transfers between host and device).</p>
+<p>The output of the <a href="https://github.com/devitocodes/devito">Devito</a> compiler for the running example used in this section is available at <a href="https://github.com/mloubout/SC20Paper/tree/master/codesamples">CodeSample</a> in <code>acou-so8.c</code>.</p>
+<h3 id="distributed-memory-parallelism">Distributed-memory parallelism</h3>
+<p>We here provide a succinct description of distributed-memory parallelism in Devito; the interested reader should refer to the MPI tutorial <a href="https://github.com/devitocodes/devito/blob/v4.2/examples/mpi/overview.ipynb">mpi-notebook</a> for thorough explanations and practical examples.</p>
+<p>Devito implements distributed-memory parallelism on top of MPI. The design is such that users can almost entirely abstract away from it and reuse non-distributed code as is. Given any <a href="https://github.com/devitocodes/devito">Devito</a> code, just running it as</p>
+<pre class="sourceCode python"><code class="sourceCode python">DEVITO_MPI=<span class="dv">1</span> mpirun -n X python ...</code></pre>
+<p>triggers the generation of code with routines for halo exchanges. The routines are scheduled at a suitable depth in the various loop nests thanks to data dependency analysis. The following optimizations are automatically applied:</p>
+<ul>
+<li>redundant halo exchanges are detected and dropped;</li>
+<li>computation/communication overlap, with prodding of the asynchronous progress engine by a designated thread through repeated calls to <code>MPI_Test</code>;</li>
+<li>a halo exchange is placed as far as possible from where it is needed to maximize computation/communication overlap;</li>
+<li>data packing and unpacking is threaded.</li>
+</ul>
+<p>Domain decomposition occurs in Python upon creation of a <code>Grid</code> object. Exploiting the MPI Cartesian topology abstraction, Devito logically splits a grid based on the number of available MPI processes (noting that users are given an “escape hatch” to override Devito’s default decomposition strategy). <code>Function</code> and <code>TimeFunction</code> objects inherit the <code>Grid</code> decomposition. For <code>SparseFunction</code> objects the approach is different. Since a <code>SparseFunction</code> represents a sparse set of points, <a href="https://github.com/devitocodes/devito">Devito</a> looks at the physical coordinates of each point and, based on the <code>Grid</code> decomposition, schedules the logical ownership to an MPI rank. If a sparse point lies along the boundary of two or more MPI ranks, then it is duplicated in each of these ranks to be accessible by all neighboring processes. Eventually, a duplicated point may be redundantly computed by multiple processes, but any redundant increments will be discarded.</p>
+<p>When accessing or manipulating data in a <a href="https://github.com/devitocodes/devito">Devito</a> code, users have the illusion to be working with classic NumPy arrays, while underneath they are actually distributed. All manner of NumPy indexing schemes (basic, slicing, etc.) are supported. In the implementation, proper global-to-local and local-to-global index conversion routines are used to propagate a read/write access to the impacted subset of ranks. For example, consider the array</p>
+<pre class="sourceCode python"><code class="sourceCode python">A = [[ <span class="dv">1</span>,  <span class="dv">2</span>,  <span class="dv">3</span>,  <span class="dv">4</span>],
+     [ <span class="dv">5</span>,  <span class="dv">6</span>,  <span class="dv">7</span>,  <span class="dv">8</span>],
+     [ <span class="dv">9</span>, <span class="dv">10</span>, <span class="dv">11</span>, <span class="dv">12</span>],
+     [<span class="dv">13</span>, <span class="dv">14</span>, <span class="dv">15</span>, <span class="dv">16</span>]])</code></pre>
+<p>which is distributed across 4 ranks such that <code>rank0</code> contains the elements reading <code>1,2,5,6</code>, <code>rank1</code> the elements <code>3,4,7,8</code>, <code>rank2</code> the elements <code>9,10,13,14</code> and <code>rank3</code> the elements <code>11,12,15,16</code>. The slicing operation <code>A[::-1,::-1]</code> will then return</p>
+<pre class="sourceCode python"><code class="sourceCode python">    [[ <span class="dv">16</span>, <span class="dv">15</span>, <span class="dv">14</span>, <span class="dv">13</span>],
+     [ <span class="dv">12</span>, <span class="dv">11</span>, <span class="dv">10</span>,  <span class="dv">9</span>],
+     [  <span class="dv">8</span>,  <span class="dv">7</span>,  <span class="dv">6</span>,  <span class="dv">5</span>],
+     [  <span class="dv">4</span>,  <span class="dv">3</span>,  <span class="dv">2</span>,  <span class="dv">1</span>]])</code></pre>
+<p>such that now <code>rank0</code> contains the elements <code>16,15,12,11</code> and so forth.</p>
+<p>Finally, we remark that while providing abstractions for distributed data manipulation, Devito does not natively support any mechanisms for parallel I/O. However, the distributed NumPy arrays along with the ability to seamlessly transfer any desired slice of data between ranks provides a generic and flexible infrastructure for the implementation of any form of parallel I/O (e.g., see <span class="scholmd-citation" data-cites="witte2018alf">(Witte et al., 2019b)</span>).</p>
+<h2 id="industry-scale-3d-seismic-imaging-in-anisotropic-media">Industry-scale 3D seismic imaging in anisotropic media</h2>
+<p>One of the main applications of seismic finite-difference modelling in exploration geophysics is reverse-time migration (RTM), a wave-equation based seismic imaging technique. Real-world seismic imaging presents a number of challenges that make applying this method to industry-scale problem sizes difficult. Firstly, RTM requires an accurate representation of the underlying physics via sophisticated wave-equations such as the tilted-transverse isotropic (TTI) wave-equation, for which both forward and adjoint implementations must to be provided. Secondly, wave-equations must be solved for a large number of independent experiments, where each individual PDE solve is itself expensive in terms of FLOPs and memory usage. For certain workloads, limited domain decomposition, which balances the domain size and the number of independent experiments, as well as checkpointing techniques must be adopted. In the following sections, we describe an industry-scale seismic imaging problem that poses all the aforementioned challenges, its implementation with Devito, and the results of an experiment carried out on the Azure Cloud using a synthetic data set.</p>
+<h3 id="anisotropic-wave-equation">Anisotropic wave-equation</h3>
+<p>In our seismic imaging case study, we use an anisotropic representation of the physics called Tilted Transverse Isotropic (TTI) modelling <span class="scholmd-citation" data-cites="thomsen1986">(<span>Thomsen</span>, 1986)</span>. This representation for wave motion is one of the most widely used in exploration geophysics since it captures the leading order kinematics and dynamics of acoustic wave motion in highly heterogeneous elastic media where the medium properties vary more rapidly in the direction perpendicular to sedimentary strata <span class="scholmd-citation" data-cites="alkhalifah2000 baysal1983 bubetti2012 bubetti2014 bubesatti2016 chu2011 duveneck fletcher fowlertti2010 louboutin2018segeow whitmore1983 witte2016segpve xu2014 zhang2005 zhang2011 zhan2013">(<span>Alkhalifah</span>, 2000; <span>Baysal</span> et al., 1983; K. P. Bube et al., 2012; Bube* et al., 2014; K. Bube et al., 2016; Chu et al., 2011; Duveneck and Bakker, 2011; Fletcher et al., 2009; Fowler et al., 2010; Mathias Louboutin et al., 2018; <span>Whitmore</span>, 1983; Witte et al., 2016; <span>Xu</span> and <span>Zhou</span>, 2014; L. <span>Zhang</span> et al., 2005; Y. <span>Zhang</span> et al., 2011; <span>Zhan</span> et al., 2013)</span>. The TTI wave-equation is an acoustic, low dimensional (4 parameters, 2 wavefields) simplification of the 21 parameter and 12 wavefields tensorial equations of motions <span class="scholmd-citation" data-cites="hooke">(Hooke et al., 1678)</span>. This simplified representation is parametrized by the Thomsen parameters <span class="math scholmd-math-inline">\(\epsilon(x), \delta(x)\)</span> that relate to the global (propagation over many wavelengths) difference in propagation speed in the vertical and horizontal directions, and the tilt and azimuth angles <span class="math scholmd-math-inline">\(\theta(x), \phi(x)\)</span> that define the rotation of the vertical and horizontal axes around the cartesian directions. However, unlike the scalar isotropic acoustic wave-equation itself, the TTI wave-equation is extremely computationally costly to solve and it is also not self-adjoint as shown in <span class="scholmd-citation" data-cites="louboutin2018segeow">(Mathias Louboutin et al., 2018)</span>.</p>
+<p>The main complexity of the TTI wave-equation is that the rotation of the symmetry axis of the physics leads to rotated second-order finite-difference stencils. In order to ensure numerical stability, these rotated finite-difference operators are designed to be self-adjoint (c.f. <span class="scholmd-citation" data-cites="zhang2011 duveneck">(Y. <span>Zhang</span> et al., 2011; Duveneck and Bakker, 2011)</span>). For example, we define the rotated second order derivative with respect to <span class="math scholmd-math-inline">\(x\)</span> as: 
+<span class="math scholmd-math-display" style="display: block;">\[
+\begin{equation}
+\begin{aligned}
+  G_{\bar{x}\bar{x}} &amp;= D_{\bar{x}}^T D_{\bar{x}} \\
+  D_{\bar{x}} &amp;= \cos(\mathbf{\theta})\cos(\mathbf{\phi})\frac{\mathrm{d}}{\mathrm{d}x} + \cos(\mathbf{\theta})\sin(\mathbf{\phi})\frac{\mathrm{d}}{\mathrm{d}y} - \sin(\mathbf{\theta})\frac{\mathrm{d}}{\mathrm{d}z}.
+\end{aligned}
+\label{rot}
+\end{equation}
+\]</span>
+ We enable the simple expression of these complicated stencils in Devito as finite-difference shortcuts such as <code>u.dx</code> where <code>u</code> is a <code>Function</code>. Such shortcuts are enabled not only for the basic types but for generic composite expressions, for example <code>(u+v.dx).dy</code>. As a consequence, the rotated derivative defined in <span class="scholmd-crossref"><span class="math scholmd-math-inline">\(\ref{rot}\)</span></span> is implemented with <a href="https://github.com/devitocodes/devito">Devito</a> in two lines as:</p>
+<pre class="python{#rotxpy}"><code>dx_u = cos(theta) * cos(phi) * u.dx + cos(theta) * sin(phi) * u.dy - sin(theta) * u.dz
+
+dxx_u = (cos(theta) * cos(phi) * dx_u).dx.T + (cos(theta) * sin(phi) * dx_u).dy.T - (sin(theta) * dx_u).dz.T</code></pre>
+<p>Note that while the adjoint of the finite-difference stencil is enabled via the standard Python <code>.T</code> shortcut, the expression needs to be reordered by hand since the tilt and azymuth angles are spatially dependent and require to be inside the second pass of first-order derivative. We can see from these simple two lines that the rotated stencil involves all second-order derivatives (<code>.dx.dx</code>, <code>.dy.dy</code> and <code>.dz.dz</code>) and all second-order cross-derivatives (<code>dx.dy</code>, <code>.dx.dz</code> and <code>.dy.dz</code>) which leads to a denser stencil support and higher computational complexity (c.f. <span class="scholmd-citation" data-cites="louboutin2016ppf">(Mathias Louboutin et al., 2017)</span>). For illustrative purposes, the complete generated code for tti modelling with and without MPI is made available at <a href="https://github.com/mloubout/SC20Paper/tree/master/codesamples">CodeSample</a> in <code>tti-so8-unoptimized.c</code>, <code>tti-so8.c</code> and <code>tti-so8-mpi.c</code>.</p>
+<p>Owing to the very high number of floating-point operations (FLOPs) needed per grid point for the weighted rotated Laplacian, this anisotropic wave-equation is extremely challenging to implement. As we show in Table <span class="scholmd-crossref"><a href="#ttiFLOPs">1</a></span>, and previously analysed in <span class="scholmd-citation" data-cites="louboutin2016ppf">(Mathias Louboutin et al., 2017)</span>, the computational cost with high-order finite-difference is in the order of thousands of FLOPs per grid point without optimizations. The version without FLOP-reducing optimizations is a direct translation of the discretized operators into stencil expressions (see <code>tti-so8-unoptimized.c</code>). The version with optimizations employs transformations such as common sub-expressions elimination, factorization, and cross-iteration redundancy elimination – the latter being key in removing redundancies introduced by mixed derivatives. Implementing all of these techniques manually is inherently difficult and laborious. Further, to obtain the desired performance improvements it is necessary to orchestrate them with aggressive loop fusion (for data locality), tiling (for data locality and tensor temporaries), and potentially ad-hoc vectorization strategies (if rotating registers are used). While an explanation of the optimization strategies employed by <a href="https://github.com/devitocodes/devito">Devito</a> is beyond the scope of this paper (see <span class="scholmd-citation" data-cites="devito-compiler">(<span>Luporini</span> et al., 2018)</span> for details), what is emphasized here is that users can easily take full advantage of these optimizations without needed to concern themselves with the details.</p>
+<figure class="scholmd-float scholmd-table-float" id="ttiFLOPs">
+<div class="scholmd-float-content"><table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">spatial order</th>
+<th style="text-align: left;">w/o optimizations</th>
+<th style="text-align: left;">w/ optimizations</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">501</td>
+<td style="text-align: left;">95</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">539</td>
+<td style="text-align: left;">102</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">12</td>
+<td style="text-align: left;">1613</td>
+<td style="text-align: left;">160</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">16</td>
+<td style="text-align: left;">5489</td>
+<td style="text-align: left;">276</td>
+</tr>
+</tbody>
+</table></div>
+<div class="scholmd-float-caption"><figcaption><span class="scholmd-caption-head"><span class="scholmd-caption-head-prefix">Table</span><span class="scholmd-caption-head-label">1</span></span><span class="scholmd-caption-text">Per-grid-point FLOPs of the finite-difference TTI wave-equation stencil with different spatial discretization orders.</span></figcaption></div>
+</figure>
+<p>It is evident that developing an appropriate solver for the TTI wave-equation, an endeavor involving complicated physics, mathematics, and engineering, is exceptionally time-consuming and can lead to thousands of lines of code even for a single choice of discretization. Verification of the results is no less complicated, any minor error is effectively untrackable and any change to the finite-difference scheme or to the time-stepping algorithm is difficult to achieve without substantial re-coding. Another complication stems from the fact that practitioners of seismic inversion are often geoscientists, not computer scientists/programmers. Low level implementations from non-specialists can often lead to poorly performing code. However, if research codes are passed to specialists in the domain of low level code optimization they often lack the necessary geophysical domain knowledge, resulting in code that may lack a key feature required by the geoscientist. Neither situation is conducive to addressing the complexities that come with implementing codes based on the latest geophysical insights in tandem with those from high-performance computing. With <a href="https://github.com/devitocodes/devito">Devito</a> on the other hand, both the forward and adjoint equations can be implemented in a few lines of Python code as illustrated with the rotated operator in Listing  #rotxpy. The low level optimization element of the development is then taken care of under the hood by the Devito compiler.</p>
+<p>The simulation of wave motion is only one aspect of solving problems in seismology. During wave-equation based imaging, it is also required to compute sensitivities (gradient) with respect to the quantities of interest. This requirement imposes additional constraints on the design and implementation of model codes as outlined in <span class="scholmd-citation" data-cites="virieux">(J. Virieux and Operto, 2009)</span>. Along with several factors, such as fast setup time, we focused on correct and testable implementations for the adjoint wave-equation and the gradient (action of the adjoint Jacobian) <span class="scholmd-citation" data-cites="louboutin2018segeow louboutin2020THmfi">(Mathias Louboutin et al., 2018; Mathias Louboutin, 2020)</span>; exactness being a mandatory requirement of gradient based iterative optimization algorithms.</p>
+<h3 id="d-imaging-example-on-azure">3D Imaging example on Azure</h3>
+<p>We now demonstrate the scalability of <a href="https://github.com/devitocodes/devito">Devito</a> to real-world applications by imaging an industry-scale three-dimensional TTI subsurface model. This imaging was carried out in the Cloud on Azure and takes advantage of recent work to port conventional cluster code to the Cloud using a serverless approach. The serverless implementation is detailed in <span class="scholmd-citation" data-cites="witte2019TPDedas witte2019SEGedw">(P. A. <span>Witte</span> et al., 2020; Witte et al., 2019c)</span> where the steps to run computationally and financially efficient HPC workloads in the Cloud are described. This imaging project, in collaboration with Azure, demonstrates the scalability and robustness of <a href="https://github.com/devitocodes/devito">Devito</a> to large scale wave-equation based inverse problems in combination with a cost-effective serverless implementation of seismic imaging in the Cloud. In this example, we imaged a synthetic three-dimensional anisotropic subsurface model that mimics a realistic industry size problem with a realistic representation of the physics (TTI). The physical size of the problem is <code>10kmx10kmx2.8km</code> discretized on a <code>12.5m</code> grid with absorbing layers of width 40 grid points on each side leading to <code>881x881x371</code> computational grid points (<span class="math scholmd-math-inline">\(\approx300\)</span> Million grid points). The final image is the sum of 1500 single-source images: 100 single-source images were computed in parallel on the 200 nodes available using two nodes per source experiment.</p>
+<p><strong><em>Computational performance</em></strong></p>
+<p>We briefly describe the computational setup and the performance achieved for this anisotropic imaging problem. Due to time constraints, and because the resources we were given access to for this proof of concept with Azure were somewhat limited, we did not have access to Infiniband-enabled virtual machines (VM). This experiment was carried out on <code>Standard_E64_v3</code> and <code>Standard_E64s_v3</code> nodes which, while not HPC VM nodes, are memory optimized thus allowing to the wavefield to be stored in memory for imaging (TTI adjoint state gradient <span class="scholmd-citation" data-cites="virieux louboutin2018segeow">(J. Virieux and Operto, 2009; Mathias Louboutin et al., 2018)</span>). These VMs are Intel® Broadwell E5-2673 v4 2.3GH that are dual socket, 32 physical cores (with hyperthreading enabled) and 432Gb of DRAM. The overall inversion involved computing the image for 1500 source positions, i.e. solving 1500 forward and 1500 adjoint TTI wave-equations. A single image required, in single precision, 600Gb of memory. Two VMs were used per source and MPI set with one rank per socket (4 MPI ranks per source) and 100 sources were imaged in parallel. The performance achieved was as follows:</p>
+<ul>
+<li>140 GFLOP/s per VM;</li>
+<li>280 GFLOP/s per source;</li>
+<li>28 TFLOP/s for all 100 running sources;</li>
+<li>110min runtime per source (forward + adjoint + image computation).</li>
+</ul>
+<p>We comment that if more resources were available, and because the imaging problem is embarrassingly parallel over sources and can scale arbitrarily,the imaging of all of the 1500 sources in parallel could have been attempted, which theoretically leads to a performance of 0.4PFLOP/s.</p>
+<p><strong><em>How performance was measured</em></strong></p>
+<p>The execution time is computed through Python-level timers prefixed by an MPI barrier. The floating-point operations are counted once all of the symbolic FLOP-reducing transformations have been performed during compilation. <a href="https://github.com/devitocodes/devito">Devito</a> uses an in-house estimate of cost, rather than <code>SymPy</code>’s estimate, to take care of some low-level intricacies. For example, Devito’s estimate ignores the cost of integer arithmetic used for offset indexing into multi-dimensional arrays. To calculate the total number of FLOPs performed, <a href="https://github.com/devitocodes/devito">Devito</a> multiplies the floating-point operations calculated at compile time by the size of the iteration space, and it does that at the granularity of individual expressions. Thanks to aggressive code motion, the amount of innermost-loop-invariant sub-expressions in an <code>Operator</code> is typically negligible and therefore the <a href="https://github.com/devitocodes/devito">Devito</a> estimate does not suffer from this issue, or at least not, to the best of our knowledge, in a tangible way. The Devito-reported GFLOP/s were also checked against those produced by Intel Advisor on several single-node experiments: the differences – typically <a href="https://github.com/devitocodes/devito">Devito</a> underestimating the achieved performance – were always at most in the order of units, and therefore negligible.</p>
+<p><strong><em>Imaging result</em></strong></p>
+<p>The subsurface velocity model used in this study is an artificial anisotropic model that is designed and built combining two broadly known and used open-source SEG/EAGE acoustic velocity models that each come with realistic geophysical imaging challenges such as sub-salt imaging. The anisotropy parameters are derived from a smoothed version of the velocity while the tilt angles were derived from a combination of the smooth velocity models and vertical and horizontal edge detection. The final seismic image of the subsurface model is displayed in Figure <span class="scholmd-crossref"><a href="#OverTTI">1</a></span> and highlights the fact that 3D seismic imaging based on a serverless approach and automatic code generation is feasible and provides good results.</p>
+<figure class="scholmd-float scholmd-figure" id="OverTTI">
+<div class="scholmd-float-content"><figure class="scholmd-subfig" style="display: inline-block; width: 50%">
+<img src="./Figures/OverTTI1.png" />
+</figure><figure class="scholmd-subfig" style="display: inline-block; width: 50%">
+<img src="./Figures/OverTTI2.png" />
+</figure><br /><figure class="scholmd-subfig" style="display: inline-block; width: 50%">
+<img src="./Figures/OverTTI3.png" />
+</figure><figure class="scholmd-subfig" style="display: inline-block; width: 50%">
+<img src="./Figures/OverTTI4.png" />
+</figure></div>
+<div class="scholmd-float-caption"><figcaption><span class="scholmd-caption-head"><span class="scholmd-caption-head-prefix">Figure</span><span class="scholmd-caption-head-label">1</span></span><span class="scholmd-caption-text">3D TTI imaging on a custom made model.</span></figcaption></div>
+</figure>
+<p><span class="scholmd-citation" data-cites="witte2019TPDedas">(P. A. <span>Witte</span> et al., 2020)</span> describes the serverless implementation of seismic inverse problems in detail, including iterative algorithms for least-square minimization problems (LSRTM). The 3D anisotropic imaging results were presented as part of a keynote presentation at the EAGE HPC workshop in October 2019 <span class="scholmd-citation" data-cites="herrmann2019EAGEHPCaii">(Herrmann et al., 2019)</span> and at the Rice O&amp;G HPC workshop <span class="scholmd-citation" data-cites="witte2019RHPCssi">(Witte et al., 2019a)</span> in which the focus was on the serverless implementation of seismic inversion algorithms in the Cloud. This work illustrates the flexibility and portability of Devito: we were able to easily port a code developed and tested on local hardware to the Cloud, with only minor adjustments. Further, note that this experiment included the porting of MPI-based code for domain decomposition developed on desktop computers to the Cloud. Our experiments are reproducible using the instructions in a public repository <a href="https://github.com/slimgroup/Azure2019/tree/v1.0">AzureTTI</a>, which contains, among the other things, the Dockerfiles and Azure <a href="https://batch-shipyard.readthedocs.io">batch-shipyard</a> setup. This example can also be easily run on a traditional HPC cluster environment using, for example, <a href="https://github.com/slimgroup/JUDI.jl">JUDI</a> <span class="scholmd-citation" data-cites="witte2018alf">(Witte et al., 2019b)</span> or Dask <span class="scholmd-citation" data-cites="dask">(Rocklin, 2015)</span> for parallelization over sources.</p>
+<h2 id="elastic-modelling">Elastic modelling</h2>
+<p>While the subsurface image obtained in section #d-imaging-example-on-azure utilized anisotropic propagators capable of mimicking intricate physics, in order to model both the wave kinematics and amplitudes correctly, elastic propagators are required. These propagators are, for example, extremely important in global seismology since shear surface waves (which are ignored in acoustic models) are the most hazardous. In this section, we exploit the tensor algebra language introduced in <a href="https://github.com/devitocodes/devito">Devito</a> v4.0 to express an elastic model with compact and elegant notation.</p>
+<p>The isotropic elastic wave-equation, parametrized by the so-called Lamé parameters <span class="math scholmd-math-inline">\(\lambda, \mu\)</span> and the density <span class="math scholmd-math-inline">\(\rho\)</span> reads: 
+<span class="math scholmd-math-display" style="display: block;">\[
+\begin{equation}
+\begin{aligned}
+&amp;\frac{1}{\rho}\frac{dv}{dt} = \nabla . \tau \\
+&amp;\frac{d \tau}{dt} = \lambda \mathrm{tr}(\nabla v) \mathbf{I}  + \mu (\nabla v + (\nabla v)^T)
+\end{aligned}
+\label{elas1}
+\end{equation}
+\]</span>
+ where <span class="math scholmd-math-inline">\(v\)</span> is a vector valued function with one component per cartesian direction: 
+<span class="math scholmd-math-display" style="display: block;">\[
+\begin{equation}
+\begin{split}
+v =  \begin{bmatrix} v_x(t, x, y) \\ v_y(t, x, y)) \end{bmatrix}
+\end{split}
+\label{partvel}
+\end{equation}
+\]</span>
+ and the stress <span class="math scholmd-math-inline">\(\tau\)</span> is a symmetric second-order tensor-valued function: 
+<span class="math scholmd-math-display" style="display: block;">\[
+\begin{equation}
+\begin{aligned}
+    \tau = \begin{bmatrix}\tau_{xx}(t, x, y) &amp; \tau_{xy}(t, x, y)\\\tau_{xy}(t, x, y) &amp; \tau_{yy}(t, x, y)\end{bmatrix}.
+\end{aligned}
+\label{stress}
+\end{equation}
+\]</span>
+ The discretization of Equation <span class="scholmd-crossref"><span class="math scholmd-math-inline">\(\ref{elas1}\)</span></span> and <span class="scholmd-crossref"><span class="math scholmd-math-inline">\(\ref{stress}\)</span></span> requires five equations in two dimensions (two equations for the particle velocity and three for the stress) and nine equations in three dimensions (three for the particle velocity and six for the stress). However, the mathematical definition only require two coupled vector/tensor-valued equations for any number of dimensions.</p>
+<h3 id="tensor-algebra-language">Tensor algebra language</h3>
+<p>We have augmented the <a href="https://github.com/devitocodes/devito">Devito</a> language with tensorial objects to enable straightforward and mathematically rigorous definitions of high-dimensional PDEs, such as the elastic wave-equation defined in <span class="scholmd-crossref"><span class="math scholmd-math-inline">\(\ref{elas1}\)</span></span>. This implementation was inspired by <span class="scholmd-citation" data-cites="ufl">(Aln<span>æ</span>s et al., 2014)</span>, a functional language for finite element methods.</p>
+<p>The extended <a href="https://github.com/devitocodes/devito">Devito</a> language introduces two new types, <code>VectorFunction</code>/<code>VectorTimeFunction</code> for vectorial objects such as the particle velocity, and <code>TensorFunction</code>/<code>TensorTimeFunction</code> for second-order tensor objects (matrices) such as the stress. These new objects are constructed in the same manner as scalar <code>Function</code> objects. They also automatically implement staggered grid and staggered finite-differences with the possibility of half-node averaging. Each component of a tensorial object – a (scalar) <a href="https://github.com/devitocodes/devito">Devito</a> <code>Function</code> – is accessible via conventional vector notation (e.g. <code>v[0],t[0,1]</code>).</p>
+<p>With this extended language, the elastic wave-equation defined in <span class="scholmd-crossref"><span class="math scholmd-math-inline">\(\ref{elas1}\)</span></span> can be expressed in only four lines of code:</p>
+<pre class="sourceCode python"><code class="sourceCode python">v = VectorTimeFunction(name=<span class="st">&#39;v&#39;</span>, grid=model.grid, space_order=so, time_order=<span class="dv">1</span>)
+tau = TensorTimeFunction(name=<span class="st">&#39;t&#39;</span>, grid=model.grid, space_order=so, time_order=<span class="dv">1</span>)
+
+u_v = Eq(v.forward, model.damp * (v + s/rho*div(tau)))
+u_t = Eq(tau.forward,  model.damp *  (tau + s * (l * diag(div(v.forward)) + mu * (grad(v.forward) + grad(v.forward).T))))</code></pre>
+<p>The <code>SymPy</code> expressions created by these commands can be displayed with <code>sympy.pprint</code> as shown in Figure <span class="scholmd-crossref"><a href="#PrettyElas">2</a></span>. This representation reflects perfectly the mathematics while maintaining computational portability and efficiency through the <a href="https://github.com/devitocodes/devito">Devito</a> compiler. The complete generated code for the elastic wave-equation with and without MPI is made available at <a href="https://github.com/mloubout/SC20Paper/tree/master/codesamples">CodeSample</a> in <code>elastic-so12.c</code> and <code>elastic-so12-mpi.c</code>.</p>
+<figure class="scholmd-float scholmd-figure" id="PrettyElas">
+<div class="scholmd-float-content"><figure class="scholmd-subfig" style="display: inline-block; width: 100%">
+<img src="./Figures/vel_symb.png" />
+</figure></div>
+<div class="scholmd-float-caption"><figcaption><span class="scholmd-caption-head"><span class="scholmd-caption-head-prefix">Figure</span><span class="scholmd-caption-head-label">2</span></span><span class="scholmd-caption-text">Update stencil for the particle velocity. The stencil for updating the stress component is left out for readability, as the equation does not fit onto a single page. However, it can be found in the <a href="https://github.com/devitocodes/devito">Devito</a> tutorial on elastic modelling on github.</span></figcaption></div>
+</figure>
+<h3 id="d-example">2D example</h3>
+<p>To demonstrate the efficacy of the elastic implementation outlined above we utilized a broadly recognized 2D synthetic model, the elastic Marmousi-ii<span class="scholmd-citation" data-cites="versteeg927 marmouelas">(Versteeg, 1994; G. S. Martin et al., 2006)</span> model. The wavefields are shown on Figure <span class="scholmd-crossref"><a href="#ElasWf">3</a></span> and its corresponding elastic shot records are displayed in Figure <span class="scholmd-crossref"><a href="#ElasShot">4</a></span>. These two figures show that the wavefield is, as expected, purely acoustic in the water layer (<span class="math scholmd-math-inline">\(\tau_{xy}=0\)</span>) and transitions correctly at the ocean bottom to an elastic wavefield. We can also clearly see the shear wave-front in the subsurface (at a depth of approximately 1km). Figures <span class="scholmd-crossref"><a href="#ElasWf">3</a></span> and <span class="scholmd-crossref"><a href="#ElasShot">4</a></span> demonstrate that this high-level <a href="https://github.com/devitocodes/devito">Devito</a> implementation of the elastic wave-equation is effective and accurate. Importantly, in constructing this model within the <a href="https://github.com/devitocodes/devito">Devito</a> DSL framework, computational technicalities such as the staggered grid analysis are abstracted away. We note that the shot records displayed in Figure <span class="scholmd-crossref"><a href="#ElasShot">4</a></span> match the original data generated by the creator of this elastic model <span class="scholmd-citation" data-cites="marmouelas">(G. S. Martin et al., 2006)</span>.</p>
+<figure class="scholmd-float scholmd-figure" id="ElasWf">
+<div class="scholmd-float-content"><figure class="scholmd-subfig" style="display: inline-block; width: 100%">
+<img src="./Figures/marmou_snap.png" />
+</figure></div>
+<div class="scholmd-float-caption"><figcaption><span class="scholmd-caption-head"><span class="scholmd-caption-head-prefix">Figure</span><span class="scholmd-caption-head-label">3</span></span><span class="scholmd-caption-text">Particle velocities and stress at time <span class="math scholmd-math-inline">\(t=3\text{s}\)</span> for a source at 10m depth and <code>x=5\text{km}</code> in the marmousi-ii model.</span></figcaption></div>
+</figure>
+<figure class="scholmd-float scholmd-figure" id="ElasShot">
+<div class="scholmd-float-content"><figure class="scholmd-subfig" style="display: inline-block; width: 30%">
+<img src="./Figures/pressure_marmou.png" />
+</figure><figure class="scholmd-subfig" style="display: inline-block; width: 30%">
+<img src="./Figures/vz_marmou.png" />
+</figure><figure class="scholmd-subfig" style="display: inline-block; width: 30%">
+<img src="./Figures/vx_marmou.png" />
+</figure></div>
+<div class="scholmd-float-caption"><figcaption><span class="scholmd-caption-head"><span class="scholmd-caption-head-prefix">Figure</span><span class="scholmd-caption-head-label">4</span></span><span class="scholmd-caption-text">Seismic shot record for 5sec of modelling. <code>a</code> is the pressure (trace of stress tensor) at the surface (5m depth), <code>b</code> is the vertical particle velocity and <code>c</code> is the horizontal particle velocity at the ocean bottom (450m depth).</span></figcaption></div>
+</figure>
+<h3 id="d-proof-of-concept">3D proof of concept</h3>
+<p>Finally, three dimensional elastic data was modelled in the Cloud to demonstrate the scalability of <a href="https://github.com/devitocodes/devito">Devito</a> to cluster-size problems. The model used in this experiment mimics a reference model in geophysics known as the SEAM model <span class="scholmd-citation" data-cites="fehler2011seam">(Fehler and Keliher, 2011)</span>, a three dimensional extreme-scale synthetic representation of a subsurface. The physical dimensions of the model are <code>45kmx35kmx15km</code> discretized with a grid spacing of <code>20mx20mx10m</code> leading to a computational grid of <code>2250x1750x1500</code> grid points (5.9 billion grid points). One of the main challenges of elastic modelling is the extreme memory cost owing to the number of wavefields (a minimum of 21 fields in a three dimensional propagator) that need to be stored:</p>
+<ul>
+<li>Three particle velocities with two time steps (<code>v.forward</code> and <code>v</code>)</li>
+<li>Six stress with two time steps (<code>tau.forward</code> and <code>tau</code>)</li>
+<li>Three model parameters <code>lamda</code>, <code>mu</code> and <code>rho</code></li>
+</ul>
+<p>These 21 fields, for the 5.9 billion point grid defined above, lead to a minimum memory requirement of 461Gb for modelling alone. For this experiment, access was obtained for small HPC VMs (on Azure) called <code>Standard_H16r</code>. These VMs contain 16 core Intel Xeon E5 2667 v3 chips, with no hyperthreading, and 32 nodes were used for a single source experiment (i.e. a single wave-equation was solved). We used a 12th order discretization in space that led to 2.8TFLOP/time-step being computed by this model and the elastic wave was propagated for 16 seconds (23000 time steps). Completion of this modelling run took 16 hours, converting to 1.1TFLOP/s. While these numbers may appear low, it should be noted that the elastic kernel is extremely memory bound, while the TTI kernel is nearly compute bound (see rooflines in <span class="scholmd-citation" data-cites="louboutin2016ppf devito-api devito-compiler">(Mathias Louboutin et al., 2017; M. Louboutin et al., 2019; <span>Luporini</span> et al., 2018)</span>) making it more computationally efficient, particularly in combination with MPI. Future work will involve working on InfiniBand enabled and true HPC VMs on Azure to achieve Cloud performance on par with that of state of the art HPC clusters. Extrapolating from the performance obtained in this experiment, and assuming a fairly standard setup of 5000 independent source experiments, computing an elastic synthetic dataset would require 322 EFLOPs (23k time-steps x 2.8TFLOP/time-step x 5000 sources), or utilizing the full scalabilit</p>
+<h2 id="performance-comparison-with-other-codes">Performance comparison with other codes</h2>
+<p>Earlier performance benchmarks mainly focused on roofline model analysis. In this study, for completeness, the runtime of <a href="https://github.com/devitocodes/devito">Devito</a> is therefore compared to that of the open source hand-coded propagator <a href="https://github.com/JanThorbecke/OpenSource.git">fdelmodc</a>. This propagator, described in <span class="scholmd-citation" data-cites="thorbecke">(Thorbecke and Draganov, 2011)</span>, is a state of the art elastic kernel (Equation <span class="scholmd-crossref"><span class="math scholmd-math-inline">\(\ref{elas1}\)</span></span>) and the comparisons presented here were carried out in collaboration with its author. To ensure a fair comparison, we ensured that the physical and computational settings were identical. The settings were as follows:</p>
+<ul>
+<li>2001 by 1001 physical grid points.</li>
+<li>200 grid points of dampening layer (absorbing layer <span class="scholmd-citation" data-cites="cerjan">(Cerjan et al., 1985)</span>) on all four sides (total of 2401x1401 computational grid points).</li>
+<li>10001 time steps.</li>
+<li>Single point source, 2001 receivers.</li>
+<li>Same compiler (gcc/icc) to compile <a href="https://github.com/JanThorbecke/OpenSource.git">fdelmodc</a> and run Devito.</li>
+<li>Intel(R) Xeon(R) CPU E3-1270 v6 @ 3.8GHz.</li>
+<li>Single socket, four physical cores, four physical threads, thread pinning to cores and hyperthreading off.</li>
+</ul>
+<p>The runtimes observed for this problem were essentially identical, showing less than a one percent of difference. Such similar runtimes were obtained with both the Intel and GNU compilers and the experiment was performed with both fourth and sixth order discretizations. Kernels were executed five times each and the runtimes observed were consistently very similar. This comparison illustrates the performance achieved with <a href="https://github.com/devitocodes/devito">Devito</a> is at least on par with hand-coded propagators. Considering we do not take advantage of the Devito compilers full capabilities in two dimensional cases, we are confident that the code generated will be at least on par with the hand-coded version for three dimensional problems and this comparison will be part of our future work.</p>
+<h2 id="conclusions">Conclusions</h2>
+<p>Transitioning from academic toy problems, such as the two-dimensional acoustic wave-equation, to real-world applications can be challenging, particularly if this transition is carried out as an afterthought. Owing to the fundamental design principles of <a href="https://github.com/devitocodes/devito">Devito</a> such scaling, however, becomes trivial. In this work we demonstrated the high-level interface provided by <a href="https://github.com/devitocodes/devito">Devito</a> not only for simple scalar equations but also for coupled PDEs. This interface allows, in a simple, concise and consistent manner, the expression of all-kinds of non-trivial differential operators. Next, and most importantly, we demonstrated that the compiler enables large-scale modelling with state-of-the art computational performance and programming paradigm. The single-node performance is on par with state of the art hand-coded models, but packaged with this performance comes the flexibility of the symbolic interface and multi-node parallelism, which is integrated in the compiler and interface in a accessible way. Finally, we demonstrated that our abstractions provide the necessary portability to enable both on-premise and Cloud based HPC.</p>
+<h2 id="code-availability">Code availability</h2>
+<p>The code to reproduce the different examples presented in this work is available online in the following repositories:</p>
+<ul>
+<li>The complete code for TTI imaging is available at <a href="https://github.com/slimgroup/Azure2019/tree/v1.0">Azure2019</a> and includes the TTI propagators, the Azure setup for shot parallelism and a documentation.</li>
+<li>The elastic modelling can be run with the elastic example available in Devito at <a href="https://github.com/devitocodes/devito/blob/v4.2/examples/seismic/elastic/elastic_example.py">elastic_example.py</a> and can be run with any size and spatial order. A standalone script to run the large 3D elastic modelling is also available at <a href="https://github.com/mloubout/SC20Paper/tree/master/codesamples">codesamples</a></li>
+</ul>
+<div class="references">
+<h2 id="references" class="unnumbered">References</h2>
+<p><span>Alkhalifah</span>, T., 2000, An acoustic wave equation for anisotropic media: Geophysics, <strong>65</strong>, 1239–1250.</p>
+<p>Aln<span>æ</span>s, M. S., Logg, A., <span>Ø</span>lgaard, K. B., Rognes, M. E., and Wells, G. N., 2014, Unified Form Language: A domain-specific language for weak formulations of partial differential equations: ACM Transactions on Mathematical Software (TOMS), <strong>40</strong>, 9.</p>
+<p><span>Baysal</span>, E., <span>Kosloff</span>, D. D., and <span>Sherwood</span>, J. W. C. and, 1983, Reverse time migration: Geophysics, <strong>48</strong>, 1514–1524.</p>
+<p>Bube, K. P., Nemeth, T., Stefani, J. P., Ergas, R., Liu, W., Nihei, K. T., and Zhang, L., 2012, On the instability in second-order systems for acoustic vTI and tTI media: GEOPHYSICS, <strong>77</strong>, T171–T186. doi:<a href="http://dx.doi.org/10.1190/geo2011-0250.1">10.1190/geo2011-0250.1</a></p>
+<p>Bube, K., Washbourne, J., Ergas, R., and Nemeth, T., 2016, Self-adjoint, energy-conserving second-order pseudoacoustic systems for vTI and tTI media for reverse time migration and full-waveform inversion: In SEG technical program expanded abstracts 2016 (pp. 1110–1114). SEG. doi:<a href="http://dx.doi.org/10.1190/segam2016-13878451.1">10.1190/segam2016-13878451.1</a></p>
+<p>Bube*, K. P., Ergas, R., and Nemeth, T., 2014, Stability and energy conservation for second-order acoustic systems for vTI andTTI media with positive shear wavespeeds: In SEG technical program expanded abstracts 2014 (pp. 3439–3443). SEG. doi:<a href="http://dx.doi.org/10.1190/segam2014-0986.1">10.1190/segam2014-0986.1</a></p>
+<p>Cerjan, C., Kosloff, D., Kosloff, R., and Reshef, M., 1985, A nonreflecting boundary condition for discrete acoustic and elastic wave equations: GEOPHYSICS, <strong>50</strong>, 705–708. doi:<a href="http://dx.doi.org/10.1190/1.1441945">10.1190/1.1441945</a></p>
+<p>Chu, C., Macy, B. K., and Anno, P. D., 2011, Approximation of pure acoustic seismic wave propagation in tTI media: GEOPHYSICS, <strong>76</strong>, WB97–WB107. doi:<a href="http://dx.doi.org/10.1190/geo2011-0092.1">10.1190/geo2011-0092.1</a></p>
+<p>Duveneck, E., and Bakker, P. M., 2011, Stable p-wave modeling for reverse-time migration in tilted tI media: GEOPHYSICS, <strong>76</strong>, S65–S75. doi:<a href="http://dx.doi.org/10.1190/1.3533964">10.1190/1.3533964</a></p>
+<p>Fehler, M., and Keliher, P. J., 2011, SEAM phase 1: Challenges of subsalt imaging in tertiary basins, with emphasis on deepwater gulf of mexico: Society of Exploration Geophysicists.</p>
+<p>Fichtner, A., 2010, Full Seismic Waveform Modelling and Inversion: Springer Verlag. doi:<a href="http://dx.doi.org/10.1007/978-3-642-15807-0">10.1007/978-3-642-15807-0</a></p>
+<p>Fletcher, R. P., Du, X., and Fowler, P. J., 2009, Reverse time migration in tilted transversely isotropic (tTI) media: GEOPHYSICS, <strong>74</strong>, WCA179–WCA187. doi:<a href="http://dx.doi.org/10.1190/1.3269902">10.1190/1.3269902</a></p>
+<p>Fowler, P. J., Du, X., and Fletcher, R. P., 2010, Coupled equations for reverse time migration in transversely isotropic media: GEOPHYSICS, <strong>75</strong>, S11–S22. doi:<a href="http://dx.doi.org/10.1190/1.3294572">10.1190/1.3294572</a></p>
+<p>Herrmann, F. J., Jones, C., Gorman, G., H<span>ü</span>ckelheim, J., Lensink, K., Kelly, P., … Witte, P. A., 2019, Accelerating ideation &amp; innovation cheaply in the cloud the power of abstraction, collaboration &amp; reproducibility: 4th eAGE workshop on high-performance computing.</p>
+<p>Hooke, R., Papin, D., Sturmy, S., and Young, J., 1678, Lectures de potentia restitutiva: London : Printed for John Martyn ... Retrieved from <a href="http://lib.ugent.be/catalog/rug01:001559640" class="uri">http://lib.ugent.be/catalog/rug01:001559640</a></p>
+<p>Köhn, D., Hellwig, O., De Nil, D., and Rabbel, W., 2015, Waveform inversion in triclinic anisotropic media—a resolution study: Geophysical Journal International, <strong>201</strong>, 1642–1656. doi:<a href="http://dx.doi.org/10.1093/gji/ggv097">10.1093/gji/ggv097</a></p>
+<p>Krebs, J., Collis, S., Downey, N., Ober, C., Overfelt, J., Smith, T., … Young, J., 2014, Full wave inversion using a spectral-element discontinuous galerkin method:, <strong>2014</strong>, 1–5. doi:<a href="http://dx.doi.org/https://doi.org/10.3997/2214-4609.20140707">https://doi.org/10.3997/2214-4609.20140707</a></p>
+<p>Logg, A., Mardal, K.-A., Wells, G. N., and others, 2012, Automated solution of differential equations by the finite element method: Springer. doi:<a href="http://dx.doi.org/10.1007/978-3-642-23099-8">10.1007/978-3-642-23099-8</a></p>
+<p>Louboutin, M., 2020, Modeling for inversion in exploration geophysics: PhD thesis,. Georgia Institute of Technology. Retrieved from <a href="https://slim.gatech.edu/Publications/Public/Thesis/2020/louboutin2020THmfi/louboutin2020THmfi.pdf" class="uri">https://slim.gatech.edu/Publications/Public/Thesis/2020/louboutin2020THmfi/louboutin2020THmfi.pdf</a></p>
+<p>Louboutin, M., Lange, M., Herrmann, F. J., Kukreja, N., and Gorman, G., 2017, Performance prediction of finite-difference solvers for different computer architectures: Computers &amp; Geosciences, <strong>105</strong>, 148–157. doi:<a href="http://dx.doi.org/https://doi.org/10.1016/j.cageo.2017.04.014">https://doi.org/10.1016/j.cageo.2017.04.014</a></p>
+<p>Louboutin, M., Lange, M., Luporini, F., Kukreja, N., Witte, P. A., Herrmann, F. J., … Gorman, G. J., 2019, Devito (v3.1.0): An embedded domain-specific language for finite differences and geophysical exploration: Geoscientific Model Development, <strong>12</strong>, 1165–1187. doi:<a href="http://dx.doi.org/10.5194/gmd-12-1165-2019">10.5194/gmd-12-1165-2019</a></p>
+<p>Louboutin, M., Witte, P. A., and Herrmann, F. J., 2018, Effects of wrong adjoints for rTM in tTI media: SEG technical program expanded abstracts. doi:<a href="http://dx.doi.org/10.1190/segam2018-2996274.1">10.1190/segam2018-2996274.1</a></p>
+<p><span>Luporini</span>, F., <span>Lange</span>, M., <span>Louboutin</span>, M., <span>Kukreja</span>, N., <span>H<span>ü</span>ckelheim</span>, J., <span>Yount</span>, C., … <span>Herrmann</span>, F. J., 2018, Architecture and performance of devito, a system for automated stencil computation: CoRR, <strong>abs/1807.03032</strong>. Retrieved from <a href=" http://arxiv.org/abs/1807.03032 ">http://arxiv.org/abs/1807.03032 </a></p>
+<p>Lyu, C., Capdeville, Y., and Zhao, L., 2020, Efficiency of the spectral element method with very high polynomial degree to solve the elastic wave equation: GEOPHYSICS, <strong>85</strong>, T33–T43. doi:<a href="http://dx.doi.org/10.1190/geo2019-0087.1">10.1190/geo2019-0087.1</a></p>
+<p>Martin, G. S., Wiley, R., and Marfurt, K. J., 2006, Marmousi2: An elastic upgrade for marmousi: The Leading Edge, <strong>25</strong>, 156–166. doi:<a href="http://dx.doi.org/10.1190/1.2172306">10.1190/1.2172306</a></p>
+<p>Meurer, A., Smith, C. P., Paprocki, M., Čertík, O., Kirpichev, S. B., Rocklin, M., … Scopatz, A., 2017, SymPy: Symbolic computing in python: PeerJ Computer Science, <strong>3</strong>, e103. doi:<a href="http://dx.doi.org/10.7717/peerj-cs.103">10.7717/peerj-cs.103</a></p>
+<p>Patterson, D. A., and Hennessy, J. L., 2007, Computer organization and design: The hardware/Software interface: (3rd ed.). Morgan Kaufmann Publishers Inc.</p>
+<p>Peter, D., Komatitsch, D., Luo, Y., Martin, R., Le Goff, N., Casarotti, E., … Tromp, J., 2011, Forward and adjoint simulations of seismic wave propagation on fully unstructured hexahedral meshes: Geophysical Journal International, <strong>186</strong>, 721–739. doi:<a href="http://dx.doi.org/10.1111/j.1365-246X.2011.05044.x">10.1111/j.1365-246X.2011.05044.x</a></p>
+<p>Petersson, N., and Sj<span>ö</span>green, B., 2014, SW4 v1.1 [software]: Computational Infrastructure for Geodynamics. doi:<a href="http://dx.doi.org/http://doi.org/10.5281/zenodo.571844">http://doi.org/10.5281/zenodo.571844</a></p>
+<p>Preston, L., 2018, Computation of kernels for full waveform seismic inversion using parelasti.:. doi:<a href="http://dx.doi.org/10.2172/1468379">10.2172/1468379</a></p>
+<p>Preston, L., 2019a, Paraniso 1.0: 3-d full waveform seismic simulation in general anisotropic media.:. doi:<a href="http://dx.doi.org/10.2172/1561580">10.2172/1561580</a></p>
+<p>Preston, L., 2019b, ParelastiFWI 1.0 user guide.:. doi:<a href="http://dx.doi.org/10.2172/1561581">10.2172/1561581</a></p>
+<p>Ratcliffe, A., Win, C., Vinje, V., Conroy, G., Warner, M., Umpleby, A., … Bertrand, A., 2011, Full waveform inversion: A north sea OBC case study: SEG Technical Program Expanded Abstracts 2011. doi:<a href="http://dx.doi.org/10.1190/1.3627688">10.1190/1.3627688</a></p>
+<p>Rathgeber, F., Ham, D. A., Mitchell, L., Lange, M., Luporini, F., McRae, A. T. T., … Kelly, P. H. J., 2015, Firedrake: Automating the finite element method by composing abstractions: CoRR, <strong>abs/1501.01809</strong>. Retrieved from <a href="http://arxiv.org/abs/1501.01809" class="uri">http://arxiv.org/abs/1501.01809</a></p>
+<p>Rocklin, M., 2015, Dask: Parallel computation with blocked algorithms and task scheduling: In K. Huff &amp; J. Bergstra (Eds.), Proceedings of the 14th python in science conference (pp. 130–136).</p>
+<p>Sirgue, L., I. Barkved, O., P. Van Gestel, J., J. Askim, O., and H. Kommedal, J., 2009, 3D waveform inversion on valhall wide-azimuth oBC:. doi:<a href="http://dx.doi.org/https://doi.org/10.3997/2214-4609.201400395">https://doi.org/10.3997/2214-4609.201400395</a></p>
+<p>Tarantola, A., 1984, Inversion of seismic reflection data in the acoustic approximation: GEOPHYSICS, <strong>49</strong>, 1259. doi:<a href="http://dx.doi.org/10.1190/1.1441754">10.1190/1.1441754</a></p>
+<p><span>Thomsen</span>, L., 1986, Weak elastic anisotropy: Geophysics, <strong>51</strong>, 1964–1966.</p>
+<p>Thorbecke, J. W., and Draganov, D., 2011, Finite-difference modeling experiments for seismic interferometry: GEOPHYSICS, <strong>76</strong>, H1–H18. doi:<a href="http://dx.doi.org/10.1190/geo2010-0039.1">10.1190/geo2010-0039.1</a></p>
+<p>Trinh, P.-T., Brossier, R., Métivier, L., Tavard, L., and Virieux, J., 2019, Efficient time-domain 3D elastic and viscoelastic full-waveform inversion using a spectral-element method on flexible cartesian-based mesh: Geophysics, <strong>84</strong>, R75–R97.</p>
+<p>Versteeg, R., 1994, The marmousi experience; velocity model determination on a synthetic complex data set: The Leading Edge, <strong>13</strong>, 927–936. Retrieved from <a href="http://tle.geoscienceworld.org/content/13/9/927" class="uri">http://tle.geoscienceworld.org/content/13/9/927</a></p>
+<p>Virieux, J., and Operto, S., 2009, An overview of full-waveform inversion in exploration geophysics: GEOPHYSICS, <strong>74</strong>, WCC1–WCC26. doi:<a href="http://dx.doi.org/10.1190/1.3238367">10.1190/1.3238367</a></p>
+<p>Virieux, J., Operto, S., Ben-Hadj-Ali, H., Brossier, R., Etienne, V., Sourbier, F., … Haidar, A., 2009, Seismic wave modeling for seismic imaging: The Leading Edge, <strong>28</strong>, 538–544. doi:<a href="http://dx.doi.org/10.1190/1.3124928">10.1190/1.3124928</a></p>
+<p><span>Whitmore</span>, N. D., 1983, Iterative depth migration by backward time propagation: 1983 SEG Annual Meeting, Expanded Abstracts.</p>
+<p>Witte, P. A., Louboutin, M., Jones, C., and Herrmann, F. J., 2019a, Serverless seismic imaging in the cloud: Retrieved from <a href="https://slim.gatech.edu/Publications/Public/Submitted/2019/witte2019RHPCssi/witte2019RHPCssi.html" class="uri">https://slim.gatech.edu/Publications/Public/Submitted/2019/witte2019RHPCssi/witte2019RHPCssi.html</a></p>
+<p>Witte, P. A., Louboutin, M., Kukreja, N., Luporini, F., Lange, M., Gorman, G. J., and Herrmann, F. J., 2019b, A large-scale framework for symbolic implementations of seismic inversion algorithms in julia: Geophysics, <strong>84</strong>, F57–F71. doi:<a href="http://dx.doi.org/10.1190/geo2018-0174.1">10.1190/geo2018-0174.1</a></p>
+<p>Witte, P. A., Louboutin, M., Modzelewski, H., Jones, C., Selvage, J., and Herrmann, F. J., 2019c, Event-driven workflows for large-scale seismic imaging in the cloud: SEG technical program expanded abstracts. doi:<a href="http://dx.doi.org/10.1190/segam2019-3215069.1">10.1190/segam2019-3215069.1</a></p>
+<p><span>Witte</span>, P. A., <span>Louboutin</span>, M., <span>Modzelewski</span>, H., <span>Jones</span>, C., <span>Selvage</span>, J., and <span>Herrmann</span>, F. J., 2020, An event-driven approach to serverless seismic imaging in the cloud:IEEE Transactions on Parallel and Distributed Systems. IEEE.</p>
+<p>Witte, P. A., Stolk, C. C., and Herrmann, F. J., 2016, Phase velocity error minimizing scheme for the anisotropic pure p-wave equation: SEG technical program expanded abstracts. doi:<a href="http://dx.doi.org/10.1190/segam2016-13844850.1">10.1190/segam2016-13844850.1</a></p>
+<p><span>Xu</span>, S., and <span>Zhou</span>, H., 2014, Accurate simulations of pure quasi-p-waves in complex anisotropic media: Geophysics, <strong>79</strong>, 341–348.</p>
+<p>Zehner, B., Hellwig, O., Linke, M., Görz, I., and Buske, S., 2016, Rasterizing geological models for parallel finite difference simulation using seismic simulation as an example: Computers &amp; Geosciences, <strong>86</strong>, 83–91. doi:<a href="http://dx.doi.org/https://doi.org/10.1016/j.cageo.2015.10.008">https://doi.org/10.1016/j.cageo.2015.10.008</a></p>
+<p><span>Zhan</span>, G., <span>Pestana</span>, R. C., and <span>Stoffa</span>, P. L., 2013, An efficient hybrid pdeudospectral/finite-difference scheme for solving the tTI pure p-wave equation: Journal of Geophyics and Engineering, <strong>10</strong>.</p>
+<p><span>Zhang</span>, L., <span>Rector III</span>, J. W., and Micheal, H. G., 2005, Finite-difference modelling of wave propagation in acoustic tilted tI media: Geophysical Prospecting, <strong>53</strong>, 843–852.</p>
+<p>Zhang, Y., Zhang, H., and Zhang, G., 2011, A stable tTI reverse time migration and its implementation: GEOPHYSICS, <strong>76</strong>, WA3–WA11. doi:<a href="http://dx.doi.org/10.1190/1.3554411">10.1190/1.3554411</a></p>
+<p><span>Zhang</span>, Y., <span>Zhang</span>, H., and <span>Zhang</span>, G., 2011, A stable tTI reverse time migration and its implementation: Geophysics, <strong>76</strong>, WA3–WA11.</p>
+</div>
+</div>
+</div>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+      processClass: "math"
+    },
+    TeX: {
+        TagSide: "left",
+        TagIndent: "1.2em",
+        equationNumbers: {
+            autoNumber: "AMS"
+        },
+        Macros: {
+            ensuremath: ["#1",1],
+            textsf: ["\\mathsf{\\text{#1}}",1],
+            texttt: ["\\mathtt{\\text{#1}}",1]
+        }
+    },
+    "HTML-CSS": { 
+        scale: 100,
+        availableFonts: ["TeX"], 
+        preferredFont: "TeX",
+        webFont: "TeX",
+        imageFont: "TeX",
+        EqnChunk: 1000
+    }
+});
+</script>
+<script src="https://slimgroup.slim.gatech.edu/ScholMD/js/slimweb-scholmd-scripts.js"></script>
+<script src="https://slimgroup.slim.gatech.edu/MathJax/MathJax.js?config=TeX-AMS_HTML-full" type="text/javascript"></script>
+</div>
+</body>
+</html>
