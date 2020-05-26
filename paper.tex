@@ -276,7 +276,7 @@ as encountered in exploration geophysics. These experiments are carried
 out in Cloud-based HPC systems and include elastic forward modelling using
 distributed-memory parallelism and imaging based on the tilted transverse
 isotropic (TTI) wave-equation (\cite{virieux, thomsen1986, zhang-tti,
-duveneck, louboutin2018segeow}).  These proof of concepts highlight two
+duveneck, louboutin2018segeow}). These proof of concepts highlight two
 critical features: first, the ability of the symbolic interface and the
 compiler to translate to large-scale adjoint-based inversion problems that
 require massive compute (since thousands of PDEs are solved) as well as
@@ -286,6 +286,13 @@ modelling example, we demonstrate that \devito now fully supports and
 automates vectorial and second order tensorial staggered-grid
 finite-differences with the same high-level API previously presented for
 scalar fields defined on cartesian grids.
+
+\textcolor{red}{Wave-equation based geophysical inversion does not only require fast and accurate wave-equation sovers, 
+but also adavnced algorithms for non-convex optimization for large scale PDE constraints inverse problem.
+The high-level interface \devito provdes enables research and developement for these specific problem in a framework that scales
+to industry size problem automatically through its compiler. Projects using \devito for the wave-equation solves include 
+FWI \cite{witte2018alf}, compressived least-square RTM \cite{witte2018cls} or 
+time-domain WRI \cite{rizzuti2020EAGEtwri, louboutin2020SEGtwri} that tackles the cycle-skipping issue in seismic inversion.}
 
 This paper is organized as follows: first, we provide a brief overview of
 Devito and its symbolic API and present the distributed memory
@@ -444,7 +451,8 @@ transfers between host and device).
 The output of the \devito compiler for the running example used in this
 section is available at
 \href{https://github.com/mloubout/SC20Paper/tree/master/codesamples}{CodeSample}
-in \texttt{acou-so8.c}.
+in \texttt{acou-so8.c} \textcolor{red}{and the accuracy of the generated code is verified through our
+continuous integration pipeline against analytical solutions \cite{devito-api}.}
 
 \subsection{Distributed-memory
 parallelism}\label{distributed-memory-parallelism}
@@ -547,6 +555,11 @@ distributed NumPy arrays along with the ability to seamlessly transfer any
 desired slice of data between ranks provides a generic and flexible
 infrastructure for the implementation of any form of parallel I/O
 (e.g., see \cite{witte2018alf}).
+
+\textcolor{red}{
+\subsubsection{Strong scaling}
+Strong scaling results from CX2.
+}
 
 \section{Industry-scale 3D seismic imaging in anisotropic
 media}\label{industry-scale-3d-seismic-imaging-in-anisotropic-media}
@@ -1025,6 +1038,12 @@ parallel this becomes 5.5PFLOP/s.
 
 \section{Performance comparison with other
 codes}\label{performance-comparison-with-other-codes}
+
+\textcolor{red}{One of the main challenges in gephysical exploration is to obtain access to reference implementations
+of various wave-equations propagator. While we are in the prcess of comparing hand coded production code from high end contractor companies,
+we here compare the performance to one of the few open source software available. It is extremely important to note that are not only 
+interested in pure stencil framework, such as YASK \cite{yask}, that usually do no handle sparse operation for the source injection 
+and receiver interpolation and are therefore nota dapted to measurement based inverse problems.}
 
 Earlier performance benchmarks mainly focused on roofline model analysis.
 In this study, for completeness, the runtime of \devito is therefore
