@@ -17,7 +17,7 @@ At the time of the experimentation, we ran into two main issues:
 
 We subsequently managed to work around point one above; we have published some scaling experiments in [..., page ..., figure ...], although they still don't exploit the latest advancements in Devito v4.2 (e.g., computation/communication overlap). What we want to remark is that our manuscript centers on the development of HPC production-grade wave propagators from a high-level language, and while performance is one of the cornerstones of our work, it was not the objective of this paper to show how powerful Devito is in an extreme scaling setting. As -- we are sure -- you have understood, this is completely sensible for a venue such as SC. We could have added scaling plots showing what, with the latest Devito v4.2, appears to be a remarkable parallel efficiency, but we feel that this would have been premature, and our philosophy is not to publish any results that has not been adequately validated and reproduced over multiple architectures. This attitude is at the hearth of the success of Devito, and it's not our intention to undermine it for a mere publication.
 
-About validation of simulation quality -- [TODO]
+About validation of simulation quality -- we did not include it in this paper as we think it is outside of the scope of the presented results but the simulation quality is verified in two ways. As described in [@devito-api] The numerical accuracy is compared to the analytical solution for the acoustic wave equation as well as the convergence rate of the finite-difference discretization. The verification of the TTI equation is not as simple as we  do not have an analytical solution but the implementation of the method of manufactured solution is in progress. All parts such as finite-difference accuracy, comparison with isotropicr esult for zeros anisotropic parameters are part of the continuous integration.
 
 ## Review of pap429s2 by Reviewer 2
 Detailed Comments for Authors
@@ -67,9 +67,8 @@ The operations determining the performance of a code are the source level ones, 
 
 *     It appears much of the performance result are provided in the references so it is unclear as to what the purpose of this paper is for an SC audience. For actual seismic surveys, the imaging (interpretation) part is only 10% of the survey. Of course, one does us the RTM in developing the velocity model which adds to complexity in a way. Ease of use coupled with excellent scalable performance while important doesn't address the real "industrial" problems, it helps a little.
 
-[TODO] Felix, Gerard, Mathias...
-
-
+The industrial problem does indeed involve muliple parts, such as data acquisition then processing, and mst importatly velocity model building. We do not claim here to solve all the problems, but demonstrate that the combination of a high-elvel DSL and a highly efficient compiler provides the necessary tool for sesimic modeling and imaging at (industrial) scale. The complexity of model building requires advance optimization methods, and the easy access to computationally and easy to develop wave-equation solvers enable research and development for seismic inversion. Devito is therfore used for the development of inital background model building [@mojica2019tab] or cycle skipping mitigating methods [@rizzuti2020EAGEtwri; @louboutin2020SEGtwri] and compressive least square migration [@witte2018cls] based on a linear algebra framework for seismic inversion built on top of devito [@witte2018alf]
+We added a clarification in the introduction.
 
 
 ## Review of pap429s2 by Reviewer 4 
@@ -95,4 +94,22 @@ Scored Review Questions WEAK REJECT (2)
 
 ### Reply
 
+* One issue is that I cannot tell how much of this work is new
+
 ...
+
+*   but I think for SC we would need more information on its scalability and performance.
+
+See previous responses
+
+*    Is section III describing new work? It is unclear to me if this is an overview or new work for this paper…
+
+Yes. We have refined the txt to make it more explicit and detailed.
+
+*    Is the parallelism just via MPI?
+
+The domain decomposition is via MPI, however, the overall task parallelism is not. Seismic inversion is a fullys eparable problem on terms of surce experiment, and the paralleization over these sources is done using `batch-shipyard` in a serverless settting. THis allow optimal usage of Cloud ressource rather than firing up a cluster aht will be IDLE most of time but still payed for bytt he hour in the cloud.
+
+*   What are the possibilities for this code in terms of heterogeneous clusters? Will it be able to take advantage of GPUs?
+  
+GPU support is in development and currently supported for some applications. Its capabilities and related applications will be fully covered in a future dedicated paper.
