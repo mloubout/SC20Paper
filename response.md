@@ -2,12 +2,14 @@ Dear Editor,
 
 First of all, we would like to thank the reviewers for their work and constructive feedback. Below, we address all of their questions and observations. 
 
-# Review of pap429s2 by Reviewer 1
+## Review of pap429s2 by Reviewer 1
 Detailed Comments for Authors
     This is an interesting paper, well-written, logically ordered and shows interesting results. I only have small questions having to do with scaling results and validation.
 Comments for Revision
     If you run your model with a variable number of cores, how is the weak and strong scaling? Can you comment on that? Further, you mention that you validate performance against a wave propagator - how about validation of simulation quality? How is that done?
 Scored Review Questions ACCEPT (4)
+
+### Reply
 
 At the time of the experimentation, we ran into two main issues:
 1. Limited resources on Azure, including the access to an Infiniband-enabled system.
@@ -17,12 +19,14 @@ We subsequently managed to work around point one above; we have published some s
 
 About validation of simulation quality -- [TODO]
 
-# Review of pap429s2 by Reviewer 2
+## Review of pap429s2 by Reviewer 2
 Detailed Comments for Authors
     This paper presents a methodology to use abstractions and compiler technology effectively in the field of exploration seismology. It is a very nicely written paper that puts down all the motivation and technical details quite well. However, it is not very suitable for SC. Parallelization is pretty straightforward, uniform decomposition of relatively straightforward operation. The computational kernels have really high arithmetic intensity that is great for the domain, but not as challenging for optimization, and therefore not very interesting to this community. The parallelism applied so far is straight up MPI which is a bit behind times these days.
 Comments for Revision
     I don't think any revision will change the nature of the work, which, as I mentioned in comments section is nicely done but not best suited for SC.
 Scored Review Questions REJECT (1)
+
+### Reply
 
 With all due respect, we strongly disagree with all the critiques moved to the manuscript. Let's go through them one at a time.
 
@@ -43,7 +47,7 @@ This is simply an error. A high arithmetic intensity does not imply simple optim
 As far as we know, in 2020 MPI is still the most widely used approach for domain decomposition.
 
 
-# Review of pap429s2 by Reviewer 3
+## Review of pap429s2 by Reviewer 3
 Detailed Comments for Authors
     The authors in the paper describe their Devito, open-source Python project targeted in the area of seismic exploration. The idea of this particular piece of work is the ease of use through Devito to address, in a Domain Specific Language, creating code for seismic exploration problems which due to being computational intensive often require the use of distributed parallel systems. This is built upon MPI but appears to be hidden from the end user. It was a little confusing but the MPI parallelism appears to essentially be a domain decomposition style parallelism. There was some mention of threads, in particular there seems to be several compilation passes that abstracts out the parallelism which can include SIMD, shared-memory and MPI. Only the MPI is detailed. Through Devito, the authors demonstrate its utility on two problems; (1) Reverse Time Migration (RTM) for a pseudo-acoustic wave problem and (2) an elastic wave problem. With the RTM, they consider titled-transverse isotropic (TTI) wave equation formulation. In RTM, the forward problem is calculated and then the adjoint problem is solve backwards in time to get the imaging. RTM tends to require significant memory and/or fast access to storage of the forward problem during solves for the adjoint problem. Devito is used to set these problems up in VM (Virtual Machines) to be run in a Cloud (Azure) on 32 nodes. If this reviewer understands correctly, Devito is set up to calculate the FLOPs count which is how the authors get the performance. One question that arises, in the performance is how does Devito account for FMA (Fused Multiple Adds)? A comparison was made with an open source hand-code propagator "fdelmode" for the elastic wave equation which seems to be on a 2D problem. The result of this comparison are "essentially identical". A table comparison might be helpful. Scalability performance would also be interesting.
     It appears much of the performance result are provided in the references so it is unclear as to what the purpose of this paper is for an SC audience. For actual seismic surveys, the imaging (interpretation) part is only 10% of the survey. Of course, one does us the RTM in developing the velocity model which adds to complexity in a way. Ease of use coupled with excellent scalable performance while important doesn't address the real "industrial" problems, it helps a little.
@@ -51,7 +55,11 @@ Comments for Revision
     Perhaps restricting the discussion of both ease of use of Devito, with a comparison including scalability on one problem, say the 3D TTI problem against a known method and doing this in a cloud setting up to a significant number of nodes would make this a more appropriate paper for the SC audience. This might be too tall an order here. Dropping the discussion on the 3D elastic wave and including a table of comparison with the fdelmode for the 2D elastic wave problem or even just going through scalability comparison on the TTI problem against another code might demonstrate the value of Devito better.
 Scored Review Questions WEAK REJECT (2)
 
-# Review of pap429s2 by Reviewer 4 
+### Reply
+
+...
+
+## Review of pap429s2 by Reviewer 4 
 Detailed Comments for Authors
     This manuscript describes optimizations for Devito, a symbolic DSL designed for geophysics, to extend its use for industrial scale modeling of seismic inversion problems.
     Strengths:
@@ -71,3 +79,7 @@ Comments for Revision
     (1) section 3, 1st paragraph: "must to be" => "must be"
     (2) section 1, 3rd paragraph: make an itemized list?
 Scored Review Questions WEAK REJECT (2)
+
+### Reply
+
+...
