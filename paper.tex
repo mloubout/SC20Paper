@@ -269,6 +269,21 @@ component of \devito is its compiler (c.f \cite{devito-compiler}) that
 generates highly optimized C code. The generated code is then compiled at
 runtime for the hardware at hand.
 
+\textcolor{red}{It should be emphasized that unlike in,
+e.g., earthquake simulation models \cite{fu201718} (more?), where
+a single shot is computed, wave-equation based
+geophysical inversion not only requires
+fast and accurate solvers but also adavnced algorithms for
+non-convex optimization of large scale constrained inverse problems. The 
+high-level interface provided by \devito enables research and developement for these 
+specific problem in a framework that scales to industry size problem 
+automatically through its compiler. \devito has been used previously
+for the solution of the wave equation within imaging frameworks including
+FWI \cite{witte2018alf}, compressived least-square RTM \cite{witte2018cls} and
+time-domain Wavefield Reconstruction Inversion (WRI)~\cite{rizzuti2020EAGEtwri, 
+louboutin2020SEGtwri}, the later of which takles the cycle-skipping issue
+present in seismic inversion.}
+
 Previous work focused on the DSL and compiler to highlight the potential
 application and use cases of Devito. Here, we present a series of
 extensions and applications to large-scale three-dimensional problem sizes
@@ -287,22 +302,14 @@ automates vectorial and second order tensorial staggered-grid
 finite-differences with the same high-level API previously presented for
 scalar fields defined on cartesian grids.
 
-\textcolor{red}{Wave-equation based geophysical inversion does not only require fast and accurate wave-equation sovers, 
-but also adavnced algorithms for non-convex optimization for large scale PDE constraints inverse problem.
-The high-level interface \devito provdes enables research and developement for these specific problem in a framework that scales
-to industry size problem automatically through its compiler. Projects using \devito for the wave-equation solves include 
-FWI \cite{witte2018alf}, compressived least-square RTM \cite{witte2018cls} or 
-time-domain WRI \cite{rizzuti2020EAGEtwri, louboutin2020SEGtwri} that tackles the cycle-skipping issue in seismic inversion.}
-
 This paper is organized as follows: first, we provide a brief overview of
 Devito and its symbolic API and present the distributed memory
 implementation that allows large-scale modelling and inversion by means of
 domain decomposition. We then provide a brief comparison with a state of
 the art hand-coded wave propagator to validate the performance previously
 benchmarked with the roofline model (\cite{patterson, devito-compiler,
-devito-api, louboutin2016ppf}).  Before concluding, results from the
-Cloud-based experiments discussed above are presented, highlighting the
-vectorial and tensorial capabilities of Devito.
+devito-api, louboutin2016ppf}). \textcolor{red}{Before concluding, results from the
+Cloud-based experiments introduced above are presented}.
 
 \section{Overview of Devito}\label{overview-of-devito}
 
@@ -318,8 +325,8 @@ custom coefficients. The last major building block of a solid PDE solver
 are the boundary conditions which for finite-difference methods are
 notoriously diverse and often complicated. The system is, however,
 sufficiently general to express them through a composition of core
-mechanisms. For example, free surface and perfectly-matched layers
-(PMLs) boundary conditions can be expressed as equations -- just like
+mechanisms. For example, free surface and perfectly-matched \textcolor{red}{layer
+(PML) conditions} can be expressed as equations -- just like
 any other PDE equations -- over a suitable sub-domain.
 
 It is the job of the \devito compiler to translate the symbolic specification
@@ -339,13 +346,14 @@ an implementation of the acoustic wave-equation in isotropic media
 %
 \begin{equation}
 \begin{cases}
- m \frac{d^2 u(t, x)}{dt^2} - \Delta u(t, x) = \delta(xs) q(t) \\
- u(0, .) = \frac{d u(t, x)}{dt}(0, .) = 0 \\
+ m \frac{\partial^2 u(t, x)}{\partial t^2} - \Delta u(t, x) = \delta(xs) q(t) \\
+ u(0, .) = \frac{\partial u(t, x)}{\partial t}(0, .) = 0 \\
  d(t, .) = u(t, xr).
  \end{cases}
 \label{acou}
 \end{equation}
 %
+\textcolor{red}{FIXME: Define the terms appearing in the above equation.}
  The core of the Devito
 symbolic API consists of three classes:
 
@@ -362,7 +370,7 @@ symbolic API consists of three classes:
   the grid points, hence called ``sparse''.
 \end{itemize}
 
-A \texttt{Grid} represents a discretized finite n-dimensional space and
+A \texttt{Grid} represents a discretized finite $n$-dimensional space and
 is created as follows
 
 \begin{python}[label=grid, caption=Grid creation]
@@ -374,11 +382,11 @@ grid = Grid(shape=(nx, ny, nz),
 \noindent
 where \texttt{(nx,\phantom{\ }ny,\phantom{\ }nz)} are the number of grid
 points in each direction,
-\texttt{(ext\_x,\phantom{\ }ext\_y,\phantom{\ }ext\_z)} is the physical
+\texttt{(ext\_x,\phantom{\ }ext\_y,\phantom{\ }ext\_z)} is the
 extent of the domain in physical units (i.e \texttt{m}) and
 \texttt{(o\_x,\phantom{\ }o\_y,\phantom{\ }o\_z)} is the origin of the
-domain in the same physical units. The object \texttt{grid} contains all
-the information related to the discretization such as the grid spacing.
+domain in the same physical units. \textcolor{red}{The \texttt{grid} object contains all
+information pertinent to the discretization such as the grid spacing}.
 We use \texttt{grid} to create the symbolic objects that will be used to
 express the wave-equation. First, we define a spatially varying model
 parameter \texttt{m} and a time-space varying field \texttt{u}
@@ -556,11 +564,6 @@ desired slice of data between ranks provides a generic and flexible
 infrastructure for the implementation of any form of parallel I/O
 (e.g., see \cite{witte2018alf}).
 
-\textcolor{red}{
-\subsubsection{Strong scaling}
-Strong scaling results from CX2.
-}
-
 \section{Industry-scale 3D seismic imaging in anisotropic
 media}\label{industry-scale-3d-seismic-imaging-in-anisotropic-media}
 
@@ -613,7 +616,7 @@ derivative with respect to $x$ as:
 \begin{equation}
 \begin{aligned}
   G_{\bar{x}\bar{x}} &= D_{\bar{x}}^T D_{\bar{x}} \\
-  D_{\bar{x}} &= \cos(\mathbf{\theta})\cos(\mathbf{\phi})\frac{\mathrm{d}}{\mathrm{d}x} + \cos(\mathbf{\theta})\sin(\mathbf{\phi})\frac{\mathrm{d}}{\mathrm{d}y} - \sin(\mathbf{\theta})\frac{\mathrm{d}}{\mathrm{d}z}.
+  D_{\bar{x}} &= \cos(\mathbf{\theta})\cos(\mathbf{\phi})\frac{\partial}{\partial x} + \cos(\mathbf{\theta})\sin(\mathbf{\phi})\frac{\partial}{\partial y} - \sin(\mathbf{\theta})\frac{\partial}{\partial z}.
 \end{aligned}
 \label{rot}
 \end{equation}
@@ -860,8 +863,8 @@ $\lambda, \mu$ and the density $\rho$ reads:
 %
 \begin{equation}
 \begin{aligned}
-&\frac{1}{\rho}\frac{dv}{dt} = \nabla . \tau \\
-&\frac{d \tau}{dt} = \lambda \mathrm{tr}(\nabla v) \mathbf{I}  + \mu (\nabla v + (\nabla v)^T)
+&\frac{1}{\rho}\frac{\partial v}{\partial t} = \nabla . \tau \\
+&\frac{\partial \tau}{\partial t} = \lambda \mathrm{tr}(\nabla v) \mathbf{I}  + \mu (\nabla v + (\nabla v)^T)
 \end{aligned}
 \label{elas1}
 \end{equation}
@@ -887,10 +890,10 @@ function:
 \label{stress}
 \end{equation}
 %
- The discretization of \eqref{elas1} and \eqref{stress} requires five
-equations in two dimensions (two equations for the particle velocity and
-three for the stress) and nine equations in three dimensions (three for the particle velocity
-and six for the stress). However, the mathematical
+ Note that the discretization of \eqref{elas1} and \eqref{stress} requires five
+scalar equations in two dimensions (two for the particle velocity and
+three for stress) and nine equations in three dimensions (three for particle velocity
+and six for stress). However, the mathematical
 definition only require two coupled vector/tensor-valued equations for
 any number of dimensions.
 
@@ -903,7 +906,8 @@ high-dimensional PDEs, such as the elastic wave-equation defined in
 functional language for finite element methods.
 
 The extended \devito language introduces two new types, 
-\texttt{VectorFunction}/\texttt{VectorTimeFunction} for vectorial objects such as the particle velocity, and
+\texttt{VectorFunction}/\texttt{VectorTimeFunction} for vectorial objects
+such as the particle velocity, and
 \texttt{TensorFunction}/\texttt{TensorTimeFunction} for second-order
 tensor objects (matrices) such as the stress. These new objects are
 constructed in the same manner as scalar \texttt{Function} objects. They
@@ -1039,20 +1043,26 @@ parallel this becomes 5.5PFLOP/s.
 \section{Performance comparison with other
 codes}\label{performance-comparison-with-other-codes}
 
-\textcolor{red}{One of the main challenges in gephysical exploration is to obtain access to reference implementations
-of various wave-equations propagator. While we are in the prcess of comparing hand coded production code from high end contractor companies,
-we here compare the performance to one of the few open source software available. It is extremely important to note that are not only 
-interested in pure stencil framework, such as YASK \cite{yask}, that usually do no handle sparse operation for the source injection 
-and receiver interpolation and are therefore nota dapted to measurement based inverse problems.}
-
-Earlier performance benchmarks mainly focused on roofline model analysis.
+Earlier performance benchmarks mainly focused on roofline model analysis
+\textcolor{red}{[TODO: Add reference]}.
 In this study, for completeness, the runtime of \devito is therefore
 compared to that of the open source hand-coded propagator
 \href{https://github.com/JanThorbecke/OpenSource.git}{fdelmodc}. This propagator,
 described in \cite{thorbecke}, is a state of the art elastic kernel
 (Equation~\ref{elas1}) and the comparisons presented here were carried out
-in collaboration with its author. To ensure a fair
-comparison, we ensured that the
+in collaboration with its author.
+\textcolor{red}{It should be emphasized that direct model comparison in
+the area of exploration geophysics is challenging. The majority of production
+codes are either proprioty or are simply not publicly available. Further,
+\devito should not be compared against pure stencil frameworks,
+such as YASK \cite{yask}, since they are unable to compute the sparse operations
+required for source injection and receiver interpolation (and are therefore not
+suitable for use in measurement based inversion problems). The comparison carried out
+here is conducted in two dimensions. Whilst large scale 3D scaling comparisons are theoretically
+possible, compute time on the Cloud is expensive. Such a comparison is not feasible at this
+time and will therefore be left for future work.}
+
+To ensure a fair comparison, we ensured that the
 physical and computational settings were identical. The settings were as
 follows:
 
@@ -1086,7 +1096,7 @@ Kernels were executed five times each and the
 runtimes observed were consistently very similar. This comparison
 illustrates the performance achieved with \devito is at least on par with
 hand-coded propagators. Considering we do not take advantage of the Devito
-compilers full capabilities in two dimensional cases, we are confident
+compilers full capabilities in \textcolor{red}{the two dimensional case}, we are confident
 that the code generated will be at least on par with the hand-coded version
 for three dimensional problems and this comparison will be part of our future
 work.
@@ -1102,7 +1112,7 @@ the high-level interface provided by \devito not only for simple scalar
 equations but also for coupled PDEs. This interface allows, in a simple, concise
 and consistent manner, the expression of all-kinds of non-trivial
 differential operators. Next, and most
-importantly, we demonstrated that the compiler enables large-scale modelling with
+importantly, \textcolor{red}{it was} demonstrated that the compiler enables large-scale modelling with
 state-of-the art computational performance and programming paradigm. The
 single-node performance is on par with state of the art hand-coded models, but
 packaged with this performance comes
