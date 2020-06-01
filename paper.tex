@@ -270,7 +270,7 @@ generates highly optimized C code. The generated code is then compiled at
 runtime for the hardware at hand.
 
 \textcolor{red}{It should be emphasized that unlike in,
-e.g., earthquake simulation models \cite{fu201718} (more?), where
+e.g., earthquake simulation models \cite{fu201718}, where
 a single shot is computed, wave-equation based
 geophysical inversion not only requires
 fast and accurate solvers but also adavnced algorithms for
@@ -346,14 +346,16 @@ an implementation of the acoustic wave-equation in isotropic media
 %
 \begin{equation}
 \begin{cases}
- m \frac{\partial^2 u(t, x)}{\partial t^2} - \Delta u(t, x) = \delta(xs) q(t) \\
+ m(x) \frac{\partial^2 u(t, x)}{\partial t^2} - \Delta u(t, x) = \delta(xs) q(t) \\
  u(0, .) = \frac{\partial u(t, x)}{\partial t}(0, .) = 0 \\
  d(t, .) = u(t, xr).
  \end{cases}
 \label{acou}
 \end{equation}
 %
-\textcolor{red}{FIXME: Define the terms appearing in the above equation.}
+\textcolor{red}{where $u(t, x)$ is the pressure wavefield, $xs$ is the point source position, 
+$q(t)$ is thes ource time signature, $d(t, .)$ is the measured data at positions $xr$ and $m(x)$ is the 
+squared slowness.}
  The core of the Devito
 symbolic API consists of three classes:
 
@@ -469,6 +471,11 @@ We here provide a succinct description of distributed-memory parallelism
 in Devito; the interested reader should refer to the MPI tutorial at
 \href{https://github.com/devitocodes/devito/blob/v4.2/examples/mpi/overview.ipynb}{mpi-notebook}
 for thorough explanations and practical examples.
+\textcolor{red}{We highlugh the main feature of the distributed framework tha enable the industry scale
+applications we describe in this paper. A more thorough study of its implementation, including `mpi4numpy' and
+a complete scaling analysis will be presented in a later paper. Initial results assciated with early version of \devito's
+distributed computing capabilities can be found in \cite{luporini2019adp} on a conventional cluster and 
+in \cite{witte2019ecl} that contains results on AWS.}
 
 Devito implements distributed-memory parallelism on top of MPI. The design
 is such that users can almost entirely abstract away from it and reuse
@@ -1044,7 +1051,7 @@ parallel this becomes 5.5PFLOP/s.
 codes}\label{performance-comparison-with-other-codes}
 
 Earlier performance benchmarks mainly focused on roofline model analysis
-\textcolor{red}{[TODO: Add reference]}.
+\textcolor{red}{\cite{sevendwarfs, patterson, williams2009roofline, louboutin2016ppf}}.
 In this study, for completeness, the runtime of \devito is therefore
 compared to that of the open source hand-coded propagator
 \href{https://github.com/JanThorbecke/OpenSource.git}{fdelmodc}. This propagator,
