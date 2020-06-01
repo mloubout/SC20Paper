@@ -57,7 +57,20 @@ Scored Review Questions WEAK REJECT (2)
 
 ### Reply
 
-...
+* One question that arises, in the performance is how does Devito account for FMA (Fused Multiple Adds)?
+
+The operations determining the performance of a code are the source level ones, while FMA is a lower level concept (ie, a scalar FMA would account for two operations). This is not Devito, but rather then model adopted everywhere, otherwise two performance values from two different architectures, one with FMAs the other without, would not even be comparable.
+
+* Scalability performance would also be interesting.
+
+[TODO] Reuse part of replies above
+
+*     It appears much of the performance result are provided in the references so it is unclear as to what the purpose of this paper is for an SC audience. For actual seismic surveys, the imaging (interpretation) part is only 10% of the survey. Of course, one does us the RTM in developing the velocity model which adds to complexity in a way. Ease of use coupled with excellent scalable performance while important doesn't address the real "industrial" problems, it helps a little.
+
+[TODO] Felix, Gerard, Mathias...
+
+
+
 
 ## Review of pap429s2 by Reviewer 4 
 Detailed Comments for Authors
