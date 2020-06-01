@@ -270,7 +270,7 @@ generates highly optimized C code. The generated code is then compiled at
 runtime for the hardware at hand.
 
 \textcolor{red}{It should be emphasized that unlike in,
-e.g., earthquake simulation models \cite{fu201718} (more?), where
+e.g., earthquake simulation models \cite{fu201718}, where
 a single shot is computed, wave-equation based
 geophysical inversion not only requires
 fast and accurate solvers but also adavnced algorithms for
@@ -346,14 +346,16 @@ an implementation of the acoustic wave-equation in isotropic media
 %
 \begin{equation}
 \begin{cases}
- m \frac{\partial^2 u(t, x)}{\partial t^2} - \Delta u(t, x) = \delta(xs) q(t) \\
+ m(x) \frac{\partial^2 u(t, x)}{\partial t^2} - \Delta u(t, x) = \delta(xs) q(t) \\
  u(0, .) = \frac{\partial u(t, x)}{\partial t}(0, .) = 0 \\
  d(t, .) = u(t, xr).
  \end{cases}
 \label{acou}
 \end{equation}
 %
-\textcolor{red}{FIXME: Define the terms appearing in the above equation.}
+\textcolor{red}{where $u(t, x)$ is the pressure wavefield, $xs$ is the point source position, 
+$q(t)$ is thes ource time signature, $d(t, .)$ is the measured data at positions $xr$ and $m(x)$ is the 
+squared slowness.}
  The core of the Devito
 symbolic API consists of three classes:
 
@@ -1044,7 +1046,7 @@ parallel this becomes 5.5PFLOP/s.
 codes}\label{performance-comparison-with-other-codes}
 
 Earlier performance benchmarks mainly focused on roofline model analysis
-\textcolor{red}{[TODO: Add reference]}.
+\textcolor{red}{\cite{sevendwarfs, patterson, williams2009roofline, louboutin2016ppf}}.
 In this study, for completeness, the runtime of \devito is therefore
 compared to that of the open source hand-coded propagator
 \href{https://github.com/JanThorbecke/OpenSource.git}{fdelmodc}. This propagator,
