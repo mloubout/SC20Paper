@@ -68,44 +68,32 @@ We believe that showing the new capabilities of Devito -- the tensor language --
 
 
 ## R4 
-Detailed Comments for Authors
-    This manuscript describes optimizations for Devito, a symbolic DSL designed for geophysics, to extend its use for industrial scale modeling of seismic inversion problems.
-    Strengths:
-        added support for vector and tensor objects for staggered-grid finite-differences
-        demonstrated solving large-scale inverse problems (requiring large memory and computation)
-        demonstrated its use on Cloud-based HPC
-        paper is well-written
-    Weaknesses:
-        One issue is that I cannot tell how much of this work is new
-        contributions. The paper reads a lot like an overview of previous work in many parts. The parts that I am sure are new work (e.g., adding support for vector and tensors), I am unclear of the amount of effort or innovation involved.
-        I like this paper and the work (the ease-of-use of Devito is impressive), but I think for SC we would need more information on its scalability and performance.
-Comments for Revision
-        Please address the weaknesses above
-        Is section III describing new work? It is unclear to me if this is an overview or new work for this paper…
-        Is the parallelism just via MPI? What are the possibilities for this code in terms of heterogeneous clusters? Will it be able to take advantage of GPUs?
-    Minor issues:
-    (1) section 3, 1st paragraph: "must to be" => "must be"
-    (2) section 1, 3rd paragraph: make an itemized list?
-Scored Review Questions WEAK REJECT (2)
-
-### Reply
 
 * One issue is that I cannot tell how much of this work is new
 
-...
+We have improved the manuscript to clarify what the contributions are. These are also now reiterated throughout the whole paper. TODO -- need to add pointers to what we added?
 
-*   but I think for SC we would need more information on its scalability and performance.
+* [...] vector and tensors [...] I am unclear of the amount of effort or innovation involved.
 
-See previous responses
+The number of additions to the codebase is notable: https://github.com/devitocodes/devito/pull/873
+And for Devito and his users, this was an invaluable addition.
 
-*    Is section III describing new work? It is unclear to me if this is an overview or new work for this paper…
+* but I think for SC we would need more information on its scalability and performance.
 
-Yes. We have refined the txt to make it more explicit and detailed.
+The single-node performance is discussed in other (cited) articles. In the previous responses (R1, R2, R3), we have elaborated why the lack of scalability experiments.
 
-*    Is the parallelism just via MPI?
+* Is section III describing new work? It is unclear to me if this is an overview or new work for this paper…
 
-The domain decomposition is via MPI, however, the overall task parallelism is not. Seismic inversion is a fullys eparable problem on terms of surce experiment, and the paralleization over these sources is done using `batch-shipyard` in a serverless settting. THis allow optimal usage of Cloud ressource rather than firing up a cluster aht will be IDLE most of time but still payed for bytt he hour in the cloud.
+Yes. We have improved the text to make it more explicit and detailed.
 
-*   What are the possibilities for this code in terms of heterogeneous clusters? Will it be able to take advantage of GPUs?
+* Is the parallelism just via MPI?
+
+The inversion (outer-level of parallelism) requires what is essentially task parallelism; each task is internally MPI-parallel (domain decomposition). In this context task-parallelism means paralleization over sources, which we have accomplished using `batch-shipyard` in a serverless settting (see Section TODO). We remark that this allows optimal usage of the typical cloud infrastructure, where one pays based on actual usage of computational resources.
+
+* What are the possibilities for this code in terms of heterogeneous clusters? Will it be able to take advantage of GPUs?
   
-GPU support is in development and currently supported for some applications. Its capabilities and related applications will be fully covered in a future dedicated paper.
+GPU support is in development and currently (Devito v4.2) supported for some applications. Its capabilities and related applications will be fully covered in a future dedicated paper.
+
+* Minor issues [...]
+
+Fixed, thanks.
