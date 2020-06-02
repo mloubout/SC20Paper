@@ -45,7 +45,7 @@ Correct. We refer to other papers for all these other aspects.
 
 > One question that arises, in the performance is how does Devito account for FMA (Fused Multiple Adds)?
 
-The operations determining the performance of a code are the source level ones, while FMA is a lower level concept (ie, a scalar FMA would account for two operations). This is not Devito, but rather then model adopted everywhere, otherwise two performance values from two different architectures, one with FMAs the other without, would not even be comparable.
+The operations determining the performance of a code are the source level ones, while FMA is a lower level concept (ie, a scalar FMA would account for two operations). This is not Devito, but rather the model adopted everywhere, otherwise two performance values from two different architectures, one with FMAs the other without, would not even be comparable.
 
 > Scalability performance would also be interesting.
 
@@ -64,36 +64,36 @@ The industrial problem does indeed involve muliple parts, such as data acquisiti
 We believe that showing the new capabilities of Devito -- the tensor language -- for a different physics and discretization is as important to the SC audience as a strong scaling experiment. In fact, strong scaling may, to some extent, be regarded as more of an academic exercise in seismic imaging:
 
 * even with high-frequency FWI, a typical shot-level computation requires no more than a bunch of nodes (often order of units);
-* there is an outer-level of parallelism for inversion, essentially a farm (master-slave) where the individual workers and internally MPI-parallel.
+* there is an outer-level of parallelism for inversion, essentially a task farm where the individual workers is internally MPI-parallel.
 
 
 ## R4 
 
-* One issue is that I cannot tell how much of this work is new
+> One issue is that I cannot tell how much of this work is new
 
 We have improved the manuscript to clarify what the contributions are. These are also now reiterated throughout the whole paper. TODO -- need to add pointers to what we added?
 
-* [...] vector and tensors [...] I am unclear of the amount of effort or innovation involved.
+> [...] vector and tensors [...] I am unclear of the amount of effort or innovation involved.
 
 The number of additions to the codebase is notable: https://github.com/devitocodes/devito/pull/873
 And for Devito and his users, this was an invaluable addition.
 
-* but I think for SC we would need more information on its scalability and performance.
+> but I think for SC we would need more information on its scalability and performance.
 
 The single-node performance is discussed in other (cited) articles. In the previous responses (R1, R2, R3), we have elaborated why the lack of scalability experiments.
 
-* Is section III describing new work? It is unclear to me if this is an overview or new work for this paper…
+> Is section III describing new work? It is unclear to me if this is an overview or new work for this paper…
 
 Yes. We have improved the text to make it more explicit and detailed.
 
-* Is the parallelism just via MPI?
+> Is the parallelism just via MPI?
 
-The inversion (outer-level of parallelism) requires what is essentially task parallelism; each task is internally MPI-parallel (domain decomposition). In this context task-parallelism means paralleization over sources, which we have accomplished using `batch-shipyard` in a serverless settting (see Section TODO). We remark that this allows optimal usage of the typical cloud infrastructure, where one pays based on actual usage of computational resources.
+The inversion (outer-level of parallelism) requires what is essentially task parallelism; each task is internally MPI-parallel (domain decomposition). In this context task-parallelism means paralleization over sources, which we have accomplished using `batch-shipyard` in a serverless setting (see Section II end). We remark that this allows optimal usage of the typical cloud infrastructure, where one pays based on actual usage of computational resources.
 
-* What are the possibilities for this code in terms of heterogeneous clusters? Will it be able to take advantage of GPUs?
+> What are the possibilities for this code in terms of heterogeneous clusters? Will it be able to take advantage of GPUs?
   
 GPU support is in development and currently (Devito v4.2) supported for some applications. Its capabilities and related applications will be fully covered in a future dedicated paper.
 
-* Minor issues [...]
+> Minor issues [...]
 
 Fixed, thanks.

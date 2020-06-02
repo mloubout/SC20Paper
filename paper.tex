@@ -51,6 +51,7 @@
     \lstset{#1}
 }{}
 
+\usepackage[normalem]{ulem}
 \usepackage{color}
 \usepackage{fancyvrb}
 \usepackage{fvextra}
@@ -303,7 +304,7 @@ finite-differences with the same high-level API previously presented for
 scalar fields defined on cartesian grids.
 
 This paper is organized as follows: first, we provide a brief overview of
-Devito and its symbolic API and present the distributed memory
+Devito and its symbolic API and present the \textcolor{red}{newly developped} distributed memory
 implementation that allows large-scale modelling and inversion by means of
 domain decomposition. We then provide a brief comparison with a state of
 the art hand-coded wave propagator to validate the performance previously
@@ -861,9 +862,16 @@ utilized anisotropic propagators capable of mimicking intricate physics, in orde
 to model both the wave kinematics and amplitudes correctly, elastic
 propagators are required. These propagators are, for example, extremely
 important in global seismology since shear surface waves (which are
-ignored in acoustic models) are the most hazardous. In this section, we
+ignored in acoustic models) are the most hazardous. \textcolor{red}{In this section, we 
+introduce the new tensor algebra language implemented in \devito that enables the simple and 
+high-level definition of vectorial and tensorial physics. This API extension also implements 
+fully automatized staggered grid and staggered ginite-difference generally required for a stable discretization
+of vectorial PDEs. This extension allows us to express an elastic model with compact and elegant notation 
+and model its solution computationally efficiently with the \devito compiler}
+
+\sout{\textcolor{green}{In this section, we
 exploit the tensor algebra language introduced in \devito v4.0 to express
-an elastic model with compact and elegant notation.
+an elastic model with compact and elegant notation.}}
 
 The isotropic elastic wave-equation, parametrized by the so-called Lamé parameters
 $\lambda, \mu$ and the density $\rho$ reads:
