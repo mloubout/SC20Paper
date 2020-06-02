@@ -472,8 +472,8 @@ in Devito; the interested reader should refer to the MPI tutorial at
 \href{https://github.com/devitocodes/devito/blob/v4.2/examples/mpi/overview.ipynb}{mpi-notebook}
 for thorough explanations and practical examples.
 \textcolor{red}{We highlight the main features of the distributed framework tha enable the industry scale
-applications we describe in this paper. A more thorough study of its implementation, including `mpi4numpy' and
-a complete scaling analysis will be presented in a later paper. Initial results assciated with early version of \devito's
+applications we describe in this paper. A more thorough study of its implementation, including `mpi4py' and
+a complete scaling analysis will be presented in a later paper. Initial results associated with early version of \devito's
 distributed computing capabilities can be found in \cite{luporini2019adp} on a conventional cluster and 
 in \cite{witte2019ecl} that contains results on AWS.}
 
@@ -1060,7 +1060,7 @@ described in \cite{thorbecke}, is a state of the art elastic kernel
 in collaboration with its author.
 \textcolor{red}{It should be emphasized that direct model comparison in
 the area of exploration geophysics is challenging. The majority of production
-codes are either proprioty or are simply not publicly available. Further,
+codes are either proprietary or are simply not publicly available. Further,
 \devito should not be compared against pure stencil frameworks,
 such as YASK \cite{yask}, since they are unable to compute the sparse operations
 required for source injection and receiver interpolation (and are therefore not
