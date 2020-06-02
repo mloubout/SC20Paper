@@ -2,7 +2,7 @@ Dear Editor,
 
 First of all, we would like to thank the reviewers for their work and constructive feedback. Below, we address all of their questions and observations. 
 
-## Review of pap429s2 by Reviewer 1
+## R1
 
 > If you run your model with a variable number of cores, how is the weak and strong scaling? Can you comment on that? Further, you mention that you validate performance against a wave propagator - how about validation of simulation quality? How is that done?
 
@@ -14,7 +14,7 @@ We subsequently managed to work around point one above. Initial scaling experime
 
 About validation of simulation quality -- we did not include it in this paper as we think it is outside of the scope of the presented results, but the simulation quality is verified in two ways. As described in [@devito-api], the numerical accuracy is compared to the analytical solution for the acoustic wave equation as well as the convergence rate of the finite-difference discretization. The verification of TTI is not as simple as we do not have an analytical solution; we will be using the method of manufactured solution (MMS), but this is still work in progress. However, all of the key parts, such as finite-difference accuracy and comparison with isotropic results for zero-ed anisotropic parameters are implemented and part of our continuous integration system.
 
-## Review of pap429s2 by Reviewer 2
+## R2
 
 > However, it is not very suitable for SC
 
@@ -30,18 +30,18 @@ High arithmetic intensity does not imply "non challenging optimization". In fact
 
 > The parallelism applied so far is straight up MPI which is a bit behind times these days.
 
-As far as we know, in 2020 MPI is still the most widely used approach for domain decomposition.
+In 2020 MPI is still de facto a widely adopted approach for domain decomposition.
 
 
-## Review of pap429s2 by Reviewer 3
-Detailed Comments for Authors
-    The authors in the paper describe their Devito, open-source Python project targeted in the area of seismic exploration. The idea of this particular piece of work is the ease of use through Devito to address, in a Domain Specific Language, creating code for seismic exploration problems which due to being computational intensive often require the use of distributed parallel systems. This is built upon MPI but appears to be hidden from the end user. It was a little confusing but the MPI parallelism appears to essentially be a domain decomposition style parallelism. There was some mention of threads, in particular there seems to be several compilation passes that abstracts out the parallelism which can include SIMD, shared-memory and MPI. Only the MPI is detailed. Through Devito, the authors demonstrate its utility on two problems; (1) Reverse Time Migration (RTM) for a pseudo-acoustic wave problem and (2) an elastic wave problem. With the RTM, they consider titled-transverse isotropic (TTI) wave equation formulation. In RTM, the forward problem is calculated and then the adjoint problem is solve backwards in time to get the imaging. RTM tends to require significant memory and/or fast access to storage of the forward problem during solves for the adjoint problem. Devito is used to set these problems up in VM (Virtual Machines) to be run in a Cloud (Azure) on 32 nodes. If this reviewer understands correctly, Devito is set up to calculate the FLOPs count which is how the authors get the performance. One question that arises, in the performance is how does Devito account for FMA (Fused Multiple Adds)? A comparison was made with an open source hand-code propagator "fdelmode" for the elastic wave equation which seems to be on a 2D problem. The result of this comparison are "essentially identical". A table comparison might be helpful. Scalability performance would also be interesting.
-    It appears much of the performance result are provided in the references so it is unclear as to what the purpose of this paper is for an SC audience. For actual seismic surveys, the imaging (interpretation) part is only 10% of the survey. Of course, one does us the RTM in developing the velocity model which adds to complexity in a way. Ease of use coupled with excellent scalable performance while important doesn't address the real "industrial" problems, it helps a little.
-Comments for Revision
-    Perhaps restricting the discussion of both ease of use of Devito, with a comparison including scalability on one problem, say the 3D TTI problem against a known method and doing this in a cloud setting up to a significant number of nodes would make this a more appropriate paper for the SC audience. This might be too tall an order here. Dropping the discussion on the 3D elastic wave and including a table of comparison with the fdelmode for the 2D elastic wave problem or even just going through scalability comparison on the TTI problem against another code might demonstrate the value of Devito better.
-Scored Review Questions WEAK REJECT (2)
+## R3
 
-### Reply
+> It was a little confusing but the MPI parallelism appears to essentially be a domain decomposition style parallelism.
+
+As we elaborate in R2 (with references to the paper), it's not just about decomposing a grid. Devito deals with distribution of sparse functions, python-level distributed arrays, decomposition over sub-domains and much more.
+
+> There was some mention of threads, in particular there seems to be several compilation passes that abstracts out the parallelism which can include SIMD, shared-memory and MPI. Only the MPI is detailed.
+
+Correct. We refer to other papers for all these other aspects.
 
 > One question that arises, in the performance is how does Devito account for FMA (Fused Multiple Adds)?
 
@@ -55,12 +55,19 @@ See reply to R1 -- basically, (i) lack of resources and (ii) Devito not ready ye
 
 We are showing performance results of three different codes -- TTI, elastic, and isotropic acoustic -- thus exploring different physics and discretizations. These results are, respectively, in sections [...]. As we explain in our reply to R2, ours is an application-oriented paper built off high-level abstractions running on a cloud-based system. To achieve this, we're using several bleeding edge technologies -- an established DSL-based system such as Devito (used in companies and academia), the Azure cloud, Docker (for ease of installation, use and reproducibility), the rapidly-spreading GitHub Actions for continuos integration, and much more. The use and orchestration of these technologies is thouroughly described in the paper, and this should be, in our opinion, of strong interest for the SC audience.
 
-> For actual seismic surveys, the imaging (interpretation) part is only 10% of the survey. Of course, one does us the RTM in developing the velocity model which adds to complexity in a way. Ease of use coupled with excellent scalable performance while important doesn't address the real "industrial" problems, it helps a little.
+> For actual seismic surveys, the imaging (interpretation) part is only 10% of the survey. [...] while important doesn't address the real "industrial" problems, it helps a little.
 
 The industrial problem does indeed involve muliple parts, such as data acquisition, processing, and, most importantly, velocity model building. We do not claim here to solve all these problems; however, we demonstrate that the combination of advanced technolgies such as high-level DSLs and compilers is key to highly efficient sesimic modeling and imaging at industrial scale. The complexity of model building requires advanced optimization methods. The straightforward access to computationally and easy-to-develop wave-equation solvers enable research and development for seismic inversion. Devito is therfore used for the development of inital background model building [@mojica2019tab] or cycle skipping mitigating methods [@rizzuti2020EAGEtwri; @louboutin2020SEGtwri] and compressive least square migration [@witte2018cls] based on a linear algebra framework for seismic inversion built on top of devito [@witte2018alf]. We have added a clarification in the introduction.
 
+> Dropping the discussion on the 3D elastic wave and [...] might demonstrate the value of Devito better.
 
-## Review of pap429s2 by Reviewer 4 
+We believe that showing the new capabilities of Devito -- the tensor language -- for a different physics and discretization is as important to the SC audience as a strong scaling experiment. In fact, strong scaling may, to some extent, be regarded as more of an academic exercise in seismic imaging:
+
+* even with high-frequency FWI, a typical shot-level computation requires no more than a bunch of nodes (often order of units);
+* there is an outer-level of parallelism for inversion, essentially a farm (master-slave) where the individual workers and internally MPI-parallel.
+
+
+## R4 
 Detailed Comments for Authors
     This manuscript describes optimizations for Devito, a symbolic DSL designed for geophysics, to extend its use for industrial scale modeling of seismic inversion problems.
     Strengths:
