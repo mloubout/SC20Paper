@@ -16,19 +16,19 @@ About validation of simulation quality -- we did not include it in this paper as
 
 ## Review of pap429s2 by Reviewer 2
 
-* However, it is not very suitable for SC
+> However, it is not very suitable for SC
 
 As partly explained in our reply to R1, we conceived this work as an application-oriented paper based on high-level abstractions and compilation technology. We're in the middle of an epochal change for computational science, with legacy codes being superseded, gradually, by DSLs; our work is just yet another small step in this direction. However, unlike many other works centered on DSLs, ours builds on -- and contributes to -- what is nowadays an established framework for seismic imaging. We believe that this should be of strong interest for the SC community, especially since -- we believe -- the methodology and philosophy underpinning Devito is reusable in computational science.
 
-*  Parallelization is pretty straightforward, uniform decomposition of relatively straightforward operation.
+> Parallelization is pretty straightforward, uniform decomposition of relatively straightforward operation.
 
 We remark that our work does _not_ describe some ad-hoc MPI-based domain decomposition; what Devito can do is _generation_ of MPI parallel code from a mathematical language for solving partial differential equations. This requires considerable software engineering (especially for an open source project such as Devito that was born in academia): we're talking about thousands of lines of carefully engineered code, plus tests and examples, to enable users to just type `mpirun -n X python ...` and get their code to run on a distributed-memory system with virtually no changes to their code. Secondly, as we explained in the paper [section ...], it's not just "classic domain decomposition": Devito orchestrates sparse functions, implements distributed numpy arrays, and performs several compiler-level optimazions for effective halo exchange. Based on our experience, this is a fairly sophisticated system, quite far from being "straightforward".
 
-* The computational kernels have really high arithmetic intensity that is great for the domain, but not as challenging for optimization
+> The computational kernels have really high arithmetic intensity that is great for the domain, but not as challenging for optimization
 
 High arithmetic intensity does not imply "non challenging optimization". In fact, it's the exact opposite, and there are several examples in computational science that we could use as evidence, even outside of seismic. Take high-order finite (spectral) elements for instance -- you may get an extremely good arithmetic intensity, but without tensor-product basis functions and suitable optimizations such as sum-factorization you'll likely end up with a notable, yet totally misleasing, GFlops/s performance, as a huge fraction of flops will stem from redundant computation (e.g., common sub-expressions, lack of code hoisting, distributivity). The same story happens with our TTI. As we explain in the paper [section ...], without capturing the cross-iteration common sub-expressions (due to high order derivatives), we would have obtained remarkable GFlops/s performance, but terrible GPoints/s. And capturing such redundancies is indeed quite challenging. In fact, this is one of the reasons several companies are today so much interested in Devito: machines (compilers) can be better than humans at detecting redundancies, and definitely way faster than them.
 
-* The parallelism applied so far is straight up MPI which is a bit behind times these days.
+> The parallelism applied so far is straight up MPI which is a bit behind times these days.
 
 As far as we know, in 2020 MPI is still the most widely used approach for domain decomposition.
 
