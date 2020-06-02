@@ -43,18 +43,21 @@ Scored Review Questions WEAK REJECT (2)
 
 ### Reply
 
-* One question that arises, in the performance is how does Devito account for FMA (Fused Multiple Adds)?
+> One question that arises, in the performance is how does Devito account for FMA (Fused Multiple Adds)?
 
 The operations determining the performance of a code are the source level ones, while FMA is a lower level concept (ie, a scalar FMA would account for two operations). This is not Devito, but rather then model adopted everywhere, otherwise two performance values from two different architectures, one with FMAs the other without, would not even be comparable.
 
-* Scalability performance would also be interesting.
+> Scalability performance would also be interesting.
 
-[TODO] Reuse part of replies above
+See reply to R1 -- basically, (i) lack of resources and (ii) Devito not ready yet for extreme scale at the time we ran the experiments.
 
-*     It appears much of the performance result are provided in the references so it is unclear as to what the purpose of this paper is for an SC audience. For actual seismic surveys, the imaging (interpretation) part is only 10% of the survey. Of course, one does us the RTM in developing the velocity model which adds to complexity in a way. Ease of use coupled with excellent scalable performance while important doesn't address the real "industrial" problems, it helps a little.
+> It appears much of the performance result are provided in the references so it is unclear as to what the purpose of this paper is for an SC audience. 
 
-The industrial problem does indeed involve muliple parts, such as data acquisition then processing, and mst importatly velocity model building. We do not claim here to solve all the problems, but demonstrate that the combination of a high-elvel DSL and a highly efficient compiler provides the necessary tool for sesimic modeling and imaging at (industrial) scale. The complexity of model building requires advance optimization methods, and the easy access to computationally and easy to develop wave-equation solvers enable research and development for seismic inversion. Devito is therfore used for the development of inital background model building [@mojica2019tab] or cycle skipping mitigating methods [@rizzuti2020EAGEtwri; @louboutin2020SEGtwri] and compressive least square migration [@witte2018cls] based on a linear algebra framework for seismic inversion built on top of devito [@witte2018alf]
-We added a clarification in the introduction.
+We are showing performance results of three different codes -- TTI, elastic, and isotropic acoustic -- thus exploring different physics and discretizations. These results are, respectively, in sections [...]. As we explain in our reply to R2, ours is an application-oriented paper built off high-level abstractions running on a cloud-based system. To achieve this, we're using several bleeding edge technologies -- an established DSL-based system such as Devito (used in companies and academia), the Azure cloud, Docker (for ease of installation, use and reproducibility), the rapidly-spreading GitHub Actions for continuos integration, and much more. The use and orchestration of these technologies is thouroughly described in the paper, and this should be, in our opinion, of strong interest for the SC audience.
+
+> For actual seismic surveys, the imaging (interpretation) part is only 10% of the survey. Of course, one does us the RTM in developing the velocity model which adds to complexity in a way. Ease of use coupled with excellent scalable performance while important doesn't address the real "industrial" problems, it helps a little.
+
+The industrial problem does indeed involve muliple parts, such as data acquisition, processing, and, most importantly, velocity model building. We do not claim here to solve all these problems; however, we demonstrate that the combination of advanced technolgies such as high-level DSLs and compilers is key to highly efficient sesimic modeling and imaging at industrial scale. The complexity of model building requires advanced optimization methods. The straightforward access to computationally and easy-to-develop wave-equation solvers enable research and development for seismic inversion. Devito is therfore used for the development of inital background model building [@mojica2019tab] or cycle skipping mitigating methods [@rizzuti2020EAGEtwri; @louboutin2020SEGtwri] and compressive least square migration [@witte2018cls] based on a linear algebra framework for seismic inversion built on top of devito [@witte2018alf]. We have added a clarification in the introduction.
 
 
 ## Review of pap429s2 by Reviewer 4 
