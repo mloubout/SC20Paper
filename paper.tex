@@ -282,7 +282,7 @@ automatically through its compiler. \devito has been used previously
 for the solution of the wave equation within imaging frameworks including
 FWI \cite{witte2018alf}, compressived least-square RTM \cite{witte2018cls} and
 time-domain Wavefield Reconstruction Inversion (WRI)~\cite{rizzuti2020EAGEtwri, 
-louboutin2020SEGtwri}, the later of which takles the cycle-skipping issue
+louboutin2020SEGtwri}, the later of which tackles the cycle-skipping issue
 present in seismic inversion.}
 
 Previous work focused on the DSL and compiler to highlight the potential
@@ -355,7 +355,7 @@ an implementation of the acoustic wave-equation in isotropic media
 \end{equation}
 %
 \textcolor{red}{where $u(t, x)$ is the pressure wavefield, $xs$ is the point source position, 
-$q(t)$ is thes ource time signature, $d(t, .)$ is the measured data at positions $xr$ and $m(x)$ is the 
+$q(t)$ is the source time signature, $d(t, .)$ is the measured data at positions $xr$ and $m(x)$ is the
 squared slowness.}
  The core of the Devito
 symbolic API consists of three classes:
@@ -472,8 +472,8 @@ We here provide a succinct description of distributed-memory parallelism
 in Devito; the interested reader should refer to the MPI tutorial at
 \href{https://github.com/devitocodes/devito/blob/v4.2/examples/mpi/overview.ipynb}{mpi-notebook}
 for thorough explanations and practical examples.
-\textcolor{red}{We highlight the main features of the distributed framework tha enable the industry scale
-applications we describe in this paper. A more thorough study of its implementation, including mpi over numpy and
+\textcolor{red}{We highlight the main features of the distributed framework that enable the industry scale
+applications we describe in this paper. A more thorough study of its implementation, including MPI over numpy and
 a complete scaling analysis will be presented in a later paper. Initial results associated with early version of \devito's
 distributed computing capabilities can be found in \cite{luporini2019adp} on a conventional cluster and 
 in \cite{witte2019ecl} that contains results on AWS.}
