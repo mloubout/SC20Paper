@@ -1,6 +1,11 @@
+---
+title: respons to reviews
+bibliography:
+	- sc20_paper.bib
+---
 Dear Editor,
 
-First of all, we would like to thank the reviewers for their work and constructive feedback. Below, we address their questions and observations. 
+First of all, we would like to thank the reviewers for their work and constructive feedback. Below, we address their questions and observations.
 
 ## R1
 
