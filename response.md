@@ -57,7 +57,7 @@ We show performance results of three different codes -- TTI, elastic, and isotro
 
 > For actual seismic [...] it helps a little.
 
-The industrial problem does indeed involve muliple parts, such as data acquisition, processing, and, most importantly, velocity model building. We do not claim to solve all these problems. However, we demonstrate that the combination of advanced technolgies such as DSLs and compilers is key to highly-efficient sesimic modeling and imaging at industrial scale. We have added references and clarification in the introduction.
+The industrial problem does indeed involve muliple parts, such as data acquisition, processing, and, most importantly, velocity model building. We do not claim to solve all these problems. However, we demonstrate that the combination of advanced technolgies such as DSLs and compilers is key to highly-efficient sesimic modelling and imaging at industrial scale. We have added references and clarification in the introduction.
 
 > Dropping [...] 3D elastic [...] might demonstrate the value of Devito better.
 

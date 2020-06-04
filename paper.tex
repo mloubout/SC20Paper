@@ -1125,8 +1125,8 @@ Owing to the fundamental design principles of \devito such scaling,
 however, becomes trivial. In this work we demonstrated
 the high-level interface provided by \devito not only for simple scalar
 equations but also for coupled PDEs. This interface allows, in a simple, concise
-and consistent manner, the expression of all-kinds of non-trivial
-differential operators. Next, and most
+and consistent manner, the expression of all-kinds of non-trivial differential operators \textcolor{red}{, in this the vectorial elastic equation 
+and rotated finite-difference}. Next, and most
 importantly, \textcolor{red}{it was} demonstrated that the compiler enables large-scale modelling with
 state-of-the art computational performance and programming paradigm. The
 single-node performance is on par with state of the art hand-coded models, but
@@ -1134,7 +1134,10 @@ packaged with this performance comes
 the flexibility of the symbolic interface and multi-node parallelism, which is
 integrated in the compiler and interface in a accessible way. Finally,
 we demonstrated that our abstractions provide the necessary portability
-to enable both on-premise and Cloud based HPC.
+to enable both on-premise and Cloud based HPC. \textcolor{red}{WHile the work we 
+presented here does not solve all the problems in exploration geophysics, the high-level interface 
+and at (industry) scale performance we demonstrated convinced
+multiple academic and industrial project to use \devito.}
 
 
 \section{Code availability}
