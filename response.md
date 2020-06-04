@@ -4,15 +4,15 @@ First of all, we would like to thank the reviewers for their work and constructi
 
 ## R1
 
-> If you run your model [...] How is that done?
+> you run your model [...] How is that done?
 
-At the time of the experimentation, we ran into two main issues:
+During experimentation, we had two issues:
 1. Limited resources on Azure, including the access to an Infiniband-enabled system.
 2. Most of the MPI-level optimizations that are today in Devito still needed tuning and consolidation.
 
-We subsequently managed to work around 1.: initial scaling experiments have been published in [@witte2019ecl;@luporini2019adp], although with the latest advancements in Devito (e.g., computation/communication overlap) still unexploited. Today, we have preliminary evidence that Devito 4.2 has remarkable parallel efficiency, but we feel publication would be premature.
+We later managed to perform initial scaling experiments [@witte2019ecl;@luporini2019adp], although still without the latest advancements in Devito (e.g., computation/communication overlap). Today, we have preliminary evidence that Devito 4.2 has remarkable parallel efficiency, but we feel publication would be premature.
 
-Concerning the accuracy -- it was out of the scope of this work, but the simulation quality is verified. In [@devito-api], we have analyzed both the numerical accuracy against the analytical solution and the convergence rate of the finite-difference discretization. In Devito, we systematically test the numerical accuracy of all of the implemented models; this is automated through continuous integration.
+Concerning the accuracy -- it was out of the scope of this work, but the simulation quality is verified. In [@devito-api], we have analyzed both the numerical accuracy against the analytical solution and the convergence rate of the finite-difference discretization. In Devito, we systematically test, through continuous integration, the numerical accuracy of all of the implemented models.
 
 ## R2
 
@@ -20,13 +20,13 @@ Concerning the accuracy -- it was out of the scope of this work, but the simulat
 
 This work was conceived as an application-oriented paper based on high-level abstractions and compilation technology. However, unlike many other works centered on DSLs, ours builds on -- and contributes to -- what is nowadays an established framework for seismic imaging, used in industry and academia. Our work shows the benefits (productivity, HPC, ...) of raising the level of abstraction, so it should be relevant for SC.
 
-> Parallelization is pretty straightforward, uniform decomposition of relatively straightforward operation.
+> Parallelization is pretty straightforward, [...] straightforward operation.
 
-Our work does _not_ describe some ad-hoc MPI-based domain decomposition, but rather the _generation_ MPI parallel code from a mathematical language for solving partial differential equations. This requires considerable software engineering -- thousands of lines of carefully engineered code, plus tests and examples, which allow users to run on a distributed-memory system with virtually no changes to their code. Secondly, as explained in the paper [sections I and II-B], it's not just "classic domain decomposition": Devito also decomposes sparse functions, implements distributed numpy arrays, and performs several compiler-level optimazions for effective halo exchange. This results in a fairly sophisticated system.
+Our work does _not_ describe some ad-hoc MPI-based domain decomposition, but rather the _generation_ of MPI-parallel code from a mathematical language for solving PDEs. This requires considerable software engineering -- thousands of lines of carefully engineered code, which allow users to run on a distributed-memory system with virtually no changes to their code. Secondly, as explained in the paper [sections I and II-B], it's not just "classic domain decomposition": Devito also decomposes sparse functions, implements distributed numpy arrays, and applies several optimazions for effective halo exchange. This results in a fairly sophisticated system.
 
-> kernels have really high arithmetic intensity [...] not as challenging for optimization
+> really high arithmetic intensity [...] not as challenging for optimization
 
-High arithmetic intensity does not imply "non-challenging optimization". In fact, it's the opposite, even outside of seismic. Take high-order finite (spectral) elements for instance -- you may get an extremely high arithmetic intensity, but without tensor-product basis functions and optimizations such as sum-factorization, ultimately you'll get a notable yet misleasing GFlops/s performance, as a huge fraction of flops will stem from redundant computation (e.g., common sub-expressions, lack of code hoisting, distributivity). The same story happens with our TTI. As we explain in the paper [section III], without capturing the cross-iteration common sub-expressions (due to high order derivatives), we would have obtained remarkable GFlops/s performance, but terrible GPoints/s. Detecting and scheduling such redundancies is cumbersome. This is also one of the reasons there is today so much interest in Devito by companies: machines (compilers) can be better than humans at optimizing away redundancies, and definitely way faster than them.
+High arithmetic intensity does not imply "non-challenging optimization". In fact, it's the opposite, even outside of seismic. Take high-order finite (spectral) elements for instance -- you may get an extremely high arithmetic intensity, but without tensor-product basis functions and optimizations such as sum-factorization, ultimately you'll get a notable yet misleasing GFlops/s performance, since a huge fraction of flops are redundant (e.g., common sub-expressions, hoisting, contractions). The same story happens with our TTI. As we explain in the paper [section III], without capturing the cross-iteration common sub-expressions due to high-order derivatives, we would have obtained remarkable GFlops/s performance, but terrible GPoints/s. Optimizing away such redundancies is cumbersome, and this is one of the reasons there is today so much interest in Devito by companies.
 
 > [...] MPI which is a bit behind times these days.
 
@@ -37,7 +37,7 @@ MPI is still a widely adopted approach for domain decomposition.
 
 > It was a little confusing but [...] style parallelism.
 
-As we elaborate in R2, it's not just about decomposing a grid. Devito deals with distribution of sparse functions, python-level distributed arrays, decomposition over sub-domains and much more.
+As we elaborate in R2, it's not just "grid decomposition". Devito deals with distribution of sparse functions, distributed numpy arrays, decomposition over sub-domains and much more.
 
 > some mention of threads, [...]. Only the MPI is detailed.
 
@@ -45,23 +45,23 @@ Correct. We refer to other papers for all these other aspects.
 
 > [...] FMA (Fused Multiple Adds)?
 
-The operations determining the performance of a code are the source level ones, while FMA is a lower level concept (ie, a scalar FMA would account for two operations). This is not Devito, but rather the model adopted everywhere, otherwise two performance values from two different architectures, one with FMAs the other without, would not even be comparable.
+The operations determining the performance of a code are the source-level ones. FMA is a lower-level concept (ie, a scalar FMA would account for two operations). This is not Devito, but rather the model adopted everywhere.
 
 > Scalability performance
 
-See reply to R1: (i) lack of resources and (ii) Devito not ready yet for scalability tests at the time we ran the experiments.
+See reply to R1: (i) lack of resources and (ii) Devito not ready yet for scalability tests when we performed the experimentation.
 
 > It appears much of the performance [...]
 
-We are showing performance results of three different codes -- TTI, elastic, and isotropic acoustic -- thus exploring different physics and discretizations. As explained to R2, ours is an application-oriented paper built off high-level abstractions running on a cloud-based system. To achieve this, we are using bleeding edge technologies -- an established DSL-based system such as Devito (used in companies and academia), Azure cloud, Docker (portability), the rapidly-spreading GitHub-Actions for CI, .... The use and orchestration of these technologies is thouroughly described in the paper, and is, in our opinion, of strong interest for the SC audience.
+We are showing performance results of three different codes -- TTI, elastic, and isotropic acoustic -- thus exploring different physics and discretizations. Further, as explained to R2, ours is an application-oriented paper built off high-level abstractions running on a cloud-based system. To achieve this, we are using bleeding edge technologies -- an established DSL-based system such as Devito, Azure cloud, Docker, the rapidly-spreading GitHub-Actions for CI, etc. The use and orchestration of these technologies is thouroughly described in the paper, and is, in our opinion, of strong interest for SC.
 
 > For actual seismic [...] it helps a little.
 
-The industrial problem does indeed involve muliple parts, such as data acquisition, processing, and, most importantly, velocity model building. We do not claim here to solve all these problems; however, we demonstrate that the combination of advanced technolgies such as high-level DSLs and compilers is key to highly efficient sesimic modeling and imaging at industrial scale. Devito is used both in academia/industry for various applications. We have added the references and clarification in the introduction.
+The industrial problem does indeed involve muliple parts, such as data acquisition, processing, and, most importantly, velocity model building. We do not claim here to solve all these problems; however, we demonstrate that the combination of advanced technolgies such as DSLs and compilers is key to highly-efficient sesimic modeling and imaging at industrial scale. We have added the references and clarification in the introduction.
 
-> Dropping the discussion on the 3D elastic [...] might demonstrate the value of Devito better.
+> Dropping [...] 3D elastic [...] might demonstrate the value of Devito better.
 
-We believe that showing the new capabilities of Devito -- the tensor language, distributed omputing via high-level abstractions -- for a different physics and discretization is as important to the SC audience as a strong scaling experiment. In fact, strong scaling may, to some extent, be regarded as more of an academic exercise in seismic imaging:
+We believe that showing the new capabilities of Devito -- the tensor language, distributed computing from high-level abstractions -- for a different physics and discretization is as important to the SC audience as a strong scaling experiment. In fact, strong scaling may, to some extent, be regarded as more of an academic exercise in seismic imaging:
 
 * even with high-frequency FWI, a typical shot-level computation requires no more than a bunch of nodes (often order of units);
 * there is an outer-level of parallelism for inversion, essentially a task farm where the individual workers is internally MPI-parallel.
