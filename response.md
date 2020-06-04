@@ -26,11 +26,11 @@ Our work does _not_ describe some ad-hoc MPI-based domain decomposition, but rat
 
 > kernels have really high arithmetic intensity [...] not as challenging for optimization
 
-High arithmetic intensity does not imply "non challenging optimization". In fact, it's the exact opposite, and there are several examples in computational science that we could use as evidence, even outside of seismic. Take high-order finite (spectral) elements for instance -- you may get an extremely good arithmetic intensity, but without tensor-product basis functions and suitable optimizations such as sum-factorization you'll likely end up with a notable, yet totally misleasing, GFlops/s performance, as a huge fraction of flops will stem from redundant computation (e.g., common sub-expressions, lack of code hoisting, distributivity). The same story happens with our TTI. As we explain in the paper [section III] without capturing the cross-iteration common sub-expressions (due to high order derivatives), we would have obtained remarkable GFlops/s performance, but terrible GPoints/s. And capturing such redundancies is indeed quite challenging. In fact, this is one of the reasons several companies are today so much interested in Devito: machines (compilers) can be better than humans at detecting redundancies, and definitely way faster than them.
+High arithmetic intensity does not imply "non-challenging optimization". In fact, it's the opposite, even outside of seismic. Take high-order finite (spectral) elements for instance -- you may get an extremely high arithmetic intensity, but without tensor-product basis functions and optimizations such as sum-factorization, ultimately you'll get a notable yet misleasing GFlops/s performance, as a huge fraction of flops will stem from redundant computation (e.g., common sub-expressions, lack of code hoisting, distributivity). The same story happens with our TTI. As we explain in the paper [section III], without capturing the cross-iteration common sub-expressions (due to high order derivatives), we would have obtained remarkable GFlops/s performance, but terrible GPoints/s. Detecting and scheduling such redundancies is cumbersome. This is also one of the reasons there is today so much interest in Devito by companies: machines (compilers) can be better than humans at optimizing away redundancies, and definitely way faster than them.
 
 > [...] MPI which is a bit behind times these days.
 
-In 2020 MPI is still de facto a widely adopted approach for domain decomposition.
+MPI is still a widely adopted approach for domain decomposition.
 
 
 ## R3
@@ -39,7 +39,7 @@ In 2020 MPI is still de facto a widely adopted approach for domain decomposition
 
 As we elaborate in R2, it's not just about decomposing a grid. Devito deals with distribution of sparse functions, python-level distributed arrays, decomposition over sub-domains and much more.
 
-> There was some mention of threads, [...]. Only the MPI is detailed.
+> some mention of threads, [...]. Only the MPI is detailed.
 
 Correct. We refer to other papers for all these other aspects.
 
@@ -47,7 +47,7 @@ Correct. We refer to other papers for all these other aspects.
 
 The operations determining the performance of a code are the source level ones, while FMA is a lower level concept (ie, a scalar FMA would account for two operations). This is not Devito, but rather the model adopted everywhere, otherwise two performance values from two different architectures, one with FMAs the other without, would not even be comparable.
 
-> Scalability performance would also be interesting.
+> Scalability performance
 
 See reply to R1: (i) lack of resources and (ii) Devito not ready yet for scalability tests at the time we ran the experiments.
 
@@ -59,7 +59,7 @@ We are showing performance results of three different codes -- TTI, elastic, and
 
 The industrial problem does indeed involve muliple parts, such as data acquisition, processing, and, most importantly, velocity model building. We do not claim here to solve all these problems; however, we demonstrate that the combination of advanced technolgies such as high-level DSLs and compilers is key to highly efficient sesimic modeling and imaging at industrial scale. Devito is used both in academia/industry for various applications. We have added the references and clarification in the introduction.
 
-> Dropping the discussion on the 3D elastic wave and [...] might demonstrate the value of Devito better.
+> Dropping the discussion on the 3D elastic [...] might demonstrate the value of Devito better.
 
 We believe that showing the new capabilities of Devito -- the tensor language, distributed omputing via high-level abstractions -- for a different physics and discretization is as important to the SC audience as a strong scaling experiment. In fact, strong scaling may, to some extent, be regarded as more of an academic exercise in seismic imaging:
 
@@ -75,24 +75,23 @@ We have improved the manuscript to clarify what the contributions are. These are
 
 > [...] vector and tensors [...] I am unclear of the amount of effort or innovation involved.
 
-The number of additions to the codebase is notable: https://github.com/devitocodes/devito/pull/873
-And for Devito and his users, this was an invaluable addition.
+The number of additions to the codebase is significant: https://github.com/devitocodes/devito/pull/873
 
-> but I think for SC we would need more information on its scalability and performance.
+> for SC we would need [...] scalability and performance.
 
 The single-node performance is discussed in other (cited) articles. In the previous responses (R1, R2, R3), we have elaborated why the lack of scalability experiments.
 
-> Is section III describing new work?[...]
+> Is section III describing new work?
 
-Yes. We have improved the text to make it more explicit and detailed.
+Yes. We have improved the text to make this clear.
 
-> Is the parallelism just via MPI?[...]
+> Is the parallelism just via MPI?
 
-The inversion (outer-level of parallelism) requires what is essentially task parallelism; each task is internally MPI-parallel (domain decomposition). In this context task-parallelism means paralleization over sources, which we have accomplished using `batch-shipyard` in a serverless setting (see Section II end). We remark that this allows optimal usage of the typical cloud infrastructure, where one pays based on actual usage of computational resources.
+The inversion (outer-level of parallelism) requires what is essentially task parallelism; each task is internally MPI-parallel (domain decomposition). In this context task-parallelism means parallelization over sources, which we have accomplished using `batch-shipyard` in a serverless setting (see Section II). This allowed optimal usage of the cloud, where one pays based on actual usage of computational resources.
 
 > What are the possibilities [...]
   
-GPU support is in development and currently (Devito v4.2) supported for some applications. Its capabilities and related applications will be fully covered in a future dedicated paper.
+GPU support is in development and currently (Devito v4.2) supported for some applications. Its capabilities and related applications will be fully covered in a future paper.
 
 > Minor issues [...]
 
