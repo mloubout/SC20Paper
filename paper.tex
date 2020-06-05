@@ -111,85 +111,85 @@
 
 \title{Scaling through abstractions – high-performance vectorial wave simulations for seismic inversion with Devito}
 
-\author{
-\IEEEauthorblockN{1\textsuperscript{st} Mathias Louboutin}
-\IEEEauthorblockA{\textit{Georgia Institute of Technology}\\
-Atlanta, GA \\
-mlouboutin3@gatech.edu}
-\and
-\IEEEauthorblockN{2\textsuperscript{nd} Fabio Luporini}
-\IEEEauthorblockA{\textit{Devito Codes}\\
-London, UK \\
-fabio@devitocodes.com}
-\and
-\IEEEauthorblockN{3\textsuperscript{rd} Rhodri Nelson}
-\IEEEauthorblockA{\textit{Imperial College London}\\
-London, UK \\
-rhodri.nelson@imperial.ac.uk}
-\and
-\IEEEauthorblockN{4\textsuperscript{th} Philipp Witte}
-\IEEEauthorblockA{\textit{Georgia Institute of Technology}\\
-Atlanta, GA \\
-pwitte3@gatech.edu}
-\and
-\IEEEauthorblockN{5\textsuperscript{th} George Bisbas}
-\IEEEauthorblockA{\textit{Imperial College London}\\
-London, UK \\
-g.bisbas18@imperial.ac.uk}
-\and
-\IEEEauthorblockN{6\textsuperscript{th} Jan Thorbecke}
-\IEEEauthorblockA{\textit{TU-Delft}\\
-Delft, NL \\
-J.W.Thorbecke@tudelft.nl}
-\and
-\IEEEauthorblockN{7\textsuperscript{th} Felix J. Herrmann}
-\IEEEauthorblockA{\textit{Georgia Institute of Technology}\\
-Atlanta, GA\\
-felix.herrmann@gatech.edu}
-\and
-\IEEEauthorblockN{8\textsuperscript{th} Gerard J. Gorman}
-\IEEEauthorblockA{\textit{Imperial College London}\\
-London, UK \\
-g.gorman@imperial.ac.uk}
-}
-
-
-% \author{\IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
-% \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
-% \textit{name of organization (of Aff.)}\\
-% City, Country \\
-% email address or ORCID}
+% \author{
+% \IEEEauthorblockN{1\textsuperscript{st} Mathias Louboutin}
+% \IEEEauthorblockA{\textit{Georgia Institute of Technology}\\
+% Atlanta, GA \\
+% mlouboutin3@gatech.edu}
 % \and
-% \IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname}
-% \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
-% \textit{name of organization (of Aff.)}\\
-% City, Country \\
-% email address or ORCID}
+% \IEEEauthorblockN{2\textsuperscript{nd} Fabio Luporini}
+% \IEEEauthorblockA{\textit{Devito Codes}\\
+% London, UK \\
+% fabio@devitocodes.com}
 % \and
-% \IEEEauthorblockN{3\textsuperscript{rd} Given Name Surname}
-% \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
-% \textit{name of organization (of Aff.)}\\
-% City, Country \\
-% email address or ORCID}
+% \IEEEauthorblockN{3\textsuperscript{rd} Rhodri Nelson}
+% \IEEEauthorblockA{\textit{Imperial College London}\\
+% London, UK \\
+% rhodri.nelson@imperial.ac.uk}
 % \and
-% \IEEEauthorblockN{4\textsuperscript{th} Given Name Surname}
-% \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
-% \textit{name of organization (of Aff.)}\\
-% City, Country \\
-% email address or ORCID}
+% \IEEEauthorblockN{4\textsuperscript{th} Philipp Witte}
+% \IEEEauthorblockA{\textit{Georgia Institute of Technology}\\
+% Atlanta, GA \\
+% pwitte3@gatech.edu}
 % \and
-% \IEEEauthorblockN{5\textsuperscript{th} Given Name Surname}
-% \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
-% \textit{name of organization (of Aff.)}\\
-% City, Country \\
-% email address or ORCID}
+% \IEEEauthorblockN{5\textsuperscript{th} George Bisbas}
+% \IEEEauthorblockA{\textit{Imperial College London}\\
+% London, UK \\
+% g.bisbas18@imperial.ac.uk}
 % \and
-% \IEEEauthorblockN{6\textsuperscript{th} Given Name Surname}
-% \IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
-% \textit{name of organization (of Aff.)}\\
-% City, Country \\
-% email address or ORCID}
+% \IEEEauthorblockN{6\textsuperscript{th} Jan Thorbecke}
+% \IEEEauthorblockA{\textit{TU-Delft}\\
+% Delft, NL \\
+% J.W.Thorbecke@tudelft.nl}
+% \and
+% \IEEEauthorblockN{7\textsuperscript{th} Felix J. Herrmann}
+% \IEEEauthorblockA{\textit{Georgia Institute of Technology}\\
+% Atlanta, GA\\
+% felix.herrmann@gatech.edu}
+% \and
+% \IEEEauthorblockN{8\textsuperscript{th} Gerard J. Gorman}
+% \IEEEauthorblockA{\textit{Imperial College London}\\
+% London, UK \\
+% g.gorman@imperial.ac.uk}
 % }
+
+
+\author{\IEEEauthorblockN{1\textsuperscript{st} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{3\textsuperscript{rd} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{4\textsuperscript{th} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{5\textsuperscript{th} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+\and
+\IEEEauthorblockN{6\textsuperscript{th} Given Name Surname}
+\IEEEauthorblockA{\textit{dept. name of organization (of Aff.)} \\
+\textit{name of organization (of Aff.)}\\
+City, Country \\
+email address or ORCID}
+}
 
 \maketitle
 
