@@ -1,48 +1,43 @@
 ---
-title: respons to reviews
+title: response to reviews
 bibliography:
 	- sc20_paper.bib
 ---
 Dear Editor,
 
-First of all, we would like to thank the reviewers for their work and constructive feedback. Below, we address their questions and observations. All edits are in red in the manuscript.
+We thank the reviewers for their work and constructive feedback. Below, we address their questions and observations. All edits are in red in the manuscript.
 
 ## R1
+> If you run your model with a variable number of cores, how is the weak and strong scaling? Can you comment on that? 
+We published and cited MPI scaling results in [@witte2019ecl;@luporini2019adp]. While Devito MPI scaling has improved significantly since those publications, it is only a relatively minor consideration within the bigger picture. Applications such as FWI generally only use MPI for computing on a single data shot (i.e. a single observation). However, that computation unit of work sits within an embarrassingly parallel loop processing thousands of such shots as part of a gradient-decent algorithm. So while the computation of a single shot (the focus on Devito_ might only require TFLOPS, and iteration of the outer loop would be typically PFLOPS. A description of nested-parallelism in applications such as FWI is outside of the scope of this paper, but we have included several references to FWI papers that do describe the underlying algorithm. 
 
-> run your model [...] How is that done?
-
-During experimentation, we had two issues:
-1 - Limited Azure resources, including access to an Infiniband-enabled system.
-2 - Some MPI-level optimizations needed tuning and consolidation.
-
-We managed to perform initial scaling experiments [@witte2019ecl;@luporini2019adp], although without the latest advancements in Devito (e.g., computation/communication overlap). Today, we have preliminary evidence that Devito-v4.2 has remarkable parallel efficiency, but publication would be premature.
-
-Accuracy: details added to the text (in red). In [@devito-api], we analyze the numerical accuracy against the analytical solution and the convergence rate of the finite-differences. We also test through continuous integration the numerical accuracy of all implemented models.
+> Further, you mention that you validate performance against a wave propagator - how about validation of simulation quality? How is that done?
+Details on solver verification have been added to the paper (in red). In [@devito-api], we analyze the numerical accuracy against the analytical solution and the convergence rate of the finite-differences. We also test through continuous integration the numerical accuracy of all implemented models. Additionally, for inverse problems, we use the standard dot and gradient tests, "we focused on correct and testable implementations for the adjoint wave-equation and the gradient (action of the adjoint Jacobian) [@louboutin2018segeow; @louboutin2020THmfi]"
 
 ## R2
 
 > [...] not very suitable for SC
-
-This work was conceived as an application-oriented paper based on high-level abstractions and compilation technology. However, unlike many other works centered on DSLs, ours builds on -- and contributes to -- what is nowadays an established framework for seismic imaging, used in industry and academia. Our work shows the benefits (productivity, HPC, ...) of raising the level of abstraction, so it is relevant for SC.
+There are few words in this review so we can only guess in what sense the reviewer feels the work is not suitable for SC. High productivity for HPC and performance-portability continue to be hot topics at SC. Many recent Gordon Bell finalists in recent years have used to some degree DSL's, and DSL's. Devito is one of the very examples of DSL's to have challenged the performance of handwritten HPC codes for real engineering applications at scale. While Devito is fully open source, we have not been able to publish any head-to-head comparisons with commercial codes in this domain because of the commercial sensitivity. However, one can conclude from the fact that Devito is being adopted by companies commercially to suggest comparisons were favourable. The research in Devito is highly relevant to SC as it demonstrates that the HPC cliche that one have to can have high-productivity languages or high-performance but not both is false.
 
 > Parallelization is pretty straightforward [...]
 
-Our work focuse on the generation of MPI-parallel code from a mathematical language for solving PDEs rather than the manual addition of domain decomposition toanexi  sting code. This requires considerable software engineering to allow users to run on a distributed-memory system with virtually no changes to their code. We also point out in the paper [Sections I and II-B], that on top of standard domain decomposition, Devito decomposes unstructured sparse functions, implements distributed numpy arrays, and applies several optimazions for effective halo exchange.
+Whether or not parallelization is straightforward is not the issue. One can make the same comment about any finite difference, stencil code, anything involving linear algebra... 
+The novelty is that our work involves developing a layers of abstracts that allow finite difference based solvers be to implemented in symbolic mathematical form and automatically generate optimized C complete with nested MPI, OpenMP and SIMD parallelism. This is not "straightforward" - the only comparable software technologies that we are aware of to have accomplished something similar are FEnICS and Firedrake for the finite-element method.
+We also point out in the paper [Sections I and II-B], that on top of standard domain decomposition, Devito decomposes irregular and unstructured sparse functions, implements distributed numpy arrays, and applies several optimizations for efficient halo exchange.
 
 > high arithmetic intensity [...] challenging for optimization
 
-High arithmetic intensity does not imply "non-challenging optimization". High-order finite (spectral) elements for instance -- where an extremely high arithmetic intensity can be obtained, but without tensor-product basis functions and optimizations such as sum-factorization, notable yet misleasing GFlops/s performance is achieved since a huge fraction of flops are redundant (e.g., common sub-expressions). TTI is similar. As explained in Section III, without capturing cross-iteration common sub-expressions (high-order cross derivatives), we would obtaine remarkable GFlops/s, but terrible GPoints/s. Optimizing away such redundancies is cumbersome, and is one of the reasons companies are so much interested in Devito.
+High arithmetic intensity does not imply "non-challenging optimization". High-order finite (spectral) elements for instance -- where an extremely high arithmetic intensity can be obtained, but without tensor-product basis functions and optimizations such as sum-factorization results in an inflated GFlops/s measurement since a huge fraction of flops are redundant (e.g., common sub-expressions). TTI, a relatively sophisticated propagation model used in industry, is similar. As explained in Section III, without capturing cross-iteration common sub-expressions (high-order cross derivatives), we would obtain very high GFlops/s, but terrible GPoints/s (and therefore poor time to solution). Optimizing away such redundancies, one of the compiler transformations performed by Devito,  is challenging to do by hand as there can be thousands of algebraic terms in these engineering applications.
 
 > [...] MPI which is a bit behind times these days.
 
-MPI is still curently the most broadly accepted approach for domain decomposition.
-
+The authors are curious to know if the reviewer also believes all MPI focused papers are unsuitable for SC. Devito uses a range of parallel programming models, usually nested, depending on the context. For example, SIMD for SIMD registers, OpenMP for multi-core shared memory, OpenMP 5 offloading and OpenACC for accelerators, and frameworks such as Dask for parallelizing task-graphs. For domain-decomposition parallelism on distributed memory computers, MPI is still the most widely accepted solution.
 
 ## R3
 
 > little confusing but [...] style parallelism.
 
-See R2 -- it's not just "grid decomposition", Devito deals with distribution of sparse functions, numpy arrays, decomposition over sub-domains, etc.
+The complexity arises from the fact that there are several layers of parallelism and parallel programming patterns. While we focus on MPI  for domain decomposition for this paper, a single application will also use threading, accelerators, SIMD vectorization, irregular computation, distributed numpy arrays.
 
 > some mention of threads, [...]. Only MPI is detailed.
 
@@ -50,23 +45,23 @@ Correct. We explicitly refer to other articles for these other aspects.
 
 > [...] FMA?
 
-The operations determining the performance of a code are the source-level ones. FMA is a lower-level concept (ie, a scalar FMA = two operations). This model is adopted everywhere.
+The operations determining the performance of software are the source-level ones. FMA is a lower-level concept (i.e., a scalar FMA = two operations). This model is adopted everywhere.
 
 > Scalability performance
 
-See R1 -- (i) lack of resources and (ii) Devito not ready yet for scalability tests when the experimentation was performed.
+See response to R1.
 
 > much of the performance [...]
 
-We show performance results of three different codes -- TTI, elastic, and isotropic acoustic -- thus exploring different physics and discretizations. Further, as explained in R2, ours is an application-oriented paper built off high-level abstractions running on a cloud-based system. To achieve this, we are using bleeding edge technologies -- an established DSL-based system such as Devito, Azure cloud, Docker, the rapidly-spreading GitHub-Actions for CI, etc. The use and orchestration of these technologies is thouroughly described in the paper, and is of strong interest for SC (strong industry interest for production scale).
+We show performance results of three different codes -- TTI, elastic, and isotropic acoustic -- thus exploring different physics and discretizations. Further, as explained in R2, ours is an application-oriented paper built off high-level abstractions running on a cloud-based system. To achieve this, we are using state-of-the-art edge technologies -- an established DSL-based system such as Devito, Azure cloud, Docker, GitHub-Actions for CI, etc. The use and orchestration of these technologies is thoroughly described in the paper and is of keen interest for SC (strong industry interest for production scale).
 
 > For actual seismic [...] it helps a little.
 
-The industrial problem does indeed involve muliple parts, such as data acquisition, processing, and, most importantly, velocity model building. We do not claim to solve all these problems. However, we demonstrate that the combination of advanced technolgies such as DSLs and compilers is key to highly-efficient sesimic modelling and imaging at industrial scale. We have added references and clarification in the introduction.
+The industrial problem does indeed involve multiple parts, such as data acquisition, processing, and, most importantly, velocity model building. We do not claim to solve all these problems. However, we demonstrate that the combination of advanced technologies such as DSLs and compilers is key to highly-efficient seismic modelling and imaging at an industrial scale. We have added references and clarification in the introduction.
 
 > Dropping [...] 3D elastic [...] might demonstrate [...].
 
-The new capabilities of Devito -- tensor language, MPI from high-level abstractions -- for multiple physics and discretizations is as important as a strong scaling experiment. Strong scaling may, to some extent, be regarded as more of an academic exercise in seismic imaging:
+The new capabilities of Devito -- tensor language, MPI from high-level abstractions -- for multiple physics and discretizations is as essential as a strong scaling experiment. Strong scaling may, to some extent, be regarded as more of an academic exercise in seismic imaging:
 
 * even with high-frequency FWI, a typical shot-level computation requires no more than a bunch of nodes (often order of units);
 * there is an outer-level of parallelism for inversion, essentially a task farm where the individual workers are internally MPI-parallel.
@@ -82,21 +77,21 @@ We have improved the manuscript to clarify what the contributions are. These are
 
 The number of additions to the codebase is significant: https://github.com/devitocodes/devito/pull/873
 
-> for SC [...] sacalability and performance.
+> for SC [...] scalability and performance.
 
 The single-node performance is discussed in other cited articles. See R1 about the lack of scalability experiments.
 
->  section III describing new work?
+> section III describing new work?
 
 Yes. We have improved the text to make this clear.
 
 > parallelism just via MPI?
 
-The inversion (outer-level of parallelism) requires what is essentially task parallelism; each task is internally MPI-parallel (domain decomposition). In this context task-parallelism means parallelization over sources, accomplished using `batch-shipyard` in a serverless setting [Section II]. This allowed optimal usage of the cloud, where one pays based on actual usage of computational resources.
+The inversion (outer-level of parallelism) requires what is essentially task parallelism; each task is internally MPI-parallel (domain decomposition). In this context, task-parallelism means parallelization over sources, accomplished using `batch-shipyard` in a serverless setting [Section II]. This allowed optimal usage of the cloud, where one pays based on actual usage of computational resources.
 
 > What are the possibilities [...]
   
-GPU support is in development and currently (Devito-v4.2) supported for some applications. Its capabilities and related applications will be fully covered in a future paper.
+GPU support is in development and currently (Devito-v4.2) supported for some applications. Its capabilities and related applications will be covered in a forthcoming paper.
 
 > Minor issues [...]
 
