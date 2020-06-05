@@ -291,8 +291,8 @@ extensions and applications to large-scale three-dimensional problem sizes
 as encountered in exploration geophysics. These experiments are carried
 out in Cloud-based HPC systems and include elastic forward modelling using
 distributed-memory parallelism and imaging based on the tilted transverse
-isotropic (TTI) wave-equation (\cite{virieux, thomsen1986, zhang-tti,
-duveneck, louboutin2018segeow}). These proof of concepts highlight two
+isotropic (TTI) wave-equation~\cite{virieux, thomsen1986, zhang-tti,
+duveneck, louboutin2018segeow}. These proof of concepts highlight two
 critical features: first, the ability of the symbolic interface and the
 compiler to translate to large-scale adjoint-based inversion problems that
 require massive compute (since thousands of PDEs are solved) as well as
@@ -308,8 +308,8 @@ Devito and its symbolic API and present the \textcolor{red}{newly developped} di
 implementation that allows large-scale modelling and inversion by means of
 domain decomposition. We then provide a brief comparison with a state of
 the art hand-coded wave propagator to validate the performance previously
-benchmarked with the roofline model (\cite{patterson, devito-compiler,
-devito-api, louboutin2016ppf}). \textcolor{red}{Before concluding, results from the
+benchmarked with the roofline model \cite{patterson, devito-compiler,
+devito-api, louboutin2016ppf}. \textcolor{red}{Before concluding, results from the
 Cloud-based experiments introduced above are presented}.
 
 \section{Overview of Devito}\label{overview-of-devito}
@@ -317,14 +317,14 @@ Cloud-based experiments introduced above are presented}.
 Devito \cite{devito-api} provides a functional language built on top of
 \texttt{SymPy} \cite{sympy} to symbolically express PDEs at a
 mathematical level and implements automatic discretization with the
-finite-difference method. The language is by design flexible enough to
-express other types of non finite-difference operators, such as
-interpolation and tensor contractions, that are inherent to
-measurement-based inverse problems. Several additional features are
+finite-difference method. \textcolor{red}{The language is by design flexible enough to
+express other non finite-difference operators, such as
+interpolation and tensor contractions, inherent in
+measurement-based inverse problems}. Several additional features are
 supported, among which are staggered grids, sub-domains, and stencils with
 custom coefficients. The last major building block of a solid PDE solver
 are the boundary conditions which for finite-difference methods are
-notoriously diverse and often complicated. The system is, however,
+notoriously diverse and often complicated. The \textcolor{red}{DSL} is, however,
 sufficiently general to express them through a composition of core
 mechanisms. For example, free surface and perfectly-matched \textcolor{red}{layer
 (PML) conditions} can be expressed as equations -- just like
@@ -347,15 +347,15 @@ an implementation of the acoustic wave-equation in isotropic media
 %
 \begin{equation}
 \begin{cases}
- m(x) \frac{\partial^2 u(t, x)}{\partial t^2} - \Delta u(t, x) = \delta(xs) q(t) \\
+ m(x) \frac{\partial^2 u(t, x)}{\partial t^2} - \Delta u(t, x) = \delta(x_s) q(t) \\
  u(0, .) = \frac{\partial u(t, x)}{\partial t}(0, .) = 0 \\
- d(t, .) = u(t, xr).
+ d(t, .) = u(t, x_r).
  \end{cases}
 \label{acou}
 \end{equation}
 %
-\textcolor{red}{where $u(t, x)$ is the pressure wavefield, $xs$ is the point source position, 
-$q(t)$ is the source time signature, $d(t, .)$ is the measured data at positions $xr$ and $m(x)$ is the
+\textcolor{red}{where $u(t, x)$ is the pressure wavefield, $x_s$ is the point source position, 
+$q(t)$ is the source time signature, $d(t, .)$ is the measured data at positions $x_r$ and $m(x)$ is the
 squared slowness.}
  The core of the Devito
 symbolic API consists of three classes:
@@ -728,7 +728,7 @@ adjoint wave-equation and the gradient (action of the adjoint Jacobian)
 \cite{louboutin2018segeow, louboutin2020THmfi}; exactness being a mandatory
 requirement of gradient based iterative optimization algorithms.
 
-\subsection{3D Imaging example on Azure}\label{d-imaging-example-on-azure}
+\subsection{3D Imaging on Azure}\label{d-imaging-example-on-azure}
 
 We now demonstrate the scalability of \devito to real-world applications by
 imaging an industry-scale three-dimensional TTI subsurface model. This
@@ -865,9 +865,9 @@ important in global seismology since shear surface waves (which are
 ignored in acoustic models) are the most hazardous. \textcolor{red}{In this section, we 
 introduce the new tensor algebra language implemented in \devito that enables the simple and 
 high-level definition of vectorial and tensorial physics. This API extension also implements 
-fully automatized staggered grid and staggered ginite-difference generally required for a stable discretization
+fully automatized staggered grid and staggered finite-differences which are generally required for a stable discretization
 of vectorial PDEs. This extension allows us to express an elastic model with compact and elegant notation 
-and model its solution computationally efficiently with the \devito compiler}
+and model its solution computationally efficiently with the \devito compiler}.
 
 \sout{\textcolor{green}{In this section, we
 exploit the tensor algebra language introduced in \devito v4.0 to express
@@ -1125,8 +1125,8 @@ Owing to the fundamental design principles of \devito such scaling,
 however, becomes trivial. In this work we demonstrated
 the high-level interface provided by \devito not only for simple scalar
 equations but also for coupled PDEs. This interface allows, in a simple, concise
-and consistent manner, the expression of all-kinds of non-trivial differential operators \textcolor{red}{, in this the vectorial elastic equation 
-and rotated finite-difference}. Next, and most
+and consistent manner, the expression of all-kinds of non-trivial differential operators\textcolor{red}{: the vectorial elastic equation 
+and TTI (rotated finite-difference) being two examples presented in the present study}. Next, and most
 importantly, \textcolor{red}{it was} demonstrated that the compiler enables large-scale modelling with
 state-of-the art computational performance and programming paradigm. The
 single-node performance is on par with state of the art hand-coded models, but
@@ -1134,10 +1134,12 @@ packaged with this performance comes
 the flexibility of the symbolic interface and multi-node parallelism, which is
 integrated in the compiler and interface in a accessible way. Finally,
 we demonstrated that our abstractions provide the necessary portability
-to enable both on-premise and Cloud based HPC. \textcolor{red}{WHile the work we 
-presented here does not solve all the problems in exploration geophysics, the high-level interface 
-and at (industry) scale performance we demonstrated convinced
-multiple academic and industrial project to use \devito.}
+to enable both on-premise and Cloud based HPC.
+
+\textcolor{red}{We emphasize that the work
+presented here does not solve (and does not claim to solve) all problems encountered within exploration geophysics. The high-level interface 
+and at (industry) scale performance demonstrated has resulted in
+multiple academic and industrial projects adopting the use \devito within their larger imaging frameworks.}
 
 
 \section{Code availability}
@@ -1146,10 +1148,9 @@ The code to reproduce the different examples presented in this work is available
 
 \begin{itemize}
   \item The complete code for TTI imaging is available at \url{https://github.com/slimgroup/Azure2019/tree/v1.0} and includes 
-  the TTI propagators, the Azure setup for shot parallelism and a documentation.
-  \item The elastic modelling can be run with the elastic example available in Devito at
-  \url{https://github.com/devitocodes/devito/blob/v4.2/examples/seismic/elastic/elastic_example.py} 
-  and can be run with any size and spatial order. A standalone script to run the large 3D elastic modelling
+  the TTI propagators, the Azure setup for shot parallelism and documentation.
+  \item \textcolor{red}{Elastic simulations can be run using the elastic example} available in Devito at
+  \url{https://github.com/devitocodes/devito/blob/v4.2/examples/seismic/elastic/elastic_example.py}. A standalone script to run the large 3D elastic modelling \textcolor{red}{experiment presented here}
   is also available at \url{https://github.com/mloubout/SC20Paper/tree/master/codesamples}
 \end{itemize}
 
